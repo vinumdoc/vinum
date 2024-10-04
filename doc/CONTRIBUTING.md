@@ -16,7 +16,7 @@ Contributing to Vinum
 
     - `docs/vinum.md      
     - `docs/CONTRIBUTING.md`    
-    -- CODE_OF_CONDUCT.md
+    -- docs/CODE_OF_CONDUCT.md
 
  Then, go through the following steps.
 
