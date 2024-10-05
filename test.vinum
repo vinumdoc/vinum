@@ -1,0 +1,11 @@
+[section
+	[alan : Alan Turing]
+	[alan]
+	[par This is a paragraph]
+	[par [alan]]
+	[par [alan] [alan]]
+	[par [alan] hello]
+	[par hello [alan]]
+	[par It's often said that [alan] is the father of Computer Sciences.]
+	[par Today is [day_of_week 2024-09-26].]
+]
