@@ -17,7 +17,7 @@ struct ast_node ast_node_new(const int type, char *text) {
 }
 
 void ast_node_add_child(struct ast_node *dst, const size_t child) {
-	assert(dst->num_childs <= MAX_AST_NODE_CHILDS);
+	assert(dst->num_childs < MAX_AST_NODE_CHILDS);
 
 	dst->childs[dst->num_childs] = child;
 	dst->num_childs++;
@@ -30,7 +30,7 @@ struct ast ast_new() {
 }
 
 size_t ast_add_node(struct ast *ast, const struct ast_node node) {
-	assert(ast->num_nodes <= MAX_AST_NODES);
+	assert(ast->num_nodes < MAX_AST_NODES);
 
 	ast->nodes[ast->num_nodes] = node;
 	ast->num_nodes++;
