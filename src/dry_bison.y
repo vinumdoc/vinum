@@ -29,7 +29,7 @@ program:
        ;
 
 block:
-     '[' symbol ':' text ']'  {
+     '[' symbol ':' args ']'  {
 	struct ast_node node = ast_node_new_nvl(ASSIGNMENT);
 
 	ast_node_add_child(&node, $2);
