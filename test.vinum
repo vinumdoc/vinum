@@ -9,4 +9,6 @@
 	[par It's often said that [alan] is the father of Computer Sciences.]
 	[par Today is [day_of_week 2024-09-26].]
 	[last_alan : [last [alan]]]
+	[foo : bar]
+	[[foo]]
 ]

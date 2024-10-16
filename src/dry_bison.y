@@ -89,6 +89,13 @@ symbol: WORD {
 	ctx.ast.nodes[$1].type = SYMBOL;
 	$$ = $1;
       }
+      | block {
+	struct ast_node node = ast_node_new_nvl(SYMBOL);
+
+	ast_node_add_child(&node, $1);
+
+	$$ = ast_add_node(&ctx.ast, node);
+      }
       ;
 
 text:
