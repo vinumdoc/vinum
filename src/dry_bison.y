@@ -99,14 +99,14 @@ symbol: WORD {
       ;
 
 text:
-     WORD {
+     word_text {
 	struct ast_node node = ast_node_new_nvl(TEXT);
 
 	ast_node_add_child(&node, $1);
 
 	$$ = ast_add_node(&ctx.ast, node);
     }
-    | text WORD {
+    | text word_text {
 	struct ast_node *node = &ctx.ast.nodes[$1];
 
 	ast_node_add_child(node, $2);
@@ -114,5 +114,9 @@ text:
 	$$ = $1;
     }
     ;
+
+word_text: WORD { $$ = $1;}
+	 | ':'{ $$ = $1;}
+	 ;
 
 %%
