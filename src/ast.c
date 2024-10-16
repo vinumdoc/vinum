@@ -42,7 +42,7 @@ static const char* token_to_str(enum yytokentype token) {
 	switch (token) {
 		case ASSIGNMENT: return "ASSIGNMENT";
 		case CALL: return "CALL";
-		case CALL_ARGS: return "CALL_ARGS";
+		case ARGS: return "ARGS";
 		case PROGRAM: return "PROGRAM";
 		case SYMBOL: return "SYMBOL";
 		case TEXT: return "TEXT";
