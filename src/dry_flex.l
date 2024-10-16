@@ -14,9 +14,9 @@
 "]" |
 ":" { return *yytext; }
 
-[ \t\n]+ { }
+[ \t\n\r]+ { }
 
-([^\[\]: \t\n])+ {
+([^\[\]: \t\r\n])+ {
 	struct ast_node node = ast_node_new(WORD, strdup(yytext));
 	yylval = ast_add_node(&ctx.ast, node);
 
