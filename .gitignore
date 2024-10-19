@@ -85,6 +85,7 @@ autom4te.cache
 /config.sub
 /configure
 /configure.scan
+/configure~
 /depcomp
 /install-sh
 /missing
