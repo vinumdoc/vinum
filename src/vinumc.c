@@ -26,7 +26,7 @@ void yyerror(char *s, ...) {
 	va_end(ap);
 }
 
-int main(int argc, char *argv[]) {
+int main() {
 	ctx = ctx_new();
 	yyparse();
 	ast_print(&ctx.ast);

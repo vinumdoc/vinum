@@ -6,6 +6,14 @@
 #include "dry_bison.h"
 
 #include "vinumc.h"
+
+/*
+ * Disables input() and unput() function definitions from the generated .c
+ * file. This is done to remove the unused functions warnings. If some day we
+ * need to use these functions, we need to remove these define.
+ */
+#define YY_NO_INPUT
+#define YY_NO_UNPUT
 %}
 
 %%

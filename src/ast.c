@@ -69,7 +69,7 @@ static void ast_print_rec(const struct ast *ast, const int id, const int level) 
 	}
 	printf("\n");
 
-	for(int i = 0; i < node->num_childs; i++) {
+	for(size_t i = 0; i < node->num_childs; i++) {
 		ast_print_rec(ast, node->childs[i], level + 1);
 	}
 }

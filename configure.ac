@@ -1,6 +1,7 @@
 AC_INIT([vinum], [1.0])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 
+CFLAGS=""
 AC_PROG_CC
 
 AC_PROG_YACC

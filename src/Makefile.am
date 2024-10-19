@@ -1,3 +1,4 @@
+AM_CFLAGS = -Wall -Wextra -Werror -g
 AM_YFLAGS = -d
 
 bin_PROGRAMS = vinumc
