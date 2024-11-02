@@ -73,6 +73,22 @@ static void ast_print_rec(const struct ast *ast, const int id, const int level) 
 	}
 }
 
+size_t ast_copy_node(struct ast *ast, size_t node_id) {
+	struct ast_node *node = &ast->nodes[node_id];
+
+	struct ast_node no_childs_copy = *node;
+	no_childs_copy.num_childs = 0;
+
+	size_t node_copy_id = ast_add_node(ast, no_childs_copy);
+	struct ast_node *node_copy = &ast->nodes[node_copy_id];
+
+	for(size_t i = 0; i < node->num_childs; i++) {
+		ast_node_add_child(node_copy, ast_copy_node(ast, node->childs[i]));
+	}
+
+	return node_copy_id;
+}
+
 void ast_print(const struct ast *ast) {
 	ast_print_rec(ast, 0, 0);
 }

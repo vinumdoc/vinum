@@ -29,6 +29,8 @@ struct ast {
 
 struct ast ast_new();
 size_t ast_add_node(struct ast *ast, const struct ast_node node);
+size_t ast_copy_node(struct ast *ast, size_t node_id);
+
 void ast_print(const struct ast *ast);
 
 #endif // __AST_H__
