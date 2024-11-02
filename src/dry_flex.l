@@ -24,6 +24,13 @@
 
 [ \t\n\r]+ { }
 
+"$*" {
+	struct ast_node node = ast_node_new_nvl(ARG_REF_ALL_ARGS);
+	yylval = ast_add_node(&ctx.ast, node);
+
+	return WORD;
+}
+
 ([^\[\]: \t\r\n])+ {
 	struct ast_node node = ast_node_new(WORD, strdup(yytext));
 	yylval = ast_add_node(&ctx.ast, node);

@@ -7,6 +7,7 @@ BUILT_SOURCES = dry_bison.h
 
 vinumc_SOURCES = \
 		 ast.c \
+		 ast_bison_helpers.c \
 		 dry_bison.y \
 		 dry_flex.l \
 		 vinumc.c

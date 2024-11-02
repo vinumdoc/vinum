@@ -41,6 +41,7 @@ static const char* token_to_str(enum yytokentype token) {
 		case ASSIGNMENT: return "ASSIGNMENT";
 		case CALL: return "CALL";
 		case ARGS: return "ARGS";
+		case ARG_REF_ALL_ARGS: return "ARG_REF_ALL_ARGS";
 		case PROGRAM: return "PROGRAM";
 		case SYMBOL: return "SYMBOL";
 		case TEXT: return "TEXT";

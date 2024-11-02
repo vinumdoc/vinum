@@ -1,13 +1,16 @@
 %{
 #include <stdio.h>
 
+#include "ast_bison_helpers.h"
 #include "vinumc.h"
+
 int yylex();
 %}
 
 %token ASSIGNMENT
 %token CALL
 %token ARGS
+%token ARG_REF_ALL_ARGS
 %token PROGRAM
 %token SYMBOL
 %token TEXT
@@ -60,7 +63,11 @@ args:
 
 		ast_node_add_child(&node, $1);
 
-		$$ = ast_add_node(&ctx.ast, node);
+		size_t arg_node_id = ast_add_node(&ctx.ast, node);
+
+		args_handle_arg_refs(&ctx.ast, arg_node_id);
+
+		$$ = arg_node_id;
 	 }
 	 | block {
 		struct ast_node node = ast_node_new_nvl(ARGS);
@@ -73,6 +80,8 @@ args:
 		struct ast_node *node = &ctx.ast.nodes[$1];
 
 		ast_node_add_child(node, $2);
+
+		args_handle_arg_refs(&ctx.ast, $1);
 
 		$$ = $1;
 	 }
