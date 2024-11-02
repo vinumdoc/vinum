@@ -1,8 +1,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "dry_bison.h"
-
 #include "vinumc.h"
 
 struct ctx ctx;

@@ -3,7 +3,9 @@
 
 #include <stddef.h>
 
-#define MAX_AST_NODE_CHILDS 10
+#include "dry_bison.h"
+
+#define MAX_AST_NODE_CHILDS 50
 
 struct ast_node {
 	int type;

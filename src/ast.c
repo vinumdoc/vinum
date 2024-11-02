@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "dry_bison.h"
-
 #include "ast.h"
 
 struct ast_node ast_node_new(const int type, char *text) {
