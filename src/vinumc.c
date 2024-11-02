@@ -8,6 +8,7 @@ struct ctx ctx;
 struct ctx ctx_new() {
 	struct ctx ret = {
 		.ast = ast_new(),
+		.eval_ctx = eval_ctx_new(),
 	};
 
 	return ret;
@@ -27,5 +28,9 @@ void yyerror(char *s, ...) {
 int main() {
 	ctx = ctx_new();
 	yyparse();
+	ast_print(&ctx.ast);
+
+	FILE *out = fopen("out.txt", "w");
+	eval(&ctx.eval_ctx, &ctx.ast, out);
 	ast_print(&ctx.ast);
 }

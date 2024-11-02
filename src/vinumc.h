@@ -2,9 +2,11 @@
 #define __VINUMC_H__
 
 #include "ast.h"
+#include "eval.h"
 
 struct ctx {
 	struct ast ast;
+	struct eval_ctx eval_ctx;
 };
 
 extern struct ctx ctx;
