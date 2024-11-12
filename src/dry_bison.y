@@ -1,5 +1,9 @@
 %{
 #include <stdio.h>
+#include <ctype.h>
+#include <wctype.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "ast_bison_helpers.h"
 #include "vinumc.h"
@@ -96,6 +100,24 @@ args:
 
 symbol: WORD {
 	VEC_AT(&ctx.ast.nodes, $1).type = SYMBOL;
+
+	// making so our symbols are case insensitive by making the whole string lowercase
+	char *text = VEC_AT(&ctx.ast.nodes, $1).text;
+	size_t len = strlen(text);
+
+	// we need to convert from multi-byte to wide-character string
+	wchar_t *wtext = (wchar_t*)malloc(len * sizeof(wchar_t));
+	// TODO: handle the function return value
+	mbstowcs(wtext, text, len);
+	
+	for(int i = 0; wtext[i]; i++) {
+		wtext[i] = towlower(wtext[i]);
+	}
+	// converting back to multi-byte
+	// TODO: handle the function return value
+	wcstombs(text, wtext, len);
+	free(wtext);
+
 	$$ = $1;
       }
       | block {
