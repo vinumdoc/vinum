@@ -8,7 +8,7 @@ struct eval_ctx eval_ctx_new() {
 	return ret;
 }
 
-static struct namespace_entry* namespace_find_name(struct program_ctx_namespace_t *namespace, const char *name) {
+static struct namespace_entry* namespace_find_name(struct scope_namespace_t *namespace, const char *name) {
 	for (size_t i = 0; i < namespace->len; i++) {
 		if (strcmp(name, VEC_AT(namespace, i).name) == 0)
 			return &VEC_AT(namespace, i);
@@ -18,7 +18,7 @@ static struct namespace_entry* namespace_find_name(struct program_ctx_namespace_
 }
 
 #define RESOLVE_CALLS_FUNC_SIGNATURE(func_name) \
-	static void func_name (struct eval_ctx *ctx, struct ast *ast, size_t curr_ctx_id, \
+	static void func_name (struct eval_ctx *ctx, struct ast *ast, size_t curr_scope_id, \
 			size_t ast_node_id)
 
 RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls);
@@ -26,12 +26,12 @@ RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls);
 RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_program) {
 	struct ast_node ast_node = VEC_AT(&ast->nodes, ast_node_id);
 	for (size_t i = 0; i < ast_node.childs.len; i++) {
-		resolve_calls(ctx, ast, curr_ctx_id, VEC_AT(&ast_node.childs, i));
+		resolve_calls(ctx, ast, curr_scope_id, VEC_AT(&ast_node.childs, i));
 	}
 }
 
 RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_assignment) {
-	struct program_ctx *curr_ctx = &VEC_AT(&ctx->program_ctxs, curr_ctx_id);
+	struct scope *curr_scope = &VEC_AT(&ctx->scopes, curr_scope_id);
 	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
 
 	char *name = VEC_AT(&ast->nodes, VEC_AT(&ast_node->childs, 0)).text;
@@ -40,18 +40,18 @@ RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_assignment) {
 		.ast_node_id = ast_node->childs.len > 1 ? (int)VEC_AT(&ast_node->childs, 1) : -1,
 	};
 
-	VEC_PUT(&curr_ctx->namespace, entry);
+	VEC_PUT(&curr_scope->namespace, entry);
 }
 
 RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_call) {
-	struct program_ctx *curr_ctx = &VEC_AT(&ctx->program_ctxs, curr_ctx_id);
+	struct scope *curr_scope = &VEC_AT(&ctx->scopes, curr_scope_id);
 	struct ast_node ast_node = VEC_AT(&ast->nodes, ast_node_id);
 
 	if (ast_node.childs.len > 1) {
 		const struct ast_node args_node = VEC_AT(&ast->nodes, VEC_AT(&ast_node.childs, 1));
 
  		for (size_t i = 0; i < args_node.childs.len; i++) {
-			resolve_calls(ctx, ast, curr_ctx_id, VEC_AT(&args_node.childs, i));
+			resolve_calls(ctx, ast, curr_scope_id, VEC_AT(&args_node.childs, i));
 		}
 	}
 
@@ -61,7 +61,7 @@ RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_call) {
 		return;
 	}
 
-	struct namespace_entry *symbol_info = namespace_find_name(&curr_ctx->namespace, call_name);
+	struct namespace_entry *symbol_info = namespace_find_name(&curr_scope->namespace, call_name);
 
 	if (symbol_info != NULL) {
 		if (ast_node.childs.len > 1) {
@@ -101,13 +101,13 @@ RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls) {
 	switch (ast_node->type) {
 		case ARGS:
 		case PROGRAM:
-			resolve_calls_program(ctx, ast, curr_ctx_id, ast_node_id);
+			resolve_calls_program(ctx, ast, curr_scope_id, ast_node_id);
 			break;
 		case ASSIGNMENT:
-			resolve_calls_assignment(ctx, ast, curr_ctx_id, ast_node_id);
+			resolve_calls_assignment(ctx, ast, curr_scope_id, ast_node_id);
 			break;
 		case CALL:
-			resolve_calls_call(ctx, ast, curr_ctx_id, ast_node_id);
+			resolve_calls_call(ctx, ast, curr_scope_id, ast_node_id);
 			break;
 		default:
 			break;
@@ -177,7 +177,7 @@ DO_CALLS_FUNC_SIGNATURE(do_calls) {
 }
 
 void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out) {
-	VEC_PUT(&ctx->program_ctxs, (struct program_ctx){});
+	VEC_PUT(&ctx->scopes, (struct scope){});
 	resolve_calls(ctx, ast, 0, 0);
 	do_calls(ast, out, 0);
 }
