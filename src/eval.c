@@ -10,6 +10,17 @@ struct eval_ctx eval_ctx_new() {
 	return ret;
 }
 
+static size_t add_scope_child(struct eval_ctx_scopes_t *scope_array, size_t scope_id,
+			      ast_node_id_t node) {
+	size_t new_scope_id = scope_array->len;
+
+	VEC_PUT(scope_array, ((struct scope){.father = scope_id, node = node}));
+	struct scope *scope = &scope_array->base[scope_id];
+	VEC_PUT(&scope->childs, new_scope_id);
+
+	return new_scope_id;
+}
+
 static struct namespace_entry* namespace_find_name(const struct scope_namespace_t *namespace,
 						   const char *name) {
 	for (size_t i = 0; i < namespace->len; i++) {
@@ -83,6 +94,8 @@ RESOLVE_FUNC_SIGNATURE(resolve_symbols) {
 	if (ast_node->type == ASSIGNMENT) {
 		resolve_symbols_assignment(ctx, ast, curr_scope_id, ast_node_id);
 	} else {
+		if (ast_node->type == CALL)
+			curr_scope_id = add_scope_child(&ctx->scopes, curr_scope_id, ast_node_id);
 		resolve_symbols_descent(ctx, ast, curr_scope_id, ast_node_id);
 	}
 }
