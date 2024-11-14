@@ -10,10 +10,25 @@ struct eval_ctx eval_ctx_new() {
 	return ret;
 }
 
-static struct namespace_entry* namespace_find_name(struct scope_namespace_t *namespace, const char *name) {
+static struct namespace_entry* namespace_find_name(const struct scope_namespace_t *namespace,
+						   const char *name) {
 	for (size_t i = 0; i < namespace->len; i++) {
 		if (strcmp(name, VEC_AT(namespace, i).name) == 0)
 			return &VEC_AT(namespace, i);
+	}
+
+	return NULL;
+}
+
+static struct namespace_entry* find_symbol_on_scopes(const struct eval_ctx_scopes_t *scope_array,
+						     const struct scope *scope, const char *name) {
+	while (scope != NULL) {
+		struct namespace_entry *entry = namespace_find_name(&scope->namespace, name);
+
+		if (entry != NULL)
+			return entry;
+		
+		scope = scope->father == -1 ? NULL : &scope_array->base[scope->father];
 	}
 
 	return NULL;
@@ -83,7 +98,8 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 		return;
 	}
 
-	struct namespace_entry *symbol_info = namespace_find_name(&curr_scope->namespace, call_name);
+	struct namespace_entry *symbol_info = find_symbol_on_scopes(&ctx->scopes, curr_scope,
+								    call_name);
 
 	if (symbol_info != NULL) {
 		if (ast_node.childs.len > 1) {
