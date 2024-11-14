@@ -23,16 +23,16 @@ static struct namespace_entry* namespace_find_name(struct scope_namespace_t *nam
 	static void func_name (struct eval_ctx *ctx, struct ast *ast, size_t curr_scope_id, \
 			size_t ast_node_id)
 
-RESOLVE_FUNC_SIGNATURE(resolve_calls);
+RESOLVE_FUNC_SIGNATURE(resolve_symbols);
 
-RESOLVE_FUNC_SIGNATURE(resolve_calls_program) {
+RESOLVE_FUNC_SIGNATURE(resolve_symbols_descent) {
 	struct ast_node ast_node = VEC_AT(&ast->nodes, ast_node_id);
 	for (size_t i = 0; i < ast_node.childs.len; i++) {
-		resolve_calls(ctx, ast, curr_scope_id, VEC_AT(&ast_node.childs, i));
+		resolve_symbols(ctx, ast, curr_scope_id, VEC_AT(&ast_node.childs, i));
 	}
 }
 
-RESOLVE_FUNC_SIGNATURE(resolve_calls_assignment) {
+RESOLVE_FUNC_SIGNATURE(resolve_symbols_assignment) {
 	struct scope *curr_scope = &VEC_AT(&ctx->scopes, curr_scope_id);
 	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
 
@@ -43,6 +43,26 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_assignment) {
 	};
 
 	VEC_PUT(&curr_scope->namespace, entry);
+}
+
+
+RESOLVE_FUNC_SIGNATURE(resolve_symbols) {
+	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
+
+	if (ast_node->type == ASSIGNMENT) {
+		resolve_symbols_assignment(ctx, ast, curr_scope_id, ast_node_id);
+	} else {
+		resolve_symbols_descent(ctx, ast, curr_scope_id, ast_node_id);
+	}
+}
+
+RESOLVE_FUNC_SIGNATURE(resolve_calls);
+
+RESOLVE_FUNC_SIGNATURE(resolve_calls_program) {
+	const struct ast_node ast_node = VEC_AT(&ast->nodes, ast_node_id);
+	for (size_t i = 0; i < ast_node.childs.len; i++) {
+		resolve_calls(ctx, ast, curr_scope_id, VEC_AT(&ast_node.childs, i));
+	}
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
@@ -104,9 +124,6 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls) {
 		case ARGS:
 		case PROGRAM:
 			resolve_calls_program(ctx, ast, curr_scope_id, ast_node_id);
-			break;
-		case ASSIGNMENT:
-			resolve_calls_assignment(ctx, ast, curr_scope_id, ast_node_id);
 			break;
 		case CALL:
 			resolve_calls_call(ctx, ast, curr_scope_id, ast_node_id);
@@ -180,6 +197,7 @@ DO_CALLS_FUNC_SIGNATURE(do_calls) {
 
 void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out) {
 	VEC_PUT(&ctx->scopes, (struct scope){});
+	resolve_symbols(ctx, ast, 0, 0);
 	resolve_calls(ctx, ast, 0, 0);
 	do_calls(ast, out, 0);
 }
