@@ -196,7 +196,7 @@ DO_CALLS_FUNC_SIGNATURE(do_calls) {
 }
 
 void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out) {
-	VEC_PUT(&ctx->scopes, (struct scope){});
+	VEC_PUT(&ctx->scopes, (struct scope){.father = -1});
 	resolve_symbols(ctx, ast, 0, 0);
 	resolve_calls(ctx, ast, 0, 0);
 	do_calls(ast, out, 0);

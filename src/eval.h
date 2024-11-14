@@ -16,6 +16,7 @@ struct namespace_entry {
 struct scope_namespace_t VEC_DEF(struct namespace_entry);
 
 struct scope {
+	int father;
 	struct scope_childs_t childs;
 
 	struct scope_namespace_t namespace;
