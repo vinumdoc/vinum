@@ -19,20 +19,20 @@ static struct namespace_entry* namespace_find_name(struct scope_namespace_t *nam
 	return NULL;
 }
 
-#define RESOLVE_CALLS_FUNC_SIGNATURE(func_name) \
+#define RESOLVE_FUNC_SIGNATURE(func_name) \
 	static void func_name (struct eval_ctx *ctx, struct ast *ast, size_t curr_scope_id, \
 			size_t ast_node_id)
 
-RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls);
+RESOLVE_FUNC_SIGNATURE(resolve_calls);
 
-RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_program) {
+RESOLVE_FUNC_SIGNATURE(resolve_calls_program) {
 	struct ast_node ast_node = VEC_AT(&ast->nodes, ast_node_id);
 	for (size_t i = 0; i < ast_node.childs.len; i++) {
 		resolve_calls(ctx, ast, curr_scope_id, VEC_AT(&ast_node.childs, i));
 	}
 }
 
-RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_assignment) {
+RESOLVE_FUNC_SIGNATURE(resolve_calls_assignment) {
 	struct scope *curr_scope = &VEC_AT(&ctx->scopes, curr_scope_id);
 	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
 
@@ -45,7 +45,7 @@ RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_assignment) {
 	VEC_PUT(&curr_scope->namespace, entry);
 }
 
-RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_call) {
+RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 	struct scope *curr_scope = &VEC_AT(&ctx->scopes, curr_scope_id);
 	struct ast_node ast_node = VEC_AT(&ast->nodes, ast_node_id);
 
@@ -97,7 +97,7 @@ RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_call) {
 	}
 }
 
-RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls) {
+RESOLVE_FUNC_SIGNATURE(resolve_calls) {
 	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
 
 	switch (ast_node->type) {
