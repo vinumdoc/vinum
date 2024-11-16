@@ -21,11 +21,10 @@ struct ast_node ast_node_new(const int type, char *value);
 
 void ast_node_add_child(struct ast_node *dst, const size_t child);
 
-#define MAX_AST_NODES 1024
+struct ast_nodes_t VEC_DEF(struct ast_node);
 
 struct ast {
-	struct ast_node nodes[MAX_AST_NODES];
-	size_t num_nodes;
+	struct ast_nodes_t nodes;
 };
 
 struct ast ast_new();

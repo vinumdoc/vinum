@@ -24,7 +24,7 @@ program:
 	$$ = ast_add_node(&ctx.ast, node);
        }
        | program block {
-	struct ast_node *node = &ctx.ast.nodes[$1];
+	struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
 	ast_node_add_child(node, $2);
 	$$ = $1;
@@ -77,7 +77,7 @@ args:
 		$$ = ast_add_node(&ctx.ast, node);
 	 }
 	 | args text {
-		struct ast_node *node = &ctx.ast.nodes[$1];
+		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
 		ast_node_add_child(node, $2);
 
@@ -86,7 +86,7 @@ args:
 		$$ = $1;
 	 }
 	 | args block {
-		struct ast_node *node = &ctx.ast.nodes[$1];
+		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
 		ast_node_add_child(node, $2);
 
@@ -95,7 +95,7 @@ args:
 	 ;
 
 symbol: WORD {
-	ctx.ast.nodes[$1].type = SYMBOL;
+	VEC_AT(&ctx.ast.nodes, $1).type = SYMBOL;
 	$$ = $1;
       }
       | block {
@@ -116,7 +116,7 @@ text:
 	$$ = ast_add_node(&ctx.ast, node);
     }
     | text word_text {
-	struct ast_node *node = &ctx.ast.nodes[$1];
+	struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
 	ast_node_add_child(node, $2);
 

@@ -25,12 +25,8 @@ struct ast ast_new() {
 }
 
 size_t ast_add_node(struct ast *ast, const struct ast_node node) {
-	assert(ast->num_nodes < MAX_AST_NODES);
-
-	ast->nodes[ast->num_nodes] = node;
-	ast->num_nodes++;
-
-	return ast->num_nodes - 1;
+	VEC_PUT(&ast->nodes, node);
+	return ast->nodes.len - 1;
 }
 
 static const char* token_to_str(enum yytokentype token) {
@@ -48,7 +44,7 @@ static const char* token_to_str(enum yytokentype token) {
 }
 
 static void ast_print_rec(const struct ast *ast, const int id, const int level) {
-	const struct ast_node *node = &ast->nodes[id];
+	const struct ast_node *node = &VEC_AT(&ast->nodes, id);
 
 	for(int i = 0; i < level; i++) {
 		printf("    ");
@@ -71,13 +67,14 @@ static void ast_print_rec(const struct ast *ast, const int id, const int level) 
 }
 
 size_t ast_copy_node(struct ast *ast, size_t node_id) {
-	struct ast_node *node = &ast->nodes[node_id];
+	struct ast_node *node = &VEC_AT(&ast->nodes, node_id);
 
 	struct ast_node no_childs_copy = *node;
 	no_childs_copy.childs = (struct ast_node_childs_t){0};
 
 	size_t node_copy_id = ast_add_node(ast, no_childs_copy);
-	struct ast_node *node_copy = &ast->nodes[node_copy_id];
+	struct ast_node *node_copy = &VEC_AT(&ast->nodes, node_copy_id);
+
 	VEC_RESERVE(&node_copy->childs, node->childs.len);
 
 	for(size_t i = 0; i < node->childs.len; i++) {
