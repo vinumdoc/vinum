@@ -90,7 +90,7 @@ void ast_print(const struct ast *ast) {
 }
 
 static void ast_dot_rec(const struct ast *ast, FILE *stream, const size_t id) {
-	const struct ast_node *node = &ast->nodes[id];
+	const struct ast_node *node = &VEC_AT(&ast->nodes, id);
 
 	fprintf(stream, "\t%zu [label = \"", id);
 
@@ -106,8 +106,8 @@ static void ast_dot_rec(const struct ast *ast, FILE *stream, const size_t id) {
 
 	fprintf(stream, "\"]\n");
 
-	for (size_t i = 0; i < node->num_childs; i++) {
-		size_t child_id = node->childs[i];
+	for (size_t i = 0; i < node->childs.len; i++) {
+		size_t child_id = VEC_AT(&node->childs, i);
 		fprintf(stream, "\t%zu -> %zu\n", id, child_id);
 		ast_dot_rec(ast, stream, child_id);
 	}
