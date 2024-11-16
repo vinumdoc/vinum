@@ -10,8 +10,8 @@ struct eval_ctx eval_ctx_new() {
 
 static struct namespace_entry* namespace_find_name(struct program_ctx_namespace_t *namespace, const char *name) {
 	for (size_t i = 0; i < namespace->len; i++) {
-		if (strcmp(name, namespace->base[i].name) == 0)
-			return &namespace->base[i];
+		if (strcmp(name, VEC_AT(namespace, i).name) == 0)
+			return &VEC_AT(namespace, i);
 	}
 
 	return NULL;
@@ -31,7 +31,7 @@ RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_program) {
 }
 
 RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_assignment) {
-	struct program_ctx *curr_ctx = &ctx->program_ctxs.base[curr_ctx_id];
+	struct program_ctx *curr_ctx = &VEC_AT(&ctx->program_ctxs, curr_ctx_id);
 	const struct ast_node *ast_node = &ast->nodes[ast_node_id];
 
 	char *name = ast->nodes[ast_node->childs[0]].text;
@@ -44,7 +44,7 @@ RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_assignment) {
 }
 
 RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_call) {
-	struct program_ctx *curr_ctx = &ctx->program_ctxs.base[curr_ctx_id];
+	struct program_ctx *curr_ctx = &VEC_AT(&ctx->program_ctxs, curr_ctx_id);
 	struct ast_node *ast_node = &ast->nodes[ast_node_id];
 
 	if (ast_node->num_childs > 1) {

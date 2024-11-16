@@ -9,6 +9,8 @@
 	size_t capacity; \
 }
 
+#define VEC_AT(arr, idx) ((arr)->base[(idx)])
+
 #define VEC_PUT(arr, e) do { \
 	if ((arr)->len >= (arr)->capacity) { \
 		if ((arr)->capacity == 0) \
