@@ -88,3 +88,34 @@ static void ast_print_rec(const struct ast *ast, const int id, const int level) 
 void ast_print(const struct ast *ast) {
 	ast_print_rec(ast, 0, 0);
 }
+
+static void ast_dot_rec(const struct ast *ast, FILE *stream, const size_t id) {
+	const struct ast_node *node = &ast->nodes[id];
+
+	fprintf(stream, "\t%zu [label = \"", id);
+
+	if (node->type < 256) {
+		fprintf(stream, "\"%c\"", (char)node->type);
+	} else {
+		fprintf(stream, "%s", token_to_str(node->type));
+	}
+
+	if (node->text != NULL) {
+		fprintf(stream, "(%s)", node->text);
+	}
+
+	fprintf(stream, "\"]\n");
+
+	for (size_t i = 0; i < node->num_childs; i++) {
+		size_t child_id = node->childs[i];
+		fprintf(stream, "\t%zu -> %zu\n", id, child_id);
+		ast_dot_rec(ast, stream, child_id);
+	}
+}
+
+void ast_dot(const struct ast *ast, FILE *stream) {
+	fprintf(stream, "digraph {\n");
+	fprintf(stream, "\trankdir = LR\n");
+	ast_dot_rec(ast, stream, 0);
+	fprintf(stream, "}\n");
+}
