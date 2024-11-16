@@ -15,10 +15,7 @@ struct ast_node ast_node_new(const int type, char *text) {
 }
 
 void ast_node_add_child(struct ast_node *dst, const size_t child) {
-	assert(dst->num_childs < MAX_AST_NODE_CHILDS);
-
-	dst->childs[dst->num_childs] = child;
-	dst->num_childs++;
+	VEC_PUT(&dst->childs, child);
 }
 
 struct ast ast_new() {
@@ -68,8 +65,8 @@ static void ast_print_rec(const struct ast *ast, const int id, const int level) 
 	}
 	printf("\n");
 
-	for(size_t i = 0; i < node->num_childs; i++) {
-		ast_print_rec(ast, node->childs[i], level + 1);
+	for(size_t i = 0; i < node->childs.len; i++) {
+		ast_print_rec(ast, VEC_AT(&node->childs, i), level + 1);
 	}
 }
 
@@ -77,13 +74,15 @@ size_t ast_copy_node(struct ast *ast, size_t node_id) {
 	struct ast_node *node = &ast->nodes[node_id];
 
 	struct ast_node no_childs_copy = *node;
-	no_childs_copy.num_childs = 0;
+	no_childs_copy.childs = (struct ast_node_childs_t){0};
 
 	size_t node_copy_id = ast_add_node(ast, no_childs_copy);
 	struct ast_node *node_copy = &ast->nodes[node_copy_id];
+	VEC_RESERVE(&node_copy->childs, node->childs.len);
 
-	for(size_t i = 0; i < node->num_childs; i++) {
-		ast_node_add_child(node_copy, ast_copy_node(ast, node->childs[i]));
+	for(size_t i = 0; i < node->childs.len; i++) {
+		size_t child_copy_id = ast_copy_node(ast, VEC_AT(&node->childs, i));
+		ast_node_add_child(node_copy, child_copy_id);
 	}
 
 	return node_copy_id;

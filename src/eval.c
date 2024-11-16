@@ -25,8 +25,8 @@ RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls);
 
 RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_program) {
 	const struct ast_node *ast_node = &ast->nodes[ast_node_id];
-	for (size_t i = 0; i < ast_node->num_childs; i++) {
-		resolve_calls(ctx, ast, curr_ctx_id, ast_node->childs[i]);
+	for (size_t i = 0; i < ast_node->childs.len; i++) {
+		resolve_calls(ctx, ast, curr_ctx_id, VEC_AT(&ast_node->childs, i));
 	}
 }
 
@@ -34,10 +34,10 @@ RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_assignment) {
 	struct program_ctx *curr_ctx = &VEC_AT(&ctx->program_ctxs, curr_ctx_id);
 	const struct ast_node *ast_node = &ast->nodes[ast_node_id];
 
-	char *name = ast->nodes[ast_node->childs[0]].text;
+	char *name = ast->nodes[VEC_AT(&ast_node->childs, 0)].text;
 	struct namespace_entry entry = {
 		.name = name,
-		.ast_node_id = ast_node->num_childs > 1 ? (int)ast_node->childs[1] : -1,
+		.ast_node_id = ast_node->childs.len > 1 ? (int)VEC_AT(&ast_node->childs, 1) : -1,
 	};
 
 	VEC_PUT(&curr_ctx->namespace, entry);
@@ -47,15 +47,15 @@ RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_call) {
 	struct program_ctx *curr_ctx = &VEC_AT(&ctx->program_ctxs, curr_ctx_id);
 	struct ast_node *ast_node = &ast->nodes[ast_node_id];
 
-	if (ast_node->num_childs > 1) {
-		const struct ast_node *args_node = &ast->nodes[ast_node->childs[1]];
+	if (ast_node->childs.len > 1) {
+		const struct ast_node *args_node = &ast->nodes[VEC_AT(&ast_node->childs, 1)];
 
-		for (size_t i = 0; i < args_node->num_childs; i++) {
-			resolve_calls(ctx, ast, curr_ctx_id, args_node->childs[i]);
+		for (size_t i = 0; i < args_node->childs.len; i++) {
+			resolve_calls(ctx, ast, curr_ctx_id, VEC_AT(&args_node->childs, i));
 		}
 	}
 
-	char *call_name = ast->nodes[ast_node->childs[0]].text;
+	char *call_name = ast->nodes[VEC_AT(&ast_node->childs, 0)].text;
 	if (call_name == NULL) {
 		fprintf(stderr, "ERROR: Symbol with no name\n");
 		return;
@@ -64,24 +64,24 @@ RESOLVE_CALLS_FUNC_SIGNATURE(resolve_calls_call) {
 	struct namespace_entry *symbol_info = namespace_find_name(&curr_ctx->namespace, call_name);
 
 	if (symbol_info != NULL) {
-		if (ast_node->num_childs > 1) {
+		if (ast_node->childs.len > 1) {
 			if (symbol_info->ast_node_id < 0) {
-				ast_node->num_childs--;
+				ast_node->childs.len--;
 				return;
 			}
 
 			size_t symbol_args_node_id = ast_copy_node(ast, symbol_info->ast_node_id);
 			struct ast_node *symbol_args_node = &ast->nodes[symbol_args_node_id];
 
-			for (size_t i = 0; i < symbol_args_node->num_childs; i++) {
-				struct ast_node *child = &ast->nodes[symbol_args_node->childs[i]];
+			for (size_t i = 0; i < symbol_args_node->childs.len; i++) {
+				struct ast_node *child = &ast->nodes[VEC_AT(&symbol_args_node->childs, i)];
 
 				if (child->type == ARG_REF_ALL_ARGS) {
-					symbol_args_node->childs[i] = ast_node->childs[1];
+					VEC_AT(&symbol_args_node->childs, i) = VEC_AT(&ast_node->childs, 1);
 				}
 			}
 
-			ast_node->childs[1] = symbol_args_node_id;
+			VEC_AT(&ast_node->childs, 1) = symbol_args_node_id;
 		} else {
 			if (symbol_info->ast_node_id >= 0) {
 				ast_node_add_child(ast_node, symbol_info->ast_node_id);
@@ -118,37 +118,37 @@ DO_CALLS_FUNC_SIGNATURE(do_calls);
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_program) {
 	const struct ast_node *ast_node = &ast->nodes[ast_node_id];
-	for (size_t i = 0; i < ast_node->num_childs; i++) {
-		do_calls(ast, out, ast_node->childs[i]);
+	for (size_t i = 0; i < ast_node->childs.len; i++) {
+		do_calls(ast, out, VEC_AT(&ast_node->childs, i));
 	}
 }
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 	const struct ast_node *ast_node = &ast->nodes[ast_node_id];
 
-	if (ast_node->num_childs <= 1) {
+	if (ast_node->childs.len <= 1) {
 		return;
 	}
 
-	const struct ast_node *args_node = &ast->nodes[ast_node->childs[1]];
+	const struct ast_node *args_node = &ast->nodes[VEC_AT(&ast_node->childs, 1)];
 
-	for (size_t i = 0; i < args_node->num_childs; i++) {
-		do_calls(ast, out, args_node->childs[i]);
+	for (size_t i = 0; i < args_node->childs.len; i++) {
+		do_calls(ast, out, VEC_AT(&args_node->childs, i));
 	}
 }
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_text) {
 	const struct ast_node *ast_node = &ast->nodes[ast_node_id];
 
-	for (size_t i = 0; i < ast_node->num_childs; i++) {
-		const struct ast_node *child = &ast->nodes[ast_node->childs[i]];
+	for (size_t i = 0; i < ast_node->childs.len; i++) {
+		const struct ast_node *child = &ast->nodes[VEC_AT(&ast_node->childs, i)];
 		if (child->type != WORD) {
 			fprintf(stderr, "ERROR: TEXT node must hold only WORDS\n");
 			return;
 		}
 
 		fprintf(out, child->text);
-		if (i != ast_node->num_childs - 1)
+		if (i != ast_node->childs.len - 1)
 			fprintf(out, " ");
 	}
 	fprintf(out, "\n");

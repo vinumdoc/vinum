@@ -3,16 +3,17 @@
 
 #include <stddef.h>
 
+#include "vec.h"
+
 #include "dry_bison.h"
 
-#define MAX_AST_NODE_CHILDS 50
+struct ast_node_childs_t VEC_DEF(size_t);
 
 struct ast_node {
 	int type;
-	size_t childs[MAX_AST_NODE_CHILDS];
-	size_t num_childs;
-
 	char *text;
+
+	struct ast_node_childs_t childs;
 };
 
 struct ast_node ast_node_new(const int type, char *value);
