@@ -2,6 +2,7 @@
 #define __AST_H__
 
 #include <stddef.h>
+#include <stdio.h>
 
 #include "vec.h"
 
@@ -32,5 +33,6 @@ size_t ast_add_node(struct ast *ast, const struct ast_node node);
 size_t ast_copy_node(struct ast *ast, size_t node_id);
 
 void ast_print(const struct ast *ast);
+void ast_dot(const struct ast *ast, FILE *stream);
 
 #endif // __AST_H__
