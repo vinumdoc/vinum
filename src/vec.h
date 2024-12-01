@@ -9,6 +9,8 @@
 	size_t capacity; \
 }
 
+#define VEC_AT(arr, idx) ((arr)->base[(idx)])
+
 #define VEC_PUT(arr, e) do { \
 	if ((arr)->len >= (arr)->capacity) { \
 		if ((arr)->capacity == 0) \
@@ -20,6 +22,11 @@
 \
 	(arr)->base[(arr)->len] = (e); \
 	(arr)->len++; \
+} while(0)
+
+#define VEC_RESERVE(arr, size) do { \
+	(arr)->capacity = (size); \
+	(arr)->base = realloc((arr)->base, (arr)->capacity * sizeof(*(arr)->base)); \
 } while(0)
 
 #endif // __VEC_H__
