@@ -17,3 +17,7 @@ sweet_vinumc_SOURCES = \
 		 sweet_bison.y \
 		 sweet_flex.l \
 		 sweet_vinumc.c
+
+CLEANFILES = \
+		 sweet_flex.c \
+		 sweet_bison.c
