@@ -6,56 +6,48 @@
 
 #include "sweet_bison.h"
 
-#include "sweet_vinumc.h"
-
-/*
- * Disables input() and unput() function definitions from the generated .c
- * file. This is done to remove the unused functions warnings. If some day we
- * need to use these functions, we need to remove these define.
- */
 #define YY_NO_INPUT
 #define YY_NO_UNPUT
 %}
 
-alpha [a-zA-Z]
-
-numeric [0-9]
-
-blank [ \r\n\t]
-
-alphanum {alpha}|{numeric}
-
-block (\(([^()])*\))?(\.[^ \n\r\t]+)+
-
-%s inside_block outside_block
+name [^ \t\r\n\(\)\.]
+content [^\t\r\n\(\)\.] 
 
 %%
 
-
-"(" {
-  ECHO;
-  BEGIN inside_block;
-  printf("entrei   num bloco\n");
+"(" { 
+  yylval.str = strdup(yytext); 
+  return '('; 
 }
 
-<inside_block>.*?/\)\.[^ \n\r\t]+ {
-  ECHO;
-
-  BEGIN outside_block;
-  printf("sai dum bloco\n");
+")" { 
+  yylval.str = strdup(yytext); 
+  return ')'; 
 }
 
-<inside_block>\)/\.[^ \n\r\t]+ {
-  ECHO;
+"." { 
+  yylval.str = strdup(yytext); 
+  return '.'; 
 }
 
-<<EOF>> {printf("\nAcabou!\n"); return 0;}
+{name}+ {
+  yylval.str = strdup(yytext);
+  printf("\nToken NAME: %s\n", yytext);
+  return NAME;
+}
 
-.|\n {ECHO; printf("aqui no content teoricamente\n");}
+{content}+ {
+  yylval.str = strdup(yytext);
+  printf("\nToken CONTENT: %s\n", yytext);
+  return CONTENT;
+}
 
-{blank}+ { }
+\n+ { 
+  yylval.str = strdup("\n");
+  return NEW_LINE; 
+}
 
-
-. { yyerror("[ERROR]  \"%c\" not covered", *yytext); }
-
-%%
+<<EOF>> { 
+  printf("\nFim da entrada\n"); 
+  return 0; 
+}
