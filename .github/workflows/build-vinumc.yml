@@ -1,0 +1,34 @@
+name: build vinumc
+
+on:
+  push:
+  pull_request:
+
+permissions: read-all
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            autoconf \
+            automake \
+            libtool \
+            build-essential \
+            flex \
+            bison
+
+      - name: Bootstrap project
+        run: autoreconf -i
+
+      - name: Configure
+        run: ./configure
+
+      - name: Build
+        run: make
