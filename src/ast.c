@@ -29,6 +29,25 @@ size_t ast_add_node(struct ast *ast, const struct ast_node node) {
 	return ast->nodes.len - 1;
 }
 
+size_t ast_copy_node(struct ast *ast, size_t node_id) {
+	struct ast_node *node = &VEC_AT(&ast->nodes, node_id);
+
+	struct ast_node no_childs_copy = *node;
+	no_childs_copy.childs = (struct ast_node_childs_t){0};
+
+	size_t node_copy_id = ast_add_node(ast, no_childs_copy);
+	struct ast_node *node_copy = &VEC_AT(&ast->nodes, node_copy_id);
+
+	VEC_RESERVE(&node_copy->childs, node->childs.len);
+
+	for(size_t i = 0; i < node->childs.len; i++) {
+		size_t child_copy_id = ast_copy_node(ast, VEC_AT(&node->childs, i));
+		ast_node_add_child(node_copy, child_copy_id);
+	}
+
+	return node_copy_id;
+}
+
 static const char* token_to_str(enum yytokentype token) {
 	switch (token) {
 		case ASSIGNMENT: return "ASSIGNMENT";
@@ -66,25 +85,37 @@ static void ast_print_rec(const struct ast *ast, const int id, const int level) 
 	}
 }
 
-size_t ast_copy_node(struct ast *ast, size_t node_id) {
-	struct ast_node *node = &VEC_AT(&ast->nodes, node_id);
-
-	struct ast_node no_childs_copy = *node;
-	no_childs_copy.childs = (struct ast_node_childs_t){0};
-
-	size_t node_copy_id = ast_add_node(ast, no_childs_copy);
-	struct ast_node *node_copy = &VEC_AT(&ast->nodes, node_copy_id);
-
-	VEC_RESERVE(&node_copy->childs, node->childs.len);
-
-	for(size_t i = 0; i < node->childs.len; i++) {
-		size_t child_copy_id = ast_copy_node(ast, VEC_AT(&node->childs, i));
-		ast_node_add_child(node_copy, child_copy_id);
-	}
-
-	return node_copy_id;
-}
-
 void ast_print(const struct ast *ast) {
 	ast_print_rec(ast, 0, 0);
+}
+
+static void ast_dot_rec(const struct ast *ast, FILE *stream, const size_t id) {
+	const struct ast_node *node = &VEC_AT(&ast->nodes, id);
+
+	fprintf(stream, "\t%zu [label = \"", id);
+
+	if (node->type < 256) {
+		fprintf(stream, "\"%c\"", (char)node->type);
+	} else {
+		fprintf(stream, "%s", token_to_str(node->type));
+	}
+
+	if (node->text != NULL) {
+		fprintf(stream, "(%s)", node->text);
+	}
+
+	fprintf(stream, "\"]\n");
+
+	for (size_t i = 0; i < node->childs.len; i++) {
+		size_t child_id = VEC_AT(&node->childs, i);
+		fprintf(stream, "\t%zu -> %zu\n", id, child_id);
+		ast_dot_rec(ast, stream, child_id);
+	}
+}
+
+void ast_dot(const struct ast *ast, FILE *stream) {
+	fprintf(stream, "digraph {\n");
+	fprintf(stream, "\trankdir = LR\n");
+	ast_dot_rec(ast, stream, 0);
+	fprintf(stream, "}\n");
 }

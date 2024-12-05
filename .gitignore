@@ -1,5 +1,6 @@
-# vinum compiler
+# vinum binaries
 vinumc
+vin2dot
 
 # flex and bison generated files
 dry_flex.c
