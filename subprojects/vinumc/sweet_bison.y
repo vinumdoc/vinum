@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "sweet_vinumc.h"
+
 int yylex();
 %}
 
