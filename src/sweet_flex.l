@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "sweet_bison.h"
+#include "sweet_vinumc.h"
 
 #define YY_NO_INPUT
 #define YY_NO_UNPUT
