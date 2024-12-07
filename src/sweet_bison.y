@@ -12,8 +12,8 @@ int yylex();
   char* str;
 }
 
-%type<str> program block content name
-%token<str> CONTENT NAME '(' ')' '.' NEW_LINE
+%type<str> program block content name 
+%token<str> CONTENT NAME '(' ')' '.' CALL
 
 %%
 
@@ -38,28 +38,22 @@ block:
         snprintf($$, len, "[%s %s]", $5, $2);
         free($2);
         free($5);
-        printf("\no bloco lido foi: %s", $$);
     }
     | '.' name {
         size_t len = strlen($2) + 3; // "[name]"
         $$ = malloc(len);
         snprintf($$, len, "[%s]", $2);
         free($2);
-        printf("\no bloco lido foi: %s", $$);
     }
     | content {
-        printf("\nÉ um bloco no formato CONTENT\n");
         $$ = $1;
     }
-    | content block content {
-        printf("\nÉ um bloco no formato CONTENT BLOCK CONTENT\n");
-        size_t len = strlen($1) + strlen($2) + strlen($3) + 3; 
+    | block block {
+        size_t len = strlen($1) + strlen($2) + 1; 
         $$ = malloc(len);
-        snprintf($$, len, "%s %s %s", $1, $2, $3);
+        snprintf($$, len, "%s%s", $1, $2);
         free($1);
         free($2);
-        free($3);
-        printf("\no bloco lido foi: %s", $$);
     };
     // | content NEW_LINE NEW_LINE {
     //     // É um parágrafo
@@ -70,11 +64,15 @@ block:
     // }
 
 content: //content pode ter (, ) e . -> ainda nao vi isso 
-    CONTENT { 
-        $$ = strdup($1); 
+    name content{ 
+        size_t len = strlen($1) + strlen($2) + 1; 
+        $$ = malloc(len);
+        snprintf($$, len, "%s%s", $1, $2);
+        free($1);
+        free($2); 
     }
-    | name {
-        $$ = strdup("");
+    | CONTENT {
+        $$ = strdup($1);
     }
     | /* ε */ {
         $$ = strdup("");
