@@ -13,42 +13,37 @@
 
 name [^ \t\r\n\(\)\.]
 content [^\(\)\.] 
+name_stop [ \t\r\n\(\)\.]
+
 
 %%
 
 "(" { 
   yylval.str = strdup(yytext); 
-  printf("\nBEGIN BLOCK\n");
   return '('; 
 }
 
 ")" { 
-  printf("\nEND BLOCK\n");
   yylval.str = strdup(yytext); 
   return ')'; 
 }
 
 "." { 
-  printf("\npoint\n");
   yylval.str = strdup(yytext); 
   return '.'; 
 }
 
-{name}+ {
+{name}+/{name_stop} {
   yylval.str = strdup(yytext);
-  printf("\nToken NAME: %s\n", yytext);
+  printf("\n token NAME: %s", yytext);
   return NAME;
 }
 
 {content}+ {
   yylval.str = strdup(yytext);
-  printf("\nToken CONTENT: %s\n", yytext);
-  return CONTENT;
-}
+  printf("\n token CONTENT: %s", yytext);
 
-\n+ { 
-  yylval.str = strdup("\n");
-  return NEW_LINE; 
+  return CONTENT;
 }
 
 <<EOF>> { 
