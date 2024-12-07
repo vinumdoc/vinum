@@ -12,21 +12,24 @@
 %}
 
 name [^ \t\r\n\(\)\.]
-content [^\t\r\n\(\)\.] 
+content [^\(\)\.] 
 
 %%
 
 "(" { 
   yylval.str = strdup(yytext); 
+  printf("\nBEGIN BLOCK\n");
   return '('; 
 }
 
 ")" { 
+  printf("\nEND BLOCK\n");
   yylval.str = strdup(yytext); 
   return ')'; 
 }
 
 "." { 
+  printf("\npoint\n");
   yylval.str = strdup(yytext); 
   return '.'; 
 }
