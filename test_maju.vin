@@ -1,0 +1,62 @@
+[doc
+	[# Definindo dados ]
+	[title: Análise de algoritmos de ordenação: Bubble, Insertion e Merge Sort]
+	[author: Maria Júlia Soares De Grandi]
+	[id: NUSP: 12542501]
+	[date: [today]]
+	[bubble: [emph Bubble Sort]]
+	[insertion: [emph Insertion Sort]]
+	[merge: [emph Merge Sort]]
+
+	[abstract
+		[#Contextualize o seu trabalho.]
+		[par Serão analisados os algoritmos de ordenação [bubble], [insertion] e [merge],
+		visando demonstrar a eficiência e o modo como funcionam esses algoritmos, bem como
+		seu comportamento perante a ordem inicial dos dados, e assim provar qual o melhor, o
+		médio e o pior caso de cada um deles, além de suas respectivas funções de
+		recorrência e notação assintótica para cada caso.]
+	]
+	[sec [heading: Introdução]
+		[#Faça a introdução do seu relatório. O que será feito?]
+		[par O problema da ordenação é um dos mais básicos em Computação, e pode ser
+		resolvido através dos algoritmos de ordenação, ou seja, algoritmos que organizam um
+		conjunto de dados em uma ordem específica, total ou parcialmente, com o objetivo de
+		obter as informações de uma lista mais rapidamente, ou ainda, de forma mais
+		eficiente.]
+		[par Nesse relatório será explicada a lógica dos algoritmos de ordenação conhecidos
+		como [bubble], [insertion] e [merge], mostrada a implementação dos mesmos em
+		linguagem C, bem como a função de recorrência oriunda da contagem de operações, além
+		de posteriores testes para comprovar a eficiência e notação assintótica descritas na
+		função encontrada.]
+		[par Desse modo, espera-se provar por testes práticos toda a teoria e as equações
+		aqui escritas e constatadas, junto a produzir uma análise completa dos algoritmos em
+		diferentes cenários, a fim de selecionar o melhor algoritmo para resolver o problema
+		de ordenação.]
+	]
+	[sec [heading: Metodologia e Desenvolvimento]
+		[#Explique a metodologia utilizada e o desenvolvimento do projeto. Como você obteve
+		seus dados?]
+		[sub [heading: [bubble]]
+			[par O algoritmo chamado de [bubble] visa ordenar um conjunto de dados de
+			acordo com a seguinte lógica, (será exemplificada uma ordenação crescente):
+			o primeiro elemento é fixado e comparado com os elementos posteriores, até o
+			final (n vezes, pois há n elementos), e trocando de lugar com todos aqueles
+			que forem maior que ele. Assim, ao final da primeira iteração, é garantido
+			que o maior dos elementos está em sua posição correta; de modo análogo, ao
+			final da segunda, o penúltimo elemento está em seu local correto, e assim
+			por diante.]
+			[par Ou seja, o algoritmo percorre o vetor [math n^2] vezes comparando os
+			elementos, e realizando trocas de posição sempre que necessário, até que o
+			primeiro elemento seja o menor e todos os outros estejam devidamente
+			ordenados, e tal verificação é finalizada na última iteração, desse modo, é
+			notável que independente da ordem inicial dos dados, o algoritmo será
+			executado [math n^2] vezes, o que implica na não diferenciação de um pior ou
+			melhor caso no que tange às comparações, apenas no âmbito das trocas. Nesse
+			sentido, apesar de sempre executado [math n^2] vezes, o algoritmo tende a
+			realizar mais operações quando há mais trocas a serem feitas, por isso, seu
+			pior caso ocorre quando o vetor está invertido, pois faz-se necessário que
+			todos os elementos sejam trocados, e o melhor, quando o vetor já está
+			ordenado, visto que não há trocas a serem feitas, apenas comparações.]
+		]
+	]
+]
