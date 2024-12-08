@@ -7,6 +7,10 @@ dry_flex.c
 dry_bison.h
 dry_bison.c
 
+# Generated vinumc output
+out.txt
+out.html
+
 # Prerequisites
 *.d
 
