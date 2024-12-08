@@ -1,4 +1,4 @@
-AM_CFLAGS = -Wall -Wextra -Werror -g
+AM_CFLAGS = -Wall -Wextra -Werror -Wformat-security -g
 AM_YFLAGS = -d
 
 bin_PROGRAMS = vinumc vin2dot

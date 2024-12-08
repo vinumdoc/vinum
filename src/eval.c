@@ -150,7 +150,7 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_text) {
 			return;
 		}
 
-		fprintf(out, child->text);
+		fprintf(out, "%s", child->text);
 		if (i != ast_node->childs.len - 1)
 			fprintf(out, " ");
 	}
