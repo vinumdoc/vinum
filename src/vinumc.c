@@ -26,8 +26,13 @@ void yyerror(char *s, ...) {
 	va_end(ap);
 }
 
-int main() {
+extern FILE *yyin;
+
+int main(int argc, char **argv) {
 	setlocale(LC_ALL, "");
+	if (argc > 1) {
+		yyin = fopen(argv[1], "r");
+	}
 
 	ctx = ctx_new();
 	yyparse();
