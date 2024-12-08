@@ -1,5 +1,6 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <locale.h>
 
 #include "vinumc.h"
 
@@ -26,6 +27,8 @@ void yyerror(char *s, ...) {
 }
 
 int main() {
+	setlocale(LC_ALL, "");
+
 	ctx = ctx_new();
 	yyparse();
 	ast_print(&ctx.ast);
