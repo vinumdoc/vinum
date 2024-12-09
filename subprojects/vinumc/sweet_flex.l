@@ -11,9 +11,11 @@
 #define YY_NO_UNPUT
 %}
 
+%x READING_NAME
+
 name [^ \t\r\n\(\)\.]
 content [^\(\)\.] 
-name_stop [ \t\r\n\(\)\.]
+blank [ \t\r\n]
 
 
 %%
@@ -28,21 +30,44 @@ name_stop [ \t\r\n\(\)\.]
   return ')'; 
 }
 
-"." { 
+"." {
   yylval.str = strdup(yytext); 
-  return '.'; 
+  BEGIN(READING_NAME); 
+  return '.';
 }
 
-{name}+/{name_stop} {
-  yylval.str = strdup(yytext);
+<READING_NAME>{name}+ {
+  yylval.str = strdup(yytext); 
   printf("\n token NAME: %s", yytext);
   return NAME;
 }
 
-{content}+ {
-  yylval.str = strdup(yytext);
-  printf("\n token CONTENT: %s", yytext);
+<READING_NAME>"." {
+  yylval.str = strdup(yytext); 
+  return '.';
+}
 
+<READING_NAME>{blank} {
+  yylval.str = strdup(yytext); 
+  BEGIN(INITIAL); 
+  return CONTENT;
+}
+
+<READING_NAME>"(" {
+  yylval.str = strdup(yytext); 
+  BEGIN(INITIAL); 
+  return '(';
+}
+
+<READING_NAME>")" {
+  yylval.str = strdup(yytext); 
+  BEGIN(INITIAL); 
+  return ')';
+}
+
+{content}+ {
+  yylval.str = strdup(yytext); 
+  printf("\n token CONTENT: %s", yytext);
   return CONTENT;
 }
 
