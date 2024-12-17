@@ -1,3 +1,5 @@
+#include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "eval.h"
@@ -180,4 +182,24 @@ void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out) {
 	VEC_PUT(&ctx->scopes, (struct scope){});
 	resolve_calls(ctx, ast, 0, 0);
 	do_calls(ast, out, 0);
+}
+
+void eval_dot(const struct eval_ctx *ctx, FILE *stream) {
+	fprintf(stream, "digraph {\n");
+	fprintf(stream, "\tnode [shape=record];\n");
+	for (size_t i = 0; i < ctx->scopes.len; i++) {
+		const struct scope *sc = &VEC_AT(&ctx->scopes, i);
+		fprintf(stream, "\t%zu [label=\" %zu |", i, i);
+		for (size_t j = 0; j < sc->namespace.len; j++) {
+			fprintf(stream, "%s", VEC_AT(&sc->namespace, j).name);
+			if (j < sc->namespace.len - 1)
+				fprintf(stream, " |");
+		}
+		fprintf(stream, "\"]\n");
+
+		for (size_t j = 0; j < sc->childs.len; j++) {
+			fprintf(stream, "\t%zu -> %zu\n", i, VEC_AT(&sc->childs, j));
+		}
+	}
+	fprintf(stream, "}\n");
 }

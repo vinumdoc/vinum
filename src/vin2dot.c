@@ -30,6 +30,7 @@ void yyerror(char *s, ...) {
 enum command {
 	CMD_AST,
 	CMD_AST_AFTER,
+	CMD_SCOPES,
 };
 
 static const char* pop_argv(int *argc, char **argv[]) {
@@ -49,6 +50,7 @@ static void show_usage(const char *prgname) {
 	fprintf(stderr, "Commands:\n");
 	fprintf(stderr, "  ast\tShow the AST in the dot format\n");
 	fprintf(stderr, "  ast-after\tShow the AST after evaluation in the dot format\n");
+	fprintf(stderr, "  scopes\tShow the scope tree in the dot format\n");
 }
  
 int main(int argc, char *argv[]) {
@@ -67,6 +69,8 @@ int main(int argc, char *argv[]) {
 		cmd = CMD_AST;
 	} else if (!strcmp(cmd_str, "ast-after")) {
 		cmd = CMD_AST_AFTER;
+	} else if (!strcmp(cmd_str, "scopes")) {
+		cmd = CMD_SCOPES;
 	} else {
 		fprintf(stderr, "ERROR: Command \"%s\" is not recognized\n\n", cmd_str);
 		show_usage(prgname);
@@ -83,6 +87,10 @@ int main(int argc, char *argv[]) {
 		case CMD_AST_AFTER:
 			eval(&ctx.eval_ctx, &ctx.ast, stderr);
 			ast_dot(&ctx.ast, stdout);
+			return EXIT_SUCCESS;
+		case CMD_SCOPES:
+			eval(&ctx.eval_ctx, &ctx.ast, stderr);
+			eval_dot(&ctx.eval_ctx, stdout);
 			return EXIT_SUCCESS;
 		default:
 			assert(0 && "unreachable"); // This should never happen

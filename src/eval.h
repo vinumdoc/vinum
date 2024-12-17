@@ -30,4 +30,6 @@ struct eval_ctx {
 struct eval_ctx eval_ctx_new();
 void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out);
 
+void eval_dot(const struct eval_ctx *ctx, FILE *stream);
+
 #endif // __EVAL_H__
