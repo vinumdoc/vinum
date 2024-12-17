@@ -1,5 +1,7 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
+#include <assert.h>
 
 #include "vinumc.h"
 
@@ -25,8 +27,56 @@ void yyerror(char *s, ...) {
 	va_end(ap);
 }
 
-int main() {
+enum command {
+	CMD_AST,
+};
+
+static const char* pop_argv(int *argc, char **argv[]) {
+	if (argc == 0)
+		return NULL;
+
+	const char *ret = **argv;
+
+	(*argc)--;
+	(*argv)++;
+
+	return ret;
+}
+
+static void show_usage(const char *prgname) {
+	fprintf(stderr, "usage: %s <COMMAND>\n\n", prgname);
+	fprintf(stderr, "Commands:\n");
+	fprintf(stderr, "  ast\tShow the AST in the dot format\n");
+}
+ 
+int main(int argc, char *argv[]) {
+	const char *prgname = pop_argv(&argc, &argv);
+	const char *cmd_str = pop_argv(&argc, &argv);
+
+	if (cmd_str == NULL) {
+		fprintf(stderr, "ERROR: No command provided\n\n");
+		show_usage(prgname);
+		return EXIT_FAILURE;
+	}
+
+	enum command cmd;
+
+	if (!strcmp(cmd_str, "ast")) {
+		cmd = CMD_AST;
+	} else {
+		fprintf(stderr, "ERROR: Command \"%s\" is not recognized\n\n", cmd_str);
+		show_usage(prgname);
+		return EXIT_FAILURE;
+	}
+
 	ctx = ctx_new();
 	yyparse();
-	ast_dot(&ctx.ast, stdout);
+
+	switch (cmd) {
+		case CMD_AST:
+			ast_dot(&ctx.ast, stdout);
+			return EXIT_SUCCESS;
+		default:
+			assert(0 && "unreachable"); // This should never happen
+	}
 }
