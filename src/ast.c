@@ -14,7 +14,7 @@ struct ast_node ast_node_new(const int type, char *text) {
 	return ret;
 }
 
-void ast_node_add_child(struct ast_node *dst, const size_t child) {
+void ast_node_add_child(struct ast_node *dst, const ast_node_id_t child) {
 	VEC_PUT(&dst->childs, child);
 }
 
@@ -24,12 +24,12 @@ struct ast ast_new() {
 	return ret;
 }
 
-size_t ast_add_node(struct ast *ast, const struct ast_node node) {
+ast_node_id_t ast_add_node(struct ast *ast, const struct ast_node node) {
 	VEC_PUT(&ast->nodes, node);
 	return ast->nodes.len - 1;
 }
 
-size_t ast_copy_node(struct ast *ast, size_t node_id) {
+ast_node_id_t ast_copy_node(struct ast *ast, ast_node_id_t node_id) {
 	struct ast_node no_childs_copy = VEC_AT(&ast->nodes, node_id);
 
 	no_childs_copy.childs = (struct ast_node_childs_t){0};
