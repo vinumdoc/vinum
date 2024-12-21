@@ -34,6 +34,22 @@ static struct namespace_entry* find_symbol_on_scopes(const struct eval_ctx_scope
 	return NULL;
 }
 
+static int find_scope_child_by_node(const struct eval_ctx_scopes_t *scopes, size_t scope_id,
+				       size_t ast_node_id) {
+	const struct scope *curr_scope = &VEC_AT(scopes, scope_id);
+	int call_scope = -1;
+
+	for (size_t i = 0; i < curr_scope->childs.len; i++) {
+		size_t tmp_scope_id = VEC_AT(&curr_scope->childs, i);
+		struct scope *tmp_scope = &VEC_AT(scopes, tmp_scope_id);
+
+		if (tmp_scope->node == ast_node_id)
+			call_scope = tmp_scope_id;
+	}
+
+	return call_scope;
+}
+
 #define RESOLVE_FUNC_SIGNATURE(func_name) \
 	static void func_name (struct eval_ctx *ctx, struct ast *ast, size_t curr_scope_id, \
 			size_t ast_node_id)
@@ -141,7 +157,13 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls) {
 		case PROGRAM:
 			resolve_calls_descent(ctx, ast, curr_scope_id, ast_node_id);
 			break;
-		case CALL:
+		case CALL:;
+			int new_scope = find_scope_child_by_node(&ctx->scopes, curr_scope_id,
+								 ast_node_id);
+			if (new_scope > 0)
+				curr_scope_id = new_scope;
+			else
+				fprintf(stderr, "ERROR: Could not find call scope for node %zu\n", ast_node_id);
 			resolve_calls_call(ctx, ast, curr_scope_id, ast_node_id);
 			break;
 		default:
