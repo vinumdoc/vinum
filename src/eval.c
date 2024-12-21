@@ -157,6 +157,10 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 						   symbol_info->ast_node_id);
 			}
 		}
+
+		size_t new_node = VEC_AT(&VEC_AT(&ast->nodes, ast_node_id).childs, 1);
+
+		resolve_symbols(ctx, ast, curr_scope_id, new_node);
 	} else {
 		fprintf(stderr, "ERROR: No symbol with name \"%s\" exist\n", call_name);
 	}
