@@ -29,6 +29,7 @@ void yyerror(char *s, ...) {
 
 enum command {
 	CMD_AST,
+	CMD_AST_AFTER,
 };
 
 static const char* pop_argv(int *argc, char **argv[]) {
@@ -47,6 +48,7 @@ static void show_usage(const char *prgname) {
 	fprintf(stderr, "usage: %s <COMMAND>\n\n", prgname);
 	fprintf(stderr, "Commands:\n");
 	fprintf(stderr, "  ast\tShow the AST in the dot format\n");
+	fprintf(stderr, "  ast-after\tShow the AST after evaluation in the dot format\n");
 }
  
 int main(int argc, char *argv[]) {
@@ -63,6 +65,8 @@ int main(int argc, char *argv[]) {
 
 	if (!strcmp(cmd_str, "ast")) {
 		cmd = CMD_AST;
+	} else if (!strcmp(cmd_str, "ast-after")) {
+		cmd = CMD_AST_AFTER;
 	} else {
 		fprintf(stderr, "ERROR: Command \"%s\" is not recognized\n\n", cmd_str);
 		show_usage(prgname);
@@ -74,6 +78,10 @@ int main(int argc, char *argv[]) {
 
 	switch (cmd) {
 		case CMD_AST:
+			ast_dot(&ctx.ast, stdout);
+			return EXIT_SUCCESS;
+		case CMD_AST_AFTER:
+			eval(&ctx.eval_ctx, &ctx.ast, stderr);
 			ast_dot(&ctx.ast, stdout);
 			return EXIT_SUCCESS;
 		default:
