@@ -30,18 +30,19 @@ size_t ast_add_node(struct ast *ast, const struct ast_node node) {
 }
 
 size_t ast_copy_node(struct ast *ast, size_t node_id) {
-	struct ast_node *node = &VEC_AT(&ast->nodes, node_id);
+	struct ast_node no_childs_copy = VEC_AT(&ast->nodes, node_id);
 
-	struct ast_node no_childs_copy = *node;
 	no_childs_copy.childs = (struct ast_node_childs_t){0};
 
 	size_t node_copy_id = ast_add_node(ast, no_childs_copy);
 	struct ast_node *node_copy = &VEC_AT(&ast->nodes, node_copy_id);
 
-	VEC_RESERVE(&node_copy->childs, node->childs.len);
+	struct ast_node_childs_t childs = VEC_AT(&ast->nodes, node_id).childs;
+	VEC_RESERVE(&node_copy->childs, childs.len);
 
-	for(size_t i = 0; i < node->childs.len; i++) {
-		size_t child_copy_id = ast_copy_node(ast, VEC_AT(&node->childs, i));
+	for(size_t i = 0; i < childs.len; i++) {
+		size_t child_copy_id = ast_copy_node(ast, VEC_AT(&childs, i));
+		struct ast_node *node_copy = &VEC_AT(&ast->nodes, node_copy_id);
 		ast_node_add_child(node_copy, child_copy_id);
 	}
 
