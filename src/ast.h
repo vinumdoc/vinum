@@ -32,6 +32,8 @@ struct ast {
 };
 
 struct ast ast_new();
+
+const char* token_to_str(enum yytokentype token);
 ast_node_id_t ast_add_node(struct ast *ast, const struct ast_node node);
 ast_node_id_t ast_copy_node(struct ast *ast, ast_node_id_t node_id);
 
