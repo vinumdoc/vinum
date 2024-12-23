@@ -49,7 +49,6 @@ ast_node_id_t ast_copy_node(struct ast *ast, ast_node_id_t node_id) {
 	return node_copy_id;
 }
 
-static const char* token_to_str(enum yytokentype token) {
 const char* token_to_str(enum yytokentype token) {
 	switch (token) {
 		case ASSIGNMENT: return "ASSIGNMENT";
