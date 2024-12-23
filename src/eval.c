@@ -113,14 +113,6 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 	struct scope *curr_scope = &VEC_AT(&ctx->scopes, curr_scope_id);
 	struct ast_node ast_node = VEC_AT(&ast->nodes, ast_node_id);
 
-	if (ast_node.childs.len > 1) {
-		const struct ast_node args_node = VEC_AT(&ast->nodes, VEC_AT(&ast_node.childs, 1));
-
- 		for (size_t i = 0; i < args_node.childs.len; i++) {
-			resolve_calls(ctx, ast, curr_scope_id, VEC_AT(&args_node.childs, i));
-		}
-	}
-
 	char *call_name = VEC_AT(&ast->nodes, VEC_AT(&ast_node.childs, 0)).text;
 	if (call_name == NULL) {
 		fprintf(stderr, "ERROR: Symbol with no name\n");
@@ -164,6 +156,8 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 	} else {
 		fprintf(stderr, "ERROR: No symbol with name \"%s\" exist\n", call_name);
 	}
+
+	resolve_calls_descent(ctx, ast, curr_scope_id, ast_node_id);
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls) {
