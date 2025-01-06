@@ -30,8 +30,10 @@ extern FILE *yyin;
 
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "");
-	if (argc > 1) {
-		yyin = fopen(argv[1], "r");
+
+	for (int i = 1; i < argc ; i++) {
+		char* arg = argv[i];
+		yyin = fopen(arg, "r");
 	}
 
 	ctx = ctx_new();
