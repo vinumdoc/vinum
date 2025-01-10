@@ -1,4 +1,4 @@
-AM_CFLAGS = -Wall -Wextra -Werror -Wformat-security -g
+AM_CFLAGS = -Wall -Wextra -Werror -Wformat-security -g -ldl
 AM_YFLAGS = -d
 
 bin_PROGRAMS = vinumc vin2dot
@@ -10,7 +10,8 @@ COMMON_SOURCES = \
 		 ast_bison_helpers.c \
 		 dry_bison.y \
 		 dry_flex.l \
-		 eval.c
+		 eval.c \
+		 extern_library_helper.c
 
 vinumc_SOURCES = \
 		 $(COMMON_SOURCES) \
