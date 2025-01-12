@@ -1,6 +1,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <locale.h>
+#include <strings.h>
 
 #include "vinumc.h"
 
@@ -30,15 +31,19 @@ extern FILE *yyin;
 
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "");
-	if (argc > 1) {
-		yyin = fopen(argv[1], "r");
+
+	FILE *out = stdout;
+	for (int i = 1; i < argc ; i++) {
+		char* arg = argv[i];
+		if (!strcasecmp("--output", arg)) {
+			out = fopen(argv[++i], "w");
+		} else {
+			yyin = fopen(arg, "r");
+		}
 	}
 
 	ctx = ctx_new();
 	yyparse();
-	ast_print(&ctx.ast);
 
-	FILE *out = fopen("out.txt", "w");
 	eval(&ctx.eval_ctx, &ctx.ast, out);
-	ast_print(&ctx.ast);
 }
