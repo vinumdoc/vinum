@@ -36,9 +36,6 @@ int main(int argc, char **argv) {
 
 	ctx = ctx_new();
 	yyparse();
-	ast_print(&ctx.ast);
 
-	FILE *out = fopen("out.txt", "w");
-	eval(&ctx.eval_ctx, &ctx.ast, out);
-	ast_print(&ctx.ast);
+	eval(&ctx.eval_ctx, &ctx.ast, stdout);
 }

@@ -9,7 +9,6 @@
 [par : <p> $* </p>]
 
 [doc
-	[alan : Alan Turing]
 	[alan]
 	[par This is a paragraph]
 	[par [alan]]
@@ -21,4 +20,5 @@
 	[last_alan : [last [alan]]]
 	[foo : bar]
 	[[foo]]
+	[alan : Alan Turing]
 ]
