@@ -58,7 +58,7 @@ RESOLVE_FUNC_SIGNATURE(resolve_symbols) {
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls);
 
-RESOLVE_FUNC_SIGNATURE(resolve_calls_program) {
+RESOLVE_FUNC_SIGNATURE(resolve_calls_descent) {
 	const struct ast_node ast_node = VEC_AT(&ast->nodes, ast_node_id);
 	for (size_t i = 0; i < ast_node.childs.len; i++) {
 		resolve_calls(ctx, ast, curr_scope_id, VEC_AT(&ast_node.childs, i));
@@ -123,7 +123,7 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls) {
 	switch (ast_node->type) {
 		case ARGS:
 		case PROGRAM:
-			resolve_calls_program(ctx, ast, curr_scope_id, ast_node_id);
+			resolve_calls_descent(ctx, ast, curr_scope_id, ast_node_id);
 			break;
 		case CALL:
 			resolve_calls_call(ctx, ast, curr_scope_id, ast_node_id);
