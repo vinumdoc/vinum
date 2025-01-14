@@ -4,13 +4,20 @@
 #include <stdio.h>
 
 #include "ast.h"
+#include "extern_library_helper.h"
 #include "vec.h"
 
 struct scope_childs_t VEC_DEF(size_t);
 
+enum EntryType {Symbol, Function};
+
 struct namespace_entry {
 	char *name;
-	int ast_node_id;
+	enum EntryType type;
+	union {
+		int ast_node_id;
+		function_pointer fp;
+	};
 };
 
 struct scope_namespace_t VEC_DEF(struct namespace_entry);
@@ -31,7 +38,13 @@ struct eval_ctx {
 };
 
 struct eval_ctx eval_ctx_new();
-void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out);
+
+struct libraries {
+	int counter;
+	char** names;
+};
+
+void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out, struct libraries libs);
 
 void eval_dot(const struct eval_ctx *ctx, FILE *stream);
 
