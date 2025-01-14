@@ -33,10 +33,19 @@ int main(int argc, char **argv) {
 	setlocale(LC_ALL, "");
 
 	FILE *out = stdout;
+	struct libraries libs = {0, NULL};
 	for (int i = 1; i < argc ; i++) {
 		char* arg = argv[i];
 		if (!strcasecmp("--output", arg)) {
 			out = fopen(argv[++i], "w");
+		} else if (!strcasecmp("--with", arg)) {
+			libs.names = &argv[i+1];
+			while (++i < argc && argv[i][0] != '-'){
+				libs.counter++;
+			}
+			if (i != argc){
+				i--;
+			}
 		} else {
 			yyin = fopen(arg, "r");
 		}
@@ -45,5 +54,5 @@ int main(int argc, char **argv) {
 	ctx = ctx_new();
 	yyparse();
 
-	eval(&ctx.eval_ctx, &ctx.ast, out);
+	eval(&ctx.eval_ctx, &ctx.ast, out, libs);
 }
