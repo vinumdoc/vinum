@@ -110,7 +110,7 @@ symbol: WORD {
 	// TODO: handle the function return value
 	mbstowcs(wtext, text, len);
 	
-	for(int i = 0; wtext[i]; i++) {
+	for(size_t i = 0; i < len; i++) {
 		wtext[i] = towlower(wtext[i]);
 	}
 	// converting back to multi-byte
