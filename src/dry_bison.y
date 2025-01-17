@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ast_bison_helpers.h"
 #include "vinumc.h"
 
 int yylex();
@@ -69,11 +68,16 @@ args:
 
 		size_t arg_node_id = ast_add_node(&ctx.ast, node);
 
-		args_handle_arg_refs(&ctx.ast, arg_node_id);
-
 		$$ = arg_node_id;
 	 }
 	 | block {
+		struct ast_node node = ast_node_new_nvl(ARGS);
+
+		ast_node_add_child(&node, $1);
+
+		$$ = ast_add_node(&ctx.ast, node);
+	 }
+	 | ARG_REF_ALL_ARGS {
 		struct ast_node node = ast_node_new_nvl(ARGS);
 
 		ast_node_add_child(&node, $1);
@@ -85,11 +89,16 @@ args:
 
 		ast_node_add_child(node, $2);
 
-		args_handle_arg_refs(&ctx.ast, $1);
-
 		$$ = $1;
 	 }
 	 | args block {
+		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
+
+		ast_node_add_child(node, $2);
+
+		$$ = $1;
+	 }
+	 | args ARG_REF_ALL_ARGS {
 		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
 		ast_node_add_child(node, $2);
