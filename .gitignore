@@ -74,6 +74,8 @@ Makefile.in
 /ylwrap
 .deps/
 .dirstamp
+*.log
+*.trs
 
 # http://www.gnu.org/software/autoconf
 
@@ -95,6 +97,7 @@ autom4te.cache
 /install-sh
 /missing
 /stamp-h1
+/build-aux
 
 # https://www.gnu.org/software/libtool/
 

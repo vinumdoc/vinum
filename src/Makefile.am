@@ -18,3 +18,5 @@ vinumc_SOURCES = \
 vin2dot_SOURCES = \
 		 $(COMMON_SOURCES) \
 		 vin2dot.c
+
+SUBDIRS = tests
