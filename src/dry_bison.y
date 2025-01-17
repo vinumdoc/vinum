@@ -17,6 +17,7 @@ int yylex();
 %token ARG_REF_ALL_ARGS
 %token PROGRAM
 %token SYMBOL
+%token FUNCTION
 %token TEXT
 %token WORD
 
