@@ -1,6 +1,11 @@
 AM_CFLAGS = -Wall -Wextra -Werror -Wformat-security -g
 
-TESTS =
+TESTS = \
+	simple_test
+
+simple_test_SOURCES = \
+	       simple_test.c \
+	       vunit.c
 
 bin_PROGRAMS = $(TESTS)
 
