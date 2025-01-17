@@ -72,4 +72,10 @@ void __vunit_assert_strcmp(struct vunit_test_ctx *ctx, const char *lhs, const ch
 
 int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]);
 
+int vunit_run_vinumc(struct vunit_test_ctx *ctx, char* input, char **output, char **error,
+		     char *const argv[], const int argc);
+int vunit_run_vinumcv(struct vunit_test_ctx *ctx, char* input, char **output, char **error,
+		      va_list ap);
+void vunit_run_vinumc_ok(struct vunit_test_ctx *ctx, char* input, char **output, ...);
+
 #endif // __VUNIT_H__
