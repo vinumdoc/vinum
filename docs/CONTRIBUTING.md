@@ -69,62 +69,65 @@ same license as SYSeg (GNU GPL vr. 3 or later).
 
 ## Commit Messages
 
-When applicable, use the following convention for commit messages:
+We really value commit messages, we think it's the way of keeping record of the
+project. Following the convention, the commit messages should not exceed 72
+columns of text width.
 
-When editing the commit message, use the following keywords, inspired on a 
-lax version of  Conventional Commits [4], to describe the purpose of your
-contribution:
+All the text should be on an imperative form, in a way that you're giving orders
+to the project (e.g. "Fix spell error").
 
-- `dev`      :   advance code (add of modify a feature)
-- `fix`      :   fix a bug or an unmeat requirement.
-- `ref`      :   refactor code for quality or compliance
-- `doc`      :   modify or extend documentation
-- `build`    :   improve the build process
-- `repo`     :   tide up the repository and organization
-- `minor`    :   something too simple as typo or cosmetics
-- `other`    :   something else
+This is the commit message style we follow.
 
-The suggested commit messages is
+```gitcommit
+[tag]: [Short description]
 
-`<purpose> : short description`
-
-where 'purpose' is one of the contribution purposes listed above.
-
-The short description should be in imperative form (fix, add, remove etc.)
-rather than past (fixed, added) or present (fixes, adds) --- as if ordering
-what the change should do (mind the capitalization). Do not punctuate.
-
-Example:
-
-```
-fix: correct wrong file name
-
-fix: add missing semicolon
-
-doc: update user manual
-
-repo: removed object files
+[Commit body]
 ```
 
-Ideally, each commit should be of only one type. In practice, though,
-it's reasonable to group changes in a single commit if they are naturally
-related (e.g. you modifying a function's argument type and edit the developer
-documentation to reflect the change). In those cases, it's ok to use
+### Tag
+
+It's serves for stating the area of the project were the commit is from. Usually
+is a path to a directory of file, if in doubt of what tag to use, use `git log
+<file>` in one of the files that you're touching.
+
+### Short description
+
+It's meant to be a one-line summary of the changes. Do not try to describe
+everything, you have less than 72 chars to work with. The commit body is for
+that, just give a basic idea of what have been done.
+
+Also, do not put a dot at the end of this line.
+
+### Commit body
+
+Here you explain the purpose of the commit: what's the problem, why it's needed
+and how you solved it. Try to be very clear, as if you're describing to someone
+that's doesn't knows about the issue you're solving. You can use markdown
+notation if you want.
+
+The text should be on a time tense where the changes are not yet present on the
+project, so for example, if you're describing a bug on the code you should not
+write it in this way:
 
 ```
-<purpose 1> : short description 1
-
-<purpose 2> : short description 2
-...
+The code had a bug, so we fixed it.
 ```
 
-Purpose indication in commit messages is suggested, but not mandatory (if not
-used, capitalize the first letter. Leave a blank line between statements.
+Instead, this is the proper way:
 
-If it helps to understand the context, do not refrain from adding a paragraph
-further explaining the commit. This is normal text, so, capitalize and
-punctuate accordingly.
+```
+The code has a bug, so let's fix it.
+```
 
+If the commit solves an issue, please use a [closing keyword][closing-keyword]
+on the commit body.
+
+If you're finding it difficult to write commit messages in this format, maybe
+you're cramming too much stuff into a single commit, try splitting it into
+smaller commits that do just one thing.
+
+For more information on commit message guidelines, please follow this
+[blogpost](https://cbea.ms/git-commit/).
 
 ## PR/MR merging
 
@@ -148,6 +151,6 @@ Compliance to Keep a ChangeLog [5] is under consideration.
 
 [3] Semantic Versioning, https://semver.org/
 
-[4] Conventional Commits, https://www.conventionalcommits.org/en/v1.0.0/
+[closing-keyword]: https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword
 
 [5] Keep a ChangeLog, https://keepachangelog.com/en/1.0.0/
