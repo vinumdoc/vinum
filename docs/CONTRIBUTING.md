@@ -1,13 +1,11 @@
 
-Contributing to Vinum
-==============================
+# Contributing to Vinum
  
  Vinum is open source and you are welcome and encouraged to contribute.
 
  These are a few guidelines.
 
- Contribution workflow
- ------------------------------
+## Contribution workflow
 
  The official Vinum repository is at https://github.com/monacofj/Vinum
    
@@ -39,9 +37,8 @@ Contributing to Vinum
 
  5. Go have a cup of wine, as you’ve earned it.
 
- Project standards
- ------------------------------
-
+## Project standards
+ 
  To keep things consistent, when applicable, we aim at some some standards.
 
  - REUSE specification vr. 3 [1]
@@ -50,8 +47,7 @@ Contributing to Vinum
 
  - Semantic versioning 2.0.0 [3]
 
- Code convention
- ------------------------------
+## Code convention
 
  Oh, that.
 
@@ -67,8 +63,7 @@ Contributing to Vinum
  * Comments are text. Use caption and punctuation accordingly.
 
 
- Attribution and licensing
- ------------------------------
+## Attribution and licensing
 
  If you have substantially modified an existing source or documentation
  file --- say it's considerably more than a simple typo correction or
@@ -78,8 +73,7 @@ Contributing to Vinum
  By submitting your contribution you agree that it will be available under the
  same license as SYSeg (GNU GPL vr. 3 or later).
 
- Contribution purpose
- ------------------------------
+## Contribution purpose
 
  When applicable, use the following convention for commit messages and branch
  names:
@@ -188,7 +182,7 @@ Example:
  punctuate accordingly.
  
 
- PR/MR MERGING
+## PR/MR merging
  
  In the regular workflow, contributions in the form PR/MRs should be submitted
  to the mainstream repository, then analyzed and merged into the destination
@@ -197,13 +191,12 @@ Example:
  critical repository maintenance or emergency bug fixes.
 
 
- OTHER CONVENTIONS
+## Other conventions
 
  Compliance to Keep a ChangeLog [5] is under consideration.
 
 
-References
- ------------------------------
+# References
 
  [1] REUSE Software, https://reuse.software
 
