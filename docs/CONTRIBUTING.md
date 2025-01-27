@@ -23,7 +23,7 @@ Then, go through the following steps.
 3. If you want to contribute a solution for that issue:
 
     * fork the project
-    * create a local branch for the issue (see branch naming below).
+    * create a local branch for the issue.
     * edit the relevant files in the branch
     * run lint check if available (see 'Developer tools' below)
     * push your branch into your repository
@@ -67,57 +67,9 @@ notice [1] and to the `AUTHORS` file, should you desire.
 By submitting your contribution you agree that it will be available under the
 same license as SYSeg (GNU GPL vr. 3 or later).
 
-## Contribution purpose
+## Commit Messages
 
-When applicable, use the following convention for commit messages and branch
-names:
-
-PERMANENT BRANCHES
-
-The repository contains the two GitFlow permanent branches:
-
-- `main`    : the stable branch 
-- `develop` : the unstable branch (aka `develop`)
-
-SUPPORT BRANCH NAMES (for PR/MR)
-
-When creating an ephemeral branch, use the following keywords to indicate the
-branch type (mind the casing):
-
-- `feat`  : extend of modify feature (GitFlow `feature`)
-- `hot`   : carry on maintenance on former releases  (GitFlow `hotfix`)
-- `rel`   : prepare a new release (GitFlow `release`)
-- `wip`   : work-in-progress branch (unrelated to any issue)
-- `adoc`  : critical maintance bypassing the regular workflow
-
-For `feat` and `hot` branches, use the scheme
-
-```
-<type>/<issue-number>/<short-descriptive-note>
-```
-Use lowercase alphanumeric ASCII characters, underscores, and hyphens in
-place of spaces. No punctuation.
-
- Example:
-
-```
-feat/42/modify-option-help
-
-fix/66/crash-on-negative-input
-```
-It's usually preferrable that the PR/MR be linked to an existing issue.
-Sometimes, however, we admit that ad hoc changes may be pragmatically
-justifiable. In this case, if the PR/MR is not linked to an issue,
-the simplified form
-
-`<purpose>/<short-descriptive-mnemonic>`
-
-is acceptable (this is most appropriate for 'wip' and 'exp' types).
-
-For `rel` branches, use `rel/<release-number>`.
-For `wip` and `adhoc`, use `<purpose>/<short-description>`
-
-COMMIT MESSAGES
+When applicable, use the following convention for commit messages:
 
 When editing the commit message, use the following keywords, inspired on a 
 lax version of  Conventional Commits [4], to describe the purpose of your
