@@ -11,9 +11,9 @@ The official Vinum repository is at https://github.com/monacofj/Vinum
 To start contributing, make sure you've read the essential documentation
 thoroughly:
 
-   - `docs/vinum.md      
-   - `docs/CONTRIBUTING.md`    
-   -- docs/CODE_OF_CONDUCT.md
+   - [vinum.md](/docs/vinum.md)
+   - [CONTRIBUTING.md](/docs/CONTRIBUTING.md])
+   - [CODE_OF_CONDUCT.md](/docs/CODE_OF_CONDUCT.md)
 
 Then, go through the following steps.
 
