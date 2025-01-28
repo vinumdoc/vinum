@@ -22,46 +22,46 @@ int yylex();
 %%
 
 program:
-       {
-	struct ast_node node = ast_node_new_nvl(PROGRAM);
-	$$ = ast_add_node(&ctx.ast, node);
-       }
-       | program block {
-	struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
+	{
+		struct ast_node node = ast_node_new_nvl(PROGRAM);
+		$$ = ast_add_node(&ctx.ast, node);
+	}
+	| program block {
+		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
-	ast_node_add_child(node, $2);
-	$$ = $1;
-       }
-       ;
+		ast_node_add_child(node, $2);
+		$$ = $1;
+	}
+	;
 
 block:
-     '[' symbol ':' args ']'  {
-	struct ast_node node = ast_node_new_nvl(ASSIGNMENT);
+	'[' symbol ':' args ']'  {
+		struct ast_node node = ast_node_new_nvl(ASSIGNMENT);
 
-	ast_node_add_child(&node, $2);
-	ast_node_add_child(&node, $4);
+		ast_node_add_child(&node, $2);
+		ast_node_add_child(&node, $4);
 
-	$$ = ast_add_node(&ctx.ast, node);
-   }
-   | '[' symbol args ']'  {
-	struct ast_node node = ast_node_new_nvl(CALL);
+		$$ = ast_add_node(&ctx.ast, node);
+	}
+	| '[' symbol args ']'  {
+		struct ast_node node = ast_node_new_nvl(CALL);
 
-	ast_node_add_child(&node, $2);
-	ast_node_add_child(&node, $3);
+		ast_node_add_child(&node, $2);
+		ast_node_add_child(&node, $3);
 
-	$$ = ast_add_node(&ctx.ast, node);
-   }
-   | '[' symbol ']'  {
-	struct ast_node node = ast_node_new_nvl(CALL);
+		$$ = ast_add_node(&ctx.ast, node);
+	}
+	| '[' symbol ']'  {
+		struct ast_node node = ast_node_new_nvl(CALL);
 
-	ast_node_add_child(&node, $2);
+		ast_node_add_child(&node, $2);
 
-	$$ = ast_add_node(&ctx.ast, node);
-   }
-   ;
+		$$ = ast_add_node(&ctx.ast, node);
+	}
+	;
 
 args:
-	 text {
+	text {
 		struct ast_node node = ast_node_new_nvl(ARGS);
 
 		ast_node_add_child(&node, $1);
@@ -69,43 +69,43 @@ args:
 		size_t arg_node_id = ast_add_node(&ctx.ast, node);
 
 		$$ = arg_node_id;
-	 }
-	 | block {
+	}
+	| block {
 		struct ast_node node = ast_node_new_nvl(ARGS);
 
 		ast_node_add_child(&node, $1);
 
 		$$ = ast_add_node(&ctx.ast, node);
-	 }
-	 | ARG_REF_ALL_ARGS {
+	}
+	| ARG_REF_ALL_ARGS {
 		struct ast_node node = ast_node_new_nvl(ARGS);
 
 		ast_node_add_child(&node, $1);
 
 		$$ = ast_add_node(&ctx.ast, node);
-	 }
-	 | args text {
+	}
+	| args text {
 		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
 		ast_node_add_child(node, $2);
 
 		$$ = $1;
-	 }
-	 | args block {
+	}
+	| args block {
 		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
 		ast_node_add_child(node, $2);
 
 		$$ = $1;
-	 }
-	 | args ARG_REF_ALL_ARGS {
+	}
+	| args ARG_REF_ALL_ARGS {
 		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
 		ast_node_add_child(node, $2);
 
 		$$ = $1;
-	 }
-	 ;
+	}
+	;
 
 symbol: WORD {
 	VEC_AT(&ctx.ast.nodes, $1).type = SYMBOL;
@@ -128,35 +128,36 @@ symbol: WORD {
 	free(wtext);
 
 	$$ = $1;
-      }
-      | block {
+	}
+	| block {
 	struct ast_node node = ast_node_new_nvl(SYMBOL);
 
 	ast_node_add_child(&node, $1);
 
 	$$ = ast_add_node(&ctx.ast, node);
-      }
-      ;
+	}
+	;
 
 text:
-     word_text {
-	struct ast_node node = ast_node_new_nvl(TEXT);
+	word_text {
+		struct ast_node node = ast_node_new_nvl(TEXT);
 
-	ast_node_add_child(&node, $1);
+		ast_node_add_child(&node, $1);
 
-	$$ = ast_add_node(&ctx.ast, node);
-    }
-    | text word_text {
-	struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
+		$$ = ast_add_node(&ctx.ast, node);
+	}
+	| text word_text {
+		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
-	ast_node_add_child(node, $2);
+		ast_node_add_child(node, $2);
 
-	$$ = $1;
-    }
-    ;
+		$$ = $1;
+	}
+	;
 
-word_text: WORD { $$ = $1;}
-	 | ':'{ $$ = $1;}
-	 ;
+word_text:
+	WORD { $$ = $1;}
+	| ':'{ $$ = $1;}
+	;
 
 %%
