@@ -58,6 +58,14 @@ block:
 
 		$$ = ast_add_node(&ctx.ast, node);
 	}
+	| '[' block ']' {
+		// TODO: just moved the code, need to check if this is correct
+		struct ast_node node = ast_node_new_nvl(SYMBOL);
+
+		ast_node_add_child(&node, $1);
+
+		$$ = ast_add_node(&ctx.ast, node);
+	}
 	;
 
 args:
@@ -128,13 +136,6 @@ symbol: WORD {
 	free(wtext);
 
 	$$ = $1;
-	}
-	| block {
-	struct ast_node node = ast_node_new_nvl(SYMBOL);
-
-	ast_node_add_child(&node, $1);
-
-	$$ = ast_add_node(&ctx.ast, node);
 	}
 	;
 
