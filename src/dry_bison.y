@@ -139,25 +139,20 @@ symbol: WORD {
 	;
 
 text:
-	word_text {
+	WORD {
 		struct ast_node node = ast_node_new_nvl(TEXT);
 
 		ast_node_add_child(&node, $1);
 
 		$$ = ast_add_node(&ctx.ast, node);
 	}
-	| text word_text {
+	| text WORD {
 		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
 		ast_node_add_child(node, $2);
 
 		$$ = $1;
 	}
-	;
-
-word_text:
-	WORD { $$ = $1;}
-	| ':'{ $$ = $1;}
 	;
 
 %%
