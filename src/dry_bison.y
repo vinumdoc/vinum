@@ -9,6 +9,7 @@
 
 int yylex();
 %}
+%locations
 
 %token ASSIGNMENT
 %token CALL
@@ -65,6 +66,12 @@ block:
 		ast_node_add_child(&node, $1);
 
 		$$ = ast_add_node(&ctx.ast, node);
+	}
+	| error ']' {
+		lyyerror(@2, "error: extra ']'");	
+	}
+	| '[' error {
+		lyyerror(@$, "error: no matching for '['");	
 	}
 	;
 

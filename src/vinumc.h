@@ -14,6 +14,7 @@ extern struct ctx ctx;
 struct ctx ctx_new();
 
 void yyerror(char *s, ...);
+void lyyerror(YYLTYPE t, char *s, ...);
 int yyparse();
 
 #endif // __VINUMC_H__

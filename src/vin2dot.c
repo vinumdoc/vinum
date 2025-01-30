@@ -27,6 +27,11 @@ void yyerror(char *s, ...) {
 	va_end(ap);
 }
 
+void lyyerror(YYLTYPE t, char *s, ...){
+	// TODO: just to build
+	fprintf(stderr, "%s %d", s, t.first_column);
+}
+
 enum command {
 	CMD_AST,
 	CMD_AST_AFTER,

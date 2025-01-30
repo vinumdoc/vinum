@@ -14,6 +14,12 @@
  */
 #define YY_NO_INPUT
 #define YY_NO_UNPUT
+
+/* handle locations */
+int yycolumn = 1;
+#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno; \
+	yylloc.first_column = yycolumn; yylloc.last_column = yycolumn+yyleng-1; \
+	yycolumn += yyleng;
 %}
 
 %%
@@ -22,7 +28,11 @@
 "]" |
 ":" { return *yytext; }
 
-[ \t\n\r]+ { }
+\n {
+	yycolumn = 1;
+}
+
+[ \t\r]+ { }
 
 "$*" {
 	struct ast_node node = ast_node_new_nvl(ARG_REF_ALL_ARGS);
