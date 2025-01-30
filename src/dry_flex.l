@@ -28,7 +28,7 @@
 	struct ast_node node = ast_node_new_nvl(ARG_REF_ALL_ARGS);
 	yylval = ast_add_node(&ctx.ast, node);
 
-	return WORD;
+	return ARG_REF_ALL_ARGS;
 }
 
 ([^\[\]: \t\r\n])+ {

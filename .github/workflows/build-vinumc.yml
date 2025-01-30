@@ -32,3 +32,6 @@ jobs:
 
       - name: Build
         run: make
+
+      - name: Run tests
+        run: make check

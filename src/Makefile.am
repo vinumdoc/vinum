@@ -7,7 +7,6 @@ BUILT_SOURCES = dry_bison.h
 
 COMMON_SOURCES = \
 		 ast.c \
-		 ast_bison_helpers.c \
 		 dry_bison.y \
 		 dry_flex.l \
 		 eval.c
@@ -19,3 +18,5 @@ vinumc_SOURCES = \
 vin2dot_SOURCES = \
 		 $(COMMON_SOURCES) \
 		 vin2dot.c
+
+SUBDIRS = tests

@@ -2,6 +2,8 @@
 vinumc
 vin2dot
 
+src/tests/*_test
+
 # flex and bison generated files
 dry_flex.c
 dry_bison.h
@@ -74,6 +76,8 @@ Makefile.in
 /ylwrap
 .deps/
 .dirstamp
+*.log
+*.trs
 
 # http://www.gnu.org/software/autoconf
 
@@ -95,6 +99,7 @@ autom4te.cache
 /install-sh
 /missing
 /stamp-h1
+/build-aux
 
 # https://www.gnu.org/software/libtool/
 
