@@ -18,7 +18,8 @@ thoroughly:
 1. Fork the project
 1. Create a local branch for the issue.
 1. Edit the relevant files in the branch
-1. run `meson compile --ninja-args=clang-format` to format your code changes
+1. Add tests if necessary
+1. Build and test following the instruction on the [README.md](/README.md)
 1. Push your branch into your repository
 1. Got to github and make it into a pull/merge request
 1. Go have a cup of wine, as you’ve earned it
