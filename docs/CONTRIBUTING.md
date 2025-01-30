@@ -125,10 +125,7 @@ For more information on commit message guidelines, please follow this
 
 In the regular workflow, contributions in the form PR/MRs should be submitted
 to the mainstream repository, then analyzed and merged into the destination
-branch. Bypassing the regular protocols is exceptionally acceptable, at the
-discretion of the project maintainers, to address urgent demands such as
-critical repository maintenance or emergency bug fixes.
-
+branch.
 
 ## Other conventions
 
