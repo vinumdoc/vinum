@@ -19,6 +19,8 @@ After that, follow these steps:
 
 1. Create a local branch for the issue.
 1. Edit the relevant files in the branch
+1. Check if the code builds with `make buid`
+1. Check if all the tests pass with `make check`
 1. Push your branch into your repository
 1. Got to github and make it into a pull/merge request
 1. Go have a cup of wine, as you’ve earned it
