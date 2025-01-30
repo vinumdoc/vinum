@@ -123,9 +123,10 @@ For more information on commit message guidelines, please follow this
 
 ## PR/MR merging
 
-In the regular workflow, contributions in the form PR/MRs should be submitted
-to the mainstream repository, then analyzed and merged into the destination
-branch.
+Contributions should be done as a PR to the `develop` branch.
+
+All PR's that change the code in any functional way must come with a test using
+the VUnit framework.
 
 ## Other conventions
 
