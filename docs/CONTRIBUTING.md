@@ -17,11 +17,9 @@ thoroughly:
 
 After that, follow these steps:
 
-1. Fork the project
 1. Create a local branch for the issue.
 1. Edit the relevant files in the branch
 1. Push your branch into your repository
-1. run lint check if available (see 'Developer tools' below)
 1. Got to github and make it into a pull/merge request
 1. Go have a cup of wine, as you’ve earned it
 
