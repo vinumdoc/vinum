@@ -276,3 +276,13 @@ void vunit_run_vinumc_ok(struct vunit_test_ctx *ctx, char* input, char **output,
 	VUNIT_ASSERT_EQ(ctx, ret, 0);	
 	VUNIT_ASSERT_EQ(ctx, strlen(err), 0);
 }
+
+void vunit_run_vinumc_error(struct vunit_test_ctx *ctx, char* input, char **output, char** error, ...) {
+	va_list ap;
+	va_start(ap, error);
+	int ret = vunit_run_vinumcv(ctx, input, output, error, ap);
+	va_end(ap);
+
+	VUNIT_ASSERT_EQ(ctx, ret, 0);	
+	VUNIT_ASSERT_NEQ(ctx, strlen(*error), 0);
+}

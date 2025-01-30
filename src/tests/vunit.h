@@ -77,5 +77,6 @@ int vunit_run_vinumc(struct vunit_test_ctx *ctx, char* input, char **output, cha
 int vunit_run_vinumcv(struct vunit_test_ctx *ctx, char* input, char **output, char **error,
 		      va_list ap);
 void vunit_run_vinumc_ok(struct vunit_test_ctx *ctx, char* input, char **output, ...);
+void vunit_run_vinumc_error(struct vunit_test_ctx *ctx, char* input, char **output, char** error, ...);
 
 #endif // __VUNIT_H__
