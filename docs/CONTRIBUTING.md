@@ -27,11 +27,11 @@ After that, follow these steps:
 
 To keep things consistent, when applicable, we aim at some some standards.
 
-- REUSE specification vr. 3 [1]
+- [REUSE specification vr. 3][reuse]
 
-- GitFlow branching strategy [2]
+- [GitFlow branching strategy][git-flow]
 
-- Semantic versioning 2.0.0 [3]
+- [Semantic versioning 2.0.0][semver]
 
 ## Code convention
 
@@ -130,17 +130,15 @@ the VUnit framework.
 
 ## Other conventions
 
-Compliance to Keep a ChangeLog [5] is under consideration.
+Compliance to Keep a [ChangeLog][changelog] is under consideration.
 
 
-# References
+[reuse]: https://reuse.software
 
-[1] REUSE Software, https://reuse.software
+[git-flow]: https://nvie.com/posts/a-successful-git-branching-model/
 
-[2] GitFlow, https://nvie.com/posts/a-successful-git-branching-model/
-
-[3] Semantic Versioning, https://semver.org/
+[semver]: https://semver.org/
 
 [closing-keyword]: https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword
 
-[5] Keep a ChangeLog, https://keepachangelog.com/en/1.0.0/
+[changelog]: https://keepachangelog.com/en/1.0.0/
