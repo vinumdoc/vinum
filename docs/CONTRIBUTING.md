@@ -15,21 +15,15 @@ thoroughly:
    - [CONTRIBUTING.md](/docs/CONTRIBUTING.md])
    - [CODE_OF_CONDUCT.md](/docs/CODE_OF_CONDUCT.md)
 
-Then, go through the following steps.
+After that, follow these steps:
 
-1. Either pick an issue that you want to work on, or create a new one describing
-   the problem or suggestion that you want to be addressed.
-
-3. If you want to contribute a solution for that issue:
-
-    * fork the project
-    * create a local branch for the issue.
-    * edit the relevant files in the branch
-    * run lint check if available (see 'Developer tools' below)
-    * push your branch into your repository
-    * got to github and make it into a pull/merge request
-
-5. Go have a cup of wine, as you’ve earned it.
+1. Fork the project
+1. Create a local branch for the issue.
+1. Edit the relevant files in the branch
+1. Push your branch into your repository
+1. run lint check if available (see 'Developer tools' below)
+1. Got to github and make it into a pull/merge request
+1. Go have a cup of wine, as you’ve earned it
 
 ## Project standards
 
