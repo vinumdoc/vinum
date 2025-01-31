@@ -1,0 +1,6 @@
+option(
+  'build_vin2dot',
+  type : 'boolean',
+  value : true,
+  description : 'Build vin2dot utility. it prints some vinumc internal structure in dot format, useful for debugging'
+)

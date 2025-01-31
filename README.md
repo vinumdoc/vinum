@@ -13,29 +13,44 @@ The Vinum compiler, it turns the `.vin` files into your desired output document
 ### Dependencies
 
 - C compiler
-- GNU Autotools
+- Meson
 - Bison
 - Flex
 
-This project uses the GNU Autotools for its build system.
+This project uses [Meson](mesombuild.com) for its build system, all the projects
+reside on the [`subproject`](./subprojects/) directory.
 
 This is how you use it.
 
-One the project root, use `autoreconf` to generate the `./configure` script.
+On the project root, use this command to create the build directory.
+
 
 ```console
-autoreconf -i
+meson setup <build_dir>
 ```
 
-Run the `./configure` script for generating the Makefile.
+> [!TIP]
+> You can make out of tree builds by specifying a path outside the project, like
+> `/tmp/build`
+
+After that you can compile the project with:
 
 ```console
-./configure
+meson compile -C <build_dir>
 ```
 
-And finally, run `make` to build the compiler. For subsequent builds you only
-need to run this last command.
+Each subproject has it build options, you can see and modify them with the
+commands below, respectively:
 
 ```console
-make
+meson configure -C <build_dir>
+```
+
+```console
+meson configure -C <build_dir> -D'<option>=<option_value>'
+```
+
+If you want to run the unit tests:
+```console
+meson test -C <build_dir>
 ```

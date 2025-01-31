@@ -1,9 +1,3 @@
-# vinum binaries
-vinumc
-vin2dot
-
-src/tests/*_test
-
 # flex and bison generated files
 dry_flex.c
 dry_bison.h
