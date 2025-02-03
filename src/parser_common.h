@@ -1,7 +1,6 @@
-#ifndef __VINUMC_H__
-#define __VINUMC_H__
+#ifndef __PARSER_UTILS_H__
+#define __PARSER_UTILS_H__
 
-#include "ast.h"
 #include "eval.h"
 
 struct ctx {
@@ -17,4 +16,4 @@ void yyerror(char *s, ...);
 void lyyerror(YYLTYPE t, char *s, ...);
 int yyparse();
 
-#endif // __VINUMC_H__
+#endif // __PARSER_UTILS_H__

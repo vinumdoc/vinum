@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "vinumc.h"
+#include "parser_common.h"
 
 int yylex();
 %}

@@ -3,40 +3,9 @@
 #include <locale.h>
 #include <strings.h>
 
-#include "vinumc.h"
+#include "parser_common.h"
 
 struct ctx ctx;
-
-struct ctx ctx_new() {
-	struct ctx ret = {
-		.ast = ast_new(),
-		.eval_ctx = eval_ctx_new(),
-	};
-
-	return ret;
-}
-
-void yyerror(char *s, ...) {
-	va_list	ap;
-	va_start(ap, s);
-
-	fprintf(stderr, "[ERROR]:");
-	vfprintf(stderr, s, ap);
-	fprintf(stderr, "\n");
-
-	va_end(ap);
-}
-
-void lyyerror(YYLTYPE t, char *s, ...) {
-	// TODO: handle file
-	va_list ap;
-	va_start(ap, s);
-	fprintf(stderr, "file.vinum:%d:%d: ", t.first_line, t.first_column);
-	vfprintf(stderr, s, ap);
-	fprintf(stderr, "\n");
-
-	va_end(ap);
-}
 
 extern FILE *yyin;
 

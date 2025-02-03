@@ -1,36 +1,10 @@
-#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
-#include "vinumc.h"
+#include "parser_common.h"
 
 struct ctx ctx;
-
-struct ctx ctx_new() {
-	struct ctx ret = {
-		.ast = ast_new(),
-		.eval_ctx = eval_ctx_new(),
-	};
-
-	return ret;
-}
-
-void yyerror(char *s, ...) {
-	va_list	ap;
-	va_start(ap, s);
-
-	fprintf(stderr, "[ERROR]:");
-	vfprintf(stderr, s, ap);
-	fprintf(stderr, "\n");
-
-	va_end(ap);
-}
-
-void lyyerror(YYLTYPE t, char *s, ...){
-	// TODO: just to build
-	fprintf(stderr, "%s %d", s, t.first_column);
-}
 
 enum command {
 	CMD_AST,

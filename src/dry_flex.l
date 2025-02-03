@@ -5,7 +5,7 @@
 
 #include "dry_bison.h"
 
-#include "vinumc.h"
+#include "parser_common.h"
 
 /*
  * Disables input() and unput() function definitions from the generated .c

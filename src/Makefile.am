@@ -9,7 +9,8 @@ COMMON_SOURCES = \
 		 ast.c \
 		 dry_bison.y \
 		 dry_flex.l \
-		 eval.c
+		 eval.c \
+		 parser_common.c
 
 vinumc_SOURCES = \
 		 $(COMMON_SOURCES) \
