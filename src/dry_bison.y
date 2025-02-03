@@ -1,3 +1,34 @@
+%code requires {
+	extern char *filename; /* current filename here for the lexer */
+	typedef struct YYLTYPE {
+		int first_line;
+		int first_column;
+		int last_line;
+		int last_column;
+		char *filename;
+	} YYLTYPE;
+	# define YYLTYPE_IS_DECLARED 1 /* alert the parser that we have our own definition */
+	# define YYLLOC_DEFAULT(Current, Rhs, N) \
+		do \
+			if (N) \
+				{ \
+					(Current).first_line = YYRHSLOC (Rhs, 1).first_line; \
+					(Current).first_column = YYRHSLOC (Rhs, 1).first_column; \
+					(Current).last_line = YYRHSLOC (Rhs, N).last_line; \
+					(Current).last_column = YYRHSLOC (Rhs, N).last_column; \
+					(Current).filename = YYRHSLOC (Rhs, 1).filename; \
+				} \
+			else \
+				{ /* empty RHS */ \
+					(Current).first_line = (Current).last_line = \
+					YYRHSLOC (Rhs, 0).last_line; \
+					(Current).first_column = (Current).last_column = \
+					YYRHSLOC (Rhs, 0).last_column; \
+					(Current).filename = NULL; /* new */ \
+				} \
+		while (0)
+}
+
 %{
 #include <stdio.h>
 #include <ctype.h>
@@ -8,6 +39,8 @@
 #include "parser_common.h"
 
 int yylex();
+
+char* filename;
 %}
 %locations
 
