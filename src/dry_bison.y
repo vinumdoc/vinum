@@ -1,3 +1,34 @@
+%code requires {
+	extern char *filename; /* current filename here for the lexer */
+	typedef struct YYLTYPE {
+		int first_line;
+		int first_column;
+		int last_line;
+		int last_column;
+		char *filename;
+	} YYLTYPE;
+	# define YYLTYPE_IS_DECLARED 1 /* alert the parser that we have our own definition */
+	# define YYLLOC_DEFAULT(Current, Rhs, N) \
+		do \
+			if (N) \
+				{ \
+					(Current).first_line = YYRHSLOC (Rhs, 1).first_line; \
+					(Current).first_column = YYRHSLOC (Rhs, 1).first_column; \
+					(Current).last_line = YYRHSLOC (Rhs, N).last_line; \
+					(Current).last_column = YYRHSLOC (Rhs, N).last_column; \
+					(Current).filename = YYRHSLOC (Rhs, 1).filename; \
+				} \
+			else \
+				{ /* empty RHS */ \
+					(Current).first_line = (Current).last_line = \
+					YYRHSLOC (Rhs, 0).last_line; \
+					(Current).first_column = (Current).last_column = \
+					YYRHSLOC (Rhs, 0).last_column; \
+					(Current).filename = NULL; /* new */ \
+				} \
+		while (0)
+}
+
 %{
 #include <stdio.h>
 #include <ctype.h>
@@ -5,10 +36,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "vinumc.h"
+#include "parser_common.h"
 
 int yylex();
+
+char* filename;
 %}
+%locations
 
 %token ASSIGNMENT
 %token CALL
@@ -22,46 +56,60 @@ int yylex();
 %%
 
 program:
-       {
-	struct ast_node node = ast_node_new_nvl(PROGRAM);
-	$$ = ast_add_node(&ctx.ast, node);
-       }
-       | program block {
-	struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
+	{
+		struct ast_node node = ast_node_new_nvl(PROGRAM);
+		$$ = ast_add_node(&ctx.ast, node);
+	}
+	| program block {
+		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
-	ast_node_add_child(node, $2);
-	$$ = $1;
-       }
-       ;
+		ast_node_add_child(node, $2);
+		$$ = $1;
+	}
+	;
 
 block:
-     '[' symbol ':' args ']'  {
-	struct ast_node node = ast_node_new_nvl(ASSIGNMENT);
+	'[' symbol ':' args ']'  {
+		struct ast_node node = ast_node_new_nvl(ASSIGNMENT);
 
-	ast_node_add_child(&node, $2);
-	ast_node_add_child(&node, $4);
+		ast_node_add_child(&node, $2);
+		ast_node_add_child(&node, $4);
 
-	$$ = ast_add_node(&ctx.ast, node);
-   }
-   | '[' symbol args ']'  {
-	struct ast_node node = ast_node_new_nvl(CALL);
+		$$ = ast_add_node(&ctx.ast, node);
+	}
+	| '[' symbol args ']'  {
+		struct ast_node node = ast_node_new_nvl(CALL);
 
-	ast_node_add_child(&node, $2);
-	ast_node_add_child(&node, $3);
+		ast_node_add_child(&node, $2);
+		ast_node_add_child(&node, $3);
 
-	$$ = ast_add_node(&ctx.ast, node);
-   }
-   | '[' symbol ']'  {
-	struct ast_node node = ast_node_new_nvl(CALL);
+		$$ = ast_add_node(&ctx.ast, node);
+	}
+	| '[' symbol ']'  {
+		struct ast_node node = ast_node_new_nvl(CALL);
 
-	ast_node_add_child(&node, $2);
+		ast_node_add_child(&node, $2);
 
-	$$ = ast_add_node(&ctx.ast, node);
-   }
-   ;
+		$$ = ast_add_node(&ctx.ast, node);
+	}
+	| '[' block ']' {
+		// TODO: just moved the code, need to check if this is correct
+		struct ast_node node = ast_node_new_nvl(SYMBOL);
+
+		ast_node_add_child(&node, $1);
+
+		$$ = ast_add_node(&ctx.ast, node);
+	}
+	| error ']' {
+		lyyerror(@2, "error: extra ']'");	
+	}
+	| '[' error {
+		lyyerror(@$, "error: no matching for '['");	
+	}
+	;
 
 args:
-	 text {
+	text {
 		struct ast_node node = ast_node_new_nvl(ARGS);
 
 		ast_node_add_child(&node, $1);
@@ -69,43 +117,43 @@ args:
 		size_t arg_node_id = ast_add_node(&ctx.ast, node);
 
 		$$ = arg_node_id;
-	 }
-	 | block {
+	}
+	| block {
 		struct ast_node node = ast_node_new_nvl(ARGS);
 
 		ast_node_add_child(&node, $1);
 
 		$$ = ast_add_node(&ctx.ast, node);
-	 }
-	 | ARG_REF_ALL_ARGS {
+	}
+	| ARG_REF_ALL_ARGS {
 		struct ast_node node = ast_node_new_nvl(ARGS);
 
 		ast_node_add_child(&node, $1);
 
 		$$ = ast_add_node(&ctx.ast, node);
-	 }
-	 | args text {
+	}
+	| args text {
 		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
 		ast_node_add_child(node, $2);
 
 		$$ = $1;
-	 }
-	 | args block {
+	}
+	| args block {
 		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
 		ast_node_add_child(node, $2);
 
 		$$ = $1;
-	 }
-	 | args ARG_REF_ALL_ARGS {
+	}
+	| args ARG_REF_ALL_ARGS {
 		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
 		ast_node_add_child(node, $2);
 
 		$$ = $1;
-	 }
-	 ;
+	}
+	;
 
 symbol: WORD {
 	VEC_AT(&ctx.ast.nodes, $1).type = SYMBOL;
@@ -128,35 +176,24 @@ symbol: WORD {
 	free(wtext);
 
 	$$ = $1;
-      }
-      | block {
-	struct ast_node node = ast_node_new_nvl(SYMBOL);
-
-	ast_node_add_child(&node, $1);
-
-	$$ = ast_add_node(&ctx.ast, node);
-      }
-      ;
+	}
+	;
 
 text:
-     word_text {
-	struct ast_node node = ast_node_new_nvl(TEXT);
+	WORD {
+		struct ast_node node = ast_node_new_nvl(TEXT);
 
-	ast_node_add_child(&node, $1);
+		ast_node_add_child(&node, $1);
 
-	$$ = ast_add_node(&ctx.ast, node);
-    }
-    | text word_text {
-	struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
+		$$ = ast_add_node(&ctx.ast, node);
+	}
+	| text WORD {
+		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
-	ast_node_add_child(node, $2);
+		ast_node_add_child(node, $2);
 
-	$$ = $1;
-    }
-    ;
-
-word_text: WORD { $$ = $1;}
-	 | ':'{ $$ = $1;}
-	 ;
+		$$ = $1;
+	}
+	;
 
 %%
