@@ -2,11 +2,19 @@
 
 Vinum is a document preparation system.
 
-This software is in pre-alpha stage.
+This is a [Monorepo](https://en.m.wikipedia.org/wiki/Monorepo) where all the
+Vinum related project exists.
 
-# vinumc
+The project are:
 
-The Vinum compiler, it turns the `.vin` files into your desired output document
+## vinumc
+
+The Vinum compiler, it turns the `.vin` files into your desired output document.
+
+## VUnit
+
+An unit test framework for testing the others Vinum subprojects inspired by
+[KUnit](https://www.kernel.org/doc/html/v6.11/dev-tools/kunit/index.html).
 
 ## How to build it
 
