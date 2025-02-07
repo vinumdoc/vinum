@@ -114,7 +114,7 @@ int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
 
 	size_t num_test = get_num_tests(tests);
 
-	printf("TAP Version 14\n");
+	printf("TAP version 14\n");
 	printf("1..%zu\n", num_test);
 
 	int return_value = 0;
