@@ -1,4 +1,4 @@
-name: build vinumc
+name: build vinum
 
 on:
   push:
@@ -17,21 +17,17 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            autoconf \
-            automake \
-            libtool \
-            build-essential \
+            bison \
             flex \
-            bison
-
-      - name: Bootstrap project
-        run: autoreconf -i
+            gcc \
+            meson \
+            ninja-build
 
       - name: Configure
-        run: ./configure
+        run: meson setup buildir
 
       - name: Build
-        run: make
+        run: meson compile -C buildir
 
       - name: Run tests
-        run: make check
+        run: meson test -C buildir --print-errorlogs

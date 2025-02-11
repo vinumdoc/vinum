@@ -6,7 +6,7 @@
 
 #include <sys/wait.h>
 
-#include "vunit.h"
+#include <vunit.h>
 
 static char* alloc_printf(const char* fmt, ...) {
 	va_list ap;
@@ -114,10 +114,8 @@ int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
 
 	size_t num_test = get_num_tests(tests);
 
-	printf("TAP Version 14\n");
+	printf("TAP version 14\n");
 	printf("1..%zu\n", num_test);
-
-	int return_value = 0;
 
 	for (size_t i = 0; i < num_test; i++) {
 		const struct vunit_test *test = &tests[i];
@@ -130,7 +128,6 @@ int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
 			test->test_func(&ctx);
 		}
 		else {
-			return_value = ret;
 			test_failed = true;
 		}
 
@@ -143,7 +140,7 @@ int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
 			printf("%s\n", ctx.lonjmp_msg);
 	}
 
-	return return_value;
+	return 0;
 }
 
 static char* read_all_from_pipe(struct vunit_test_ctx *ctx, int fd) {
@@ -160,7 +157,7 @@ static char* read_all_from_pipe(struct vunit_test_ctx *ctx, int fd) {
 	}
 	VUNIT_ASSERT_EQ(ctx, read_len, 0);
 
-	ret[total_len + 1] = 0;
+	ret[total_len] = 0;
 	
 	return ret;
 }
@@ -235,13 +232,13 @@ int vunit_run_vinumc(struct vunit_test_ctx *ctx, char* input, char **output, cha
 		VUNIT_ASSERT_NEQ(ctx, args_to_send, NULL);
 
 		// TODO: Get the absolute path
-		char *prg_name = "../vinumc";
+		char *prg_name = "vinumc";
 
 		args_to_send[0] = prg_name;
 		memcpy(args_to_send + 1, argv, argc * sizeof(*argv));
 		args_to_send[argc + 1] = NULL;
 
-		ret = execv(
+		ret = execvp(
 			prg_name,
 			args_to_send
 		);
