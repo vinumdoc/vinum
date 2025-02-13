@@ -1,5 +1,13 @@
 # vinum
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./resources/logo/logo-dark-256.png">
+    <source media="(prefers-color-scheme: light)" srcset="./resources/logo/logo-light-256.png">
+    <img alt="Default vinum logo" src="./resources/logo/logo-dark-256.png">
+  </picture>
+</p>
+
 Vinum is a document preparation system.
 
 This is a [Monorepo](https://en.m.wikipedia.org/wiki/Monorepo) where all the
