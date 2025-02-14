@@ -16,6 +16,8 @@ int yylex();
 %token ARG_REF_ALL_ARGS
 %token PROGRAM
 %token SYMBOL
+// TODO: FUNCTION is not used in bison but in eval
+%token FUNCTION
 %token TEXT
 %token WORD
 
