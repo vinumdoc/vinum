@@ -8,3 +8,4 @@ project('vinum', 'c', meson_version: '>=1.1',
 
 subproject('vunit')
 subproject('vinumc')
+subproject('stdlib')
