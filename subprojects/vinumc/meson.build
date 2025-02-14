@@ -32,9 +32,22 @@ vinumc_srcs = common_srcs + [
   'vinumc.c',
 ]
 
+extern_library_helper_lib = static_library(
+  'extern_library_helper',
+  sources : files('extern_library_helper.c'),
+  include_directories : include_directories('.'),
+  install : false
+)
+
+extern_library_helper_dep = declare_dependency(
+  include_directories : include_directories('.'),
+  link_with : extern_library_helper_lib
+)
+
 vinumc = executable(
   'vinumc',
   vinumc_srcs,
+  dependencies : extern_library_helper_dep,
   install : true,
 )
 
@@ -46,6 +59,7 @@ if get_option('build_vin2dot')
   executable(
     'vin2dot',
     vin2dot_srcs,
+    dependencies : extern_library_helper_dep,
     install : true,
   )
 endif
