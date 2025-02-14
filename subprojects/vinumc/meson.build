@@ -32,9 +32,14 @@ vinumc_srcs = common_srcs + [
   'vinumc.c',
 ]
 
+extern_library_dep = declare_dependency(
+  include_directories : include_directories('include'),
+)
+
 vinumc = executable(
   'vinumc',
   vinumc_srcs,
+  dependencies : extern_library_dep,
   install : true,
 )
 
@@ -46,6 +51,7 @@ if get_option('build_vin2dot')
   executable(
     'vin2dot',
     vin2dot_srcs,
+    dependencies : extern_library_dep,
     install : true,
   )
 endif
