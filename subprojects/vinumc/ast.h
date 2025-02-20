@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "extern_library_helper.h"
 #include "vec.h"
 
 #include "dry_bison.h"
@@ -15,7 +16,10 @@ struct ast_node_childs_t VEC_DEF(ast_node_id_t);
 
 struct ast_node {
 	int type;
-	char *text;
+	union {
+		char *text;
+		function_pointer fp;
+	};
 
 	struct ast_node_childs_t childs;
 };
