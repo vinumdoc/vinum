@@ -1,217 +1,146 @@
+# Contributing to Vinum
 
-Contributing to Vinum
-==============================
- 
- Vinum is open source and you are welcome and encouraged to contribute.
+Vinum is open source and you are welcome and encouraged to contribute.
 
- These are a few guidelines.
+These are a few guidelines.
 
- Contribution workflow
- ------------------------------
+## Contribution workflow
 
- The official Vinum repository is at https://github.com/monacofj/Vinum
-   
- To start contributing, make sure you've read the essential documentation
- thoroughly:
+The official Vinum repository is at https://github.com/monacofj/Vinum
+  
+To start contributing, make sure you've read the essential documentation
+thoroughly:
 
-    - `docs/vinum.md      
-    - `docs/CONTRIBUTING.md`    
-    -- docs/CODE_OF_CONDUCT.md
+   - [vinum.md](/docs/vinum.md)
+   - [CONTRIBUTING.md](/docs/CONTRIBUTING.md])
+   - [CODE_OF_CONDUCT.md](/docs/CODE_OF_CONDUCT.md)
 
- Then, go through the following steps.
+After that, follow these steps:
 
- 1. Either pick an issue that you want to work on, or create a new one describing
-    the problem or suggestion that you want to be addressed.
- 
- 3. If you want to contribute a solution for that issue:
+1. Create a local branch for the issue.
+1. Edit the relevant files in the branch
+1. Check if the code builds with `make buid`
+1. Check if all the tests pass with `make check`
+1. Push your branch into your repository
+1. Got to github and make it into a pull/merge request
+1. Go have a cup of wine, as you’ve earned it
 
-    * fork the project
-    * create a local branch for the issue (see branch naming below).
-    * edit the relevant files in the branch
-    * run lint check if available (see 'Developer tools' below)
-    * push your branch into your repository
-    * got to github and make it into a pull/merge request
+## Project standards
 
-    Do not submit a PR/MR that is not related to an open issue.
+To keep things consistent, when applicable, we aim at some some standards.
 
-    If you're going to work in your own issue, it's a good idea to request for
-    comments from the project maintainers before staring to code.
+- [REUSE specification vr. 3][reuse]
 
- 5. Go have a cup of wine, as you’ve earned it.
+- [GitFlow branching strategy][git-flow]
 
- Project standards
- ------------------------------
+- [Semantic versioning 2.0.0][semver]
 
- To keep things consistent, when applicable, we aim at some some standards.
+## Code convention
 
- - REUSE specification vr. 3 [1]
- 
- - GitFlow branching strategy [2]
+Oh, that.
 
- - Semantic versioning 2.0.0 [3]
+Code convention always tend to be a sensitive topic among programmers as it
+calls forth personal convictions and the weight of beloved traditions. As often,
+preferences vary largely. With that, we humbly as you to be indulgent about the
+choices made in this project.
 
- Code convention
- ------------------------------
+* Symbol names, comments, file names etc. always in English.
 
- Oh, that.
+* Casing, indentation, block alignment etc.: stick to the project's conventions.
 
- Code convention always tend to be a sensitive topic among programmers as it calls
- forth personal convictions and the weight of beloved traditions. As often,
- preferences vary largely. With that, we humbly as you to be indulgent about the
- choices made in this project.
- 
- * Symbol names, comments, file names etc. always in English.
-
- * Casing, indentation, block alignment etc.: stick to the project's conventions.
-
- * Comments are text. Use caption and punctuation accordingly.
+* Comments are text. Use caption and punctuation accordingly.
 
 
- Attribution and licensing
- ------------------------------
+## Attribution and licensing
 
- If you have substantially modified an existing source or documentation
- file --- say it's considerably more than a simple typo correction or
- small bug fix --- you are entitled to have your name added to the copyright
- notice [1] and to the `AUTHORS` file, should you desire.
+If you have substantially modified an existing source or documentation
+file --- say it's considerably more than a simple typo correction or
+small bug fix --- you are entitled to have your name added to the copyright
+notice [1] and to the `AUTHORS` file, should you desire.
 
- By submitting your contribution you agree that it will be available under the
- same license as SYSeg (GNU GPL vr. 3 or later).
+By submitting your contribution you agree that it will be available under the
+same license as SYSeg (GNU GPL vr. 3 or later).
 
- Contribution purpose
- ------------------------------
+## Commit Messages
 
- When applicable, use the following convention for commit messages and branch
- names:
+We really value commit messages, we think it's the way of keeping record of the
+project. Following the convention, the commit messages should not exceed 72
+columns of text width.
 
- PERMANENT BRANCHES
+All the text should be on an imperative form, in a way that you're giving orders
+to the project (e.g. "Fix spell error").
 
- The repository contains the two GitFlow permanent branches:
- 
- - `main`    : the stable branch 
- - `develop` : the unstable branch (aka `develop`)
+This is the commit message style we follow.
 
- SUPPORT BRANCH NAMES (for PR/MR)
+```gitcommit
+[tag]: [Short description]
 
- When creating an ephemeral branch, use the following keywords to indicate the
- branch type (mind the casing):
+[Commit body]
+```
 
- - `feat`  : extend of modify feature (GitFlow `feature`)
- - `hot`   : carry on maintenance on former releases  (GitFlow `hotfix`)
- - `rel`   : prepare a new release (GitFlow `release`)
- - `wip`   : work-in-progress branch (unrelated to any issue)
- - `adoc`  : critical maintance bypassing the regular workflow
+### Tag
 
- For `feat` and `hot` branches, use the scheme
+It's serves for stating the area of the project were the commit is from. Usually
+is a path to a directory of file, if in doubt of what tag to use, use `git log
+<file>` in one of the files that you're touching.
 
- ```
-    <type>/<issue-number>/<short-descriptive-note>
- ```
- Use lowercase alphanumeric ASCII characters, underscores, and hyphens in
- place of spaces. No punctuation.
+### Short description
 
-  Example:
+It's meant to be a one-line summary of the changes. Do not try to describe
+everything, you have less than 72 chars to work with. The commit body is for
+that, just give a basic idea of what have been done.
 
- ```
-  feat/42/modify-option-help
+Also, do not put a dot at the end of this line.
 
-  fix/66/crash-on-negative-input
+### Commit body
 
- ```
- It's usually preferrable that the PR/MR be linked to an existing issue.
- Sometimes, however, we admit that ad hoc changes may be pragmatically
- justifiable. In this case, if the PR/MR is not linked to an issue,
- the simplified form
- 
-  `<purpose>/<short-descriptive-mnemonic>`
+Here you explain the purpose of the commit: what's the problem, why it's needed
+and how you solved it. Try to be very clear, as if you're describing to someone
+that's doesn't knows about the issue you're solving. You can use markdown
+notation if you want.
 
- is acceptable (this is most appropriate for 'wip' and 'exp' types).
-
- For `rel` branches, use `rel/<release-number>`.
- For `wip` and `adhoc`, use `<purpose>/<short-description>`
-
- COMMIT MESSAGES
-
- When editing the commit message, use the following keywords, inspired on a 
- lax version of  Conventional Commits [4], to describe the purpose of your
- contribution:
- 
- - `dev`      :   advance code (add of modify a feature)
- - `fix`      :   fix a bug or an unmeat requirement.
- - `ref`      :   refactor code for quality or compliance
- - `doc`      :   modify or extend documentation
- - `build`    :   improve the build process
- - `repo`     :   tide up the repository and organization
- - `minor`    :   something too simple as typo or cosmetics
- - `other`    :   something else
-
- The suggested commit messages is
-
- `<purpose> : short description`
-
- where 'purpose' is one of the contribution purposes listed above.
-
- The short description should be in imperative form (fix, add, remove etc.)
- rather than past (fixed, added) or present (fixes, adds) --- as if ordering
- what the change should do (mind the capitalization). Do not punctuate.
- 
-Example:
-
- ```
-   fix: correct wrong file name
-
-   fix: add missing semicolon
-
-   doc: update user manual
-
-   repo: removed object files
+The text should be on a time tense where the changes are not yet present on the
+project, so for example, if you're describing a bug on the code you should not
+write it in this way:
 
 ```
- 
- Ideally, each commit should be of only one type. In practice, though,
- it's reasonable to group changes in a single commit if they are naturally
- related (e.g. you modifying a function's argument type and edit the developer
- documentation to reflect the change). In those cases, it's ok to use
+The code had a bug, so we fixed it.
+```
 
- ```
-  <purpose 1> : short description 1
-  
-  <purpose 2> : short description 2
-  ...
- ```
+Instead, this is the proper way:
 
- Purpose indication in commit messages is suggested, but not mandatory (if not
- used, capitalize the first letter. Leave a blank line between statements.
- 
- If it helps to understand the context, do not refrain from adding a paragraph
- further explaining the commit. This is normal text, so, capitalize and
- punctuate accordingly.
- 
+```
+The code has a bug, so let's fix it.
+```
 
- PR/MR MERGING
- 
- In the regular workflow, contributions in the form PR/MRs should be submitted
- to the mainstream repository, then analyzed and merged into the destination
- branch. Bypassing the regular protocols is exceptionally acceptable, at the
- discretion of the project maintainers, to address urgent demands such as
- critical repository maintenance or emergency bug fixes.
+If the commit solves an issue, please use a [closing keyword][closing-keyword]
+on the commit body.
 
+If you're finding it difficult to write commit messages in this format, maybe
+you're cramming too much stuff into a single commit, try splitting it into
+smaller commits that do just one thing.
 
- OTHER CONVENTIONS
+For more information on commit message guidelines, please follow this
+[blogpost](https://cbea.ms/git-commit/).
 
- Compliance to Keep a ChangeLog [5] is under consideration.
+## PR/MR merging
+
+Contributions should be done as a PR to the `develop` branch.
+
+All PR's that change the code in any functional way must come with a test using
+the VUnit framework.
+
+## Other conventions
+
+Compliance to Keep a [ChangeLog][changelog] is under consideration.
 
 
-References
- ------------------------------
+[reuse]: https://reuse.software
 
- [1] REUSE Software, https://reuse.software
+[git-flow]: https://nvie.com/posts/a-successful-git-branching-model/
 
- [2] GitFlow, https://nvie.com/posts/a-successful-git-branching-model/
+[semver]: https://semver.org/
 
- [3] Semantic Versioning, https://semver.org/
+[closing-keyword]: https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword
 
- [4] Conventional Commits, https://www.conventionalcommits.org/en/v1.0.0/
-
- [5] Keep a ChangeLog, https://keepachangelog.com/en/1.0.0/
-
+[changelog]: https://keepachangelog.com/en/1.0.0/
