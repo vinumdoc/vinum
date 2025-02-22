@@ -1,9 +1,15 @@
-#include <stdarg.h>
-#include <stdio.h>
+#include <assert.h>
+#include <getopt.h>
 #include <locale.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 #include <strings.h>
 
 #include "vinumc.h"
+
+#define ARRAY_SIZE(arr) (sizeof((arr))/sizeof(*(arr)))
 
 struct ctx ctx;
 
@@ -29,18 +35,117 @@ void yyerror(char *s, ...) {
 
 extern FILE *yyin;
 
+enum flag_kind {
+	FLAG_BOOLEAN,
+	FLAG_ARGUMENT,
+};
+
+struct flag {
+	const char *name;
+	char short_name;
+	const char *help_desc;
+	const char *placeholder_name;
+	enum flag_kind kind;
+	union {
+		bool *boolean;
+		char **str;
+	} ref_as;
+};
+
+static struct flag* find_flag_by_short_name(struct flag *flags, size_t flags_len, char short_flag) {
+	for (size_t i = 0; i < flags_len; i++) {
+		struct flag *f = &flags[i];
+
+		if (f->short_name == short_flag)
+			return f;
+	}
+
+	return NULL;
+}
+
+static void parse_cmdline(const int argc, char **argv, struct ctx *ctx, struct flag *flags,
+			 size_t flags_len) {
+	char  *optstring = calloc(2 * (flags_len + 1), sizeof(*optstring));
+	struct option *longopts = calloc(flags_len + 1,  sizeof(*longopts));
+
+	size_t optstring_i = 0;
+	for (size_t i = 0; i < flags_len; i++) {
+		struct flag *f = &flags[i];
+
+		// TODO: support short/long only flags
+		assert(f->short_name != 0);
+		assert(f->name != 0);
+
+		optstring[optstring_i++] = f->short_name;
+
+		struct option opt = {.name = f->name, .val = f->short_name};
+			
+		switch (f->kind) {
+			case FLAG_ARGUMENT:
+				opt.has_arg = required_argument;
+				optstring[optstring_i++] = ':';
+				break;
+			case FLAG_BOOLEAN:
+				opt.has_arg = no_argument;
+				break;
+		}
+
+		longopts[i] = opt;
+	}
+
+	int opt;
+	while((opt = getopt_long(argc, argv, optstring, longopts, NULL)) != -1) {
+		struct flag *f = find_flag_by_short_name(flags, flags_len, opt);
+		assert(f != NULL);
+
+		switch (f->kind) {
+			case FLAG_ARGUMENT:;
+				size_t arg_len = strlen(optarg);
+				*f->ref_as.str = calloc(arg_len + 1, sizeof(char));
+				strcpy(*f->ref_as.str, optarg);
+				break;
+			case FLAG_BOOLEAN:
+				*f->ref_as.boolean = true;
+				break;
+		}
+		
+	}
+
+	free(optstring);
+	free(longopts);
+
+	// TODO: Find a way to add this as an item in the `vinumc_flags`
+	if (optind < argc) {
+		char *input_path = argv[optind];
+		size_t input_path_len = strlen(input_path);
+		ctx->input_path = calloc(input_path_len + 1, sizeof(char));
+		strcpy(ctx->input_path, input_path);
+	}
+}
+
+static void free_flags(struct flag *flags, size_t flags_len) {
+	for (size_t i = 0; i < flags_len; i++) {
+		struct flag *f = &flags[i];
+		if (f->kind == FLAG_ARGUMENT)
+			free(*f->ref_as.str);
+	}
+}
+
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "");
 
-	for (int i = 1; i < argc ; i++) {
-		char* arg = argv[i];
-		if (!strcasecmp("--output", arg)) {
-			char *file_path = argv[++i];
-			ctx.output_path = file_path;
-		} else {
-			ctx.input_path = arg;
-		}
-	}
+	struct flag vinumc_flags[] = {
+		{
+			.name = "output", .short_name = 'o',
+			.help_desc = "Set file name output, if not set the output will be stdout",
+			.placeholder_name = "output_path",
+			.kind = FLAG_ARGUMENT, .ref_as.str = &ctx.output_path,
+		},
+	};
+
+	ctx = ctx_new();
+
+	parse_cmdline(argc, argv, &ctx, vinumc_flags, ARRAY_SIZE(vinumc_flags));
 
 	FILE *out = stdout;
 	if (ctx.output_path != NULL)
@@ -49,8 +154,10 @@ int main(int argc, char **argv) {
 	if (ctx.input_path != NULL)
 		yyin = fopen(ctx.input_path, "r");
 
-	ctx = ctx_new();
 	yyparse();
 
 	eval(&ctx.eval_ctx, &ctx.ast, out);
+
+	free_flags(vinumc_flags, ARRAY_SIZE(vinumc_flags));
+	free(ctx.input_path);
 }
