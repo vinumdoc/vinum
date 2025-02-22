@@ -32,15 +32,22 @@ extern FILE *yyin;
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "");
 
-	FILE *out = stdout;
 	for (int i = 1; i < argc ; i++) {
 		char* arg = argv[i];
 		if (!strcasecmp("--output", arg)) {
-			out = fopen(argv[++i], "w");
+			char *file_path = argv[++i];
+			ctx.output_path = file_path;
 		} else {
-			yyin = fopen(arg, "r");
+			ctx.input_path = arg;
 		}
 	}
+
+	FILE *out = stdout;
+	if (ctx.output_path != NULL)
+		out = fopen(ctx.output_path, "w");
+
+	if (ctx.input_path != NULL)
+		yyin = fopen(ctx.input_path, "r");
 
 	ctx = ctx_new();
 	yyparse();

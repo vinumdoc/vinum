@@ -5,6 +5,9 @@
 #include "eval.h"
 
 struct ctx {
+	char *input_path;
+	char *output_path;
+
 	struct ast ast;
 	struct eval_ctx eval_ctx;
 };
