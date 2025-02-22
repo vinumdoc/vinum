@@ -131,6 +131,27 @@ static void free_flags(struct flag *flags, size_t flags_len) {
 	}
 }
 
+static struct flag* print_help(const char *prg_name, struct flag *flags, size_t flags_len) {
+	printf("usage: %s ", prg_name);
+	for (size_t i = 0; i < flags_len; i++) {
+		struct flag *f = &flags[i];
+		printf("[-%c | --%s", f->short_name, f->name);
+		if (f->kind == FLAG_ARGUMENT) {
+			assert(f->placeholder_name != NULL);
+			printf(" <%s>", f->placeholder_name);
+		}
+		printf("] ");
+	}
+	printf("[<file-input>]\n\n");
+	printf("Options:");
+	for (size_t i = 0; i < flags_len; i++) {
+		struct flag *f = &flags[i];
+		assert(f->help_desc != NULL);
+		printf("\n  -%c, --%s\n\t%s\n", f->short_name, f->name, f->help_desc);
+	}
+	return NULL;
+}
+
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "");
 
@@ -141,11 +162,21 @@ int main(int argc, char **argv) {
 			.placeholder_name = "output_path",
 			.kind = FLAG_ARGUMENT, .ref_as.str = &ctx.output_path,
 		},
+		{
+			.name = "help", .short_name = 'h',
+			.help_desc = "Show help",
+			.kind = FLAG_BOOLEAN, .ref_as.boolean = &ctx.show_help,
+		},
 	};
 
 	ctx = ctx_new();
 
 	parse_cmdline(argc, argv, &ctx, vinumc_flags, ARRAY_SIZE(vinumc_flags));
+
+	if (ctx.show_help) {
+		print_help("vinumc", vinumc_flags, ARRAY_SIZE(vinumc_flags));
+		goto exit;
+	}
 
 	FILE *out = stdout;
 	if (ctx.output_path != NULL)
@@ -158,6 +189,7 @@ int main(int argc, char **argv) {
 
 	eval(&ctx.eval_ctx, &ctx.ast, out);
 
+exit:
 	free_flags(vinumc_flags, ARRAY_SIZE(vinumc_flags));
 	free(ctx.input_path);
 }

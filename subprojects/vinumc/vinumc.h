@@ -4,9 +4,12 @@
 #include "ast.h"
 #include "eval.h"
 
+#include <stdbool.h>
+
 struct ctx {
 	char *input_path;
 	char *output_path;
+	bool show_help;
 
 	struct ast ast;
 	struct eval_ctx eval_ctx;

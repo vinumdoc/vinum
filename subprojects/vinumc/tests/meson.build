@@ -1,6 +1,7 @@
 fs = import('fs')
 
 tests = [
+  'help_flag_test.c',
   'output_flag_test.c',
   'simple_test.c',
 ]
