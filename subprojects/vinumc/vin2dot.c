@@ -11,6 +11,7 @@ struct ctx ctx_new() {
 	struct ctx ret = {
 		.ast = ast_new(),
 		.eval_ctx = eval_ctx_new(),
+		.libraries = {0, NULL},
 	};
 
 	return ret;
@@ -145,15 +146,15 @@ int main(int argc, char *argv[]) {
 			ast_dot(&ctx.ast, stdout);
 			return EXIT_SUCCESS;
 		case CMD_AST_AFTER:
-			eval(&ctx.eval_ctx, &ctx.ast, stderr);
+			eval(&ctx.eval_ctx, &ctx.ast, stderr, &ctx.libraries);
 			ast_dot(&ctx.ast, stdout);
 			return EXIT_SUCCESS;
 		case CMD_AST_AND_SCOPES:
-			eval(&ctx.eval_ctx, &ctx.ast, stderr);
+			eval(&ctx.eval_ctx, &ctx.ast, stderr, &ctx.libraries);
 			dot_ast_and_scopes(&ctx.ast.nodes, &ctx.eval_ctx.scopes, stdout);
 			return EXIT_SUCCESS;
 		case CMD_SCOPES:
-			eval(&ctx.eval_ctx, &ctx.ast, stderr);
+			eval(&ctx.eval_ctx, &ctx.ast, stderr, &ctx.libraries);
 			eval_dot(&ctx.eval_ctx, stdout);
 			return EXIT_SUCCESS;
 		default:

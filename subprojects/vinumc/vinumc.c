@@ -11,6 +11,7 @@ struct ctx ctx_new() {
 	struct ctx ret = {
 		.ast = ast_new(),
 		.eval_ctx = eval_ctx_new(),
+		.libraries = {0, NULL},
 	};
 
 	return ret;
@@ -45,5 +46,5 @@ int main(int argc, char **argv) {
 	ctx = ctx_new();
 	yyparse();
 
-	eval(&ctx.eval_ctx, &ctx.ast, out);
+	eval(&ctx.eval_ctx, &ctx.ast, out, &ctx.libraries);
 }
