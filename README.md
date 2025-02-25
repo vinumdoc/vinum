@@ -19,6 +19,10 @@ The project are:
 
 The Vinum compiler, it turns the `.vin` files into your desired output document.
 
+## stdlib
+
+A collection of useful functions for vinum.
+
 ## VUnit
 
 An unit test framework for testing the others Vinum subprojects inspired by

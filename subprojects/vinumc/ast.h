@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <extern_library.h>
 #include "vec.h"
 
 #include "dry_bison.h"

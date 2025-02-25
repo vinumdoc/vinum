@@ -7,6 +7,7 @@
 struct ctx {
 	struct ast ast;
 	struct eval_ctx eval_ctx;
+	struct libraries libraries;
 };
 
 extern struct ctx ctx;
