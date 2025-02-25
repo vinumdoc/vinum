@@ -1,4 +1,4 @@
-project('vinumc', 'c')
+project('vinumc', 'c', version: '0.1.0')
 
 flex = find_program('flex')
 bison = find_program('bison')
