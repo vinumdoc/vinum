@@ -189,6 +189,14 @@ int main(int argc, char **argv) {
 			.kind = FLAG_BOOLEAN,
 			.ref_as.boolean = &ctx.show_help,
 		},
+		{
+			.name = "with",
+			.short_name = 'w',
+			.help_desc = "Set a library to be loaded",
+			.placeholder_name = "libraries",
+			.kind = FLAG_MULTI_ARGUMENTS,
+			.ref_as.str_vec = &ctx.libraries,
+		},
 	};
 
 	ctx = ctx_new();

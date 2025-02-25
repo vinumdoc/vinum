@@ -10,14 +10,18 @@ void test_output_flag(struct vunit_test_ctx *ctx) {
 			    &out, "-h", NULL);
 
 	const char *help_output =
-		"usage: vinumc [-o | --output <output_path>] [-h | --help] [<file-input>]\n"
+		"usage: vinumc [-o | --output <output_path>] [-h | --help] [-w | --with "
+		"<libraries>] [<file-input>]\n"
 		"\n"
 		"Options:\n"
 		"  -o, --output\n"
 		"	Set file name output, if not set the output will be stdout\n"
 		"\n"
 		"  -h, --help\n"
-		"	Show help\n";
+		"	Show help\n"
+		"\n"
+		"  -w, --with (can be specified multiple times)\n"
+		"	Set a library to be loaded\n";
 
 	VUNIT_ASSERT_STREQ(ctx, out, help_output);
 
