@@ -190,7 +190,7 @@ int main(int argc, char **argv) {
 
 	yyparse();
 
-	eval(&ctx.eval_ctx, &ctx.ast, out);
+	eval(&ctx.eval_ctx, &ctx.ast, out, &ctx.libraries);
 
 exit:
 	free_flags(vinumc_flags, ARRAY_SIZE(vinumc_flags));

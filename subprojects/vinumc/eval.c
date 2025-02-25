@@ -1,10 +1,14 @@
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "eval.h"
+#include "extern_library.h"
+#include "library_loader.h"
 #include "str.h"
 #include "utils.h"
+#include "vec.h"
 
 struct eval_ctx eval_ctx_new() {
 	struct eval_ctx ret = {};
@@ -83,7 +87,8 @@ RESOLVE_FUNC_SIGNATURE(resolve_symbols_assignment) {
 	char *name = VEC_AT(&ast->nodes, VEC_AT(&ast_node->childs, 0)).text;
 	struct namespace_entry entry = {
 		.name = name,
-		.ast_node_id = ast_node->childs.len > 1 ? (int)VEC_AT(&ast_node->childs, 1) : -1,
+		.type = ENTRY_INTERNAL,
+		.as.ast_node_id = ast_node->childs.len > 1 ? (int)VEC_AT(&ast_node->childs, 1) : -1,
 	};
 
 	VEC_PUT(&curr_scope->namespace, entry);
@@ -124,37 +129,45 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 		find_symbol_on_scopes(&ctx->scopes, curr_scope, call_name);
 
 	if (symbol_info != NULL) {
-		if (ast_node.childs.len > 1) {
-			if (symbol_info->ast_node_id < 0) {
-				ast_node.childs.len--;
-				return;
-			}
+		if (symbol_info->type == ENTRY_INTERNAL) {
+			if (ast_node.childs.len > 1) {
+				if (symbol_info->as.ast_node_id < 0) {
+					ast_node.childs.len--;
+					return;
+				}
 
-			size_t symbol_args_node_id = ast_copy_node(ast, symbol_info->ast_node_id);
-			struct ast_node *symbol_args_node =
-				&VEC_AT(&ast->nodes, symbol_args_node_id);
+				size_t symbol_args_node_id =
+					ast_copy_node(ast, symbol_info->as.ast_node_id);
+				struct ast_node *symbol_args_node =
+					&VEC_AT(&ast->nodes, symbol_args_node_id);
 
-			for (size_t i = 0; i < symbol_args_node->childs.len; i++) {
-				struct ast_node *child =
-					&VEC_AT(&ast->nodes, VEC_AT(&symbol_args_node->childs, i));
+				for (size_t i = 0; i < symbol_args_node->childs.len; i++) {
+					struct ast_node *child = &VEC_AT(
+						&ast->nodes, VEC_AT(&symbol_args_node->childs, i));
 
-				if (child->type == ARG_REF_ALL_ARGS) {
-					VEC_AT(&symbol_args_node->childs, i) =
-						VEC_AT(&ast_node.childs, 1);
+					if (child->type == ARG_REF_ALL_ARGS) {
+						VEC_AT(&symbol_args_node->childs, i) =
+							VEC_AT(&ast_node.childs, 1);
+					}
+				}
+				VEC_AT(&VEC_AT(&ast->nodes, ast_node_id).childs, 1) =
+					symbol_args_node_id;
+			} else {
+				if (symbol_info->as.ast_node_id >= 0) {
+					ast_node_add_child(&VEC_AT(&ast->nodes, ast_node_id),
+							   symbol_info->as.ast_node_id);
 				}
 			}
 
-			VEC_AT(&VEC_AT(&ast->nodes, ast_node_id).childs, 1) = symbol_args_node_id;
-		} else {
-			if (symbol_info->ast_node_id >= 0) {
-				ast_node_add_child(&VEC_AT(&ast->nodes, ast_node_id),
-						   symbol_info->ast_node_id);
-			}
+			size_t new_node = VEC_AT(&VEC_AT(&ast->nodes, ast_node_id).childs, 1);
+
+			resolve_symbols(ctx, ast, curr_scope_id, new_node);
+
+		} else if (symbol_info->type == ENTRY_EXTERNAL) {
+			struct ast_node *symbol_node =
+				&VEC_AT(&ast->nodes, VEC_AT(&ast_node.childs, 0));
+			symbol_node->type = FUNCTION;
 		}
-
-		size_t new_node = VEC_AT(&VEC_AT(&ast->nodes, ast_node_id).childs, 1);
-
-		resolve_symbols(ctx, ast, curr_scope_id, new_node);
 	} else {
 		fprintf(stderr, "ERROR: No symbol with name \"%s\" exist\n", call_name);
 	}
@@ -204,10 +217,33 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 		return;
 	}
 
+	const struct ast_node *symbol_node = &VEC_AT(&ast->nodes, VEC_AT(&ast_node->childs, 0));
 	const struct ast_node *args_node = &VEC_AT(&ast->nodes, VEC_AT(&ast_node->childs, 1));
 
-	for (size_t i = 0; i < args_node->childs.len; i++) {
-		do_calls(ctx, ast, out, VEC_AT(&args_node->childs, i));
+	if (symbol_node->type == FUNCTION) {
+		// writes the returns of the arguments calls to a temporary buffer,
+		// so any nested call will be resolved normally
+		struct str tmp_out = {};
+		for (size_t i = 0; i < args_node->childs.len; i++) {
+			do_calls(ctx, ast, &tmp_out, VEC_AT(&args_node->childs, i));
+		}
+
+		// find the extern function on the scope
+		struct scope *curr_scope = &VEC_AT(&ctx->scopes, 0);
+		struct namespace_entry *symbol_info =
+			find_symbol_on_scopes(&ctx->scopes, curr_scope, symbol_node->text);
+
+		// put the extern function call return on the out str
+		char *call_return = symbol_info->as.func(tmp_out.base);
+		put_str(out, call_return);
+		if (call_return != tmp_out.base) {
+			free(call_return);
+		}
+		VEC_FREE(&tmp_out);
+	} else {
+		for (size_t i = 0; i < args_node->childs.len; i++) {
+			do_calls(ctx, ast, out, VEC_AT(&args_node->childs, i));
+		}
 	}
 }
 
@@ -222,11 +258,11 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_text) {
 			return;
 		}
 
-		PUT_STR(out, child->text);
+		put_str(out, child->text);
 		if (i != ast_node->childs.len - 1)
-			PUT_STR(out, " ");
+			put_str(out, " ");
 	}
-	PUT_STR(out, "\n");
+	put_str(out, "\n");
 }
 
 DO_CALLS_FUNC_SIGNATURE(do_calls) {
@@ -248,18 +284,60 @@ DO_CALLS_FUNC_SIGNATURE(do_calls) {
 	}
 }
 
-void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out) {
+void resolve_extern_functions(struct eval_ctx *ctx, struct loaded_lib lib) {
+	struct scope *curr_scope = &VEC_AT(&ctx->scopes, 0);
+
+	int i = 0;
+	struct extern_function f = lib.functions[i];
+	while (f.name != 0) {
+		struct namespace_entry entry = {
+			.name = f.name,
+			.type = ENTRY_EXTERNAL,
+			.as.func = f.fp,
+		};
+
+		VEC_PUT(&curr_scope->namespace, entry);
+		f = lib.functions[++i];
+	}
+}
+
+struct loaded_lib *load_libs(struct eval_ctx *ctx, struct str_vec *libraries) {
+	size_t len = libraries->len;
+	struct loaded_lib *loaded_libs = calloc(len, sizeof(struct loaded_lib));
+	for (size_t i = 0; i < len; i++) {
+		loaded_libs[i] = load_lib(VEC_AT(libraries, i));
+		resolve_extern_functions(ctx, loaded_libs[i]);
+	}
+	loaded_libs[len].dl_handle = NULL;
+	return loaded_libs;
+}
+
+void unload_libs(struct loaded_lib *loaded_libs) {
+	if (loaded_libs == NULL) {
+		return;
+	}
+	int i = 0;
+	while (loaded_libs[i].dl_handle != NULL) {
+		unload_lib(loaded_libs[i]);
+		i++;
+	}
+	free(loaded_libs);
+}
+
+void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out, struct str_vec *libraries) {
 	struct scope base_scope = {
 		.father = -1,
 		.node = 0,
 	};
 	VEC_PUT(&ctx->scopes, base_scope);
 
+	struct loaded_lib *loaded_libs = load_libs(ctx, libraries);
 	resolve_symbols(ctx, ast, 0, 0);
 	resolve_calls(ctx, ast, 0, 0);
 	struct str str_out = {};
 	do_calls(ctx, ast, &str_out, 0);
 	fprintf(out, "%s", str_out.base);
+	unload_libs(loaded_libs);
 }
 
 void eval_dot(const struct eval_ctx *ctx, FILE *stream) {

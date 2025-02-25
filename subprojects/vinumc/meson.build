@@ -27,6 +27,7 @@ common_srcs = [
   lex.process('dry_flex.l'),
   'eval.c',
   'str.c',
+  'extern_library.c',
 ]
 
 vinumc_srcs = common_srcs + [

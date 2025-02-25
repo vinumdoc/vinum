@@ -89,7 +89,7 @@ static void dot_ast_and_scopes(struct ast_nodes_t *ast, struct eval_ctx_scopes_t
 		fprintf(stream, "\ts_%zu [shape=record, label=\" %zu |", i, i);
 		for (size_t j = 0; j < sc->namespace.len; j++) {
 			struct namespace_entry *entry = &VEC_AT(&sc->namespace, j);
-			fprintf(stream, "<%d> %s", entry->ast_node_id, entry->name);
+			fprintf(stream, "<%d> %s", entry->as.ast_node_id, entry->name);
 			if (j < sc->namespace.len - 1)
 				fprintf(stream, " |");
 		}
@@ -97,8 +97,8 @@ static void dot_ast_and_scopes(struct ast_nodes_t *ast, struct eval_ctx_scopes_t
 
 		for (size_t j = 0; j < sc->namespace.len; j++) {
 			struct namespace_entry *entry = &VEC_AT(&sc->namespace, j);
-			fprintf(stream, "s_%zu:<%d> -> an_%d [style=dotted]", i, entry->ast_node_id,
-				entry->ast_node_id);
+			fprintf(stream, "s_%zu:<%d> -> an_%d [style=dotted]", i,
+				entry->as.ast_node_id, entry->as.ast_node_id);
 		}
 
 		for (size_t j = 0; j < sc->childs.len; j++) {
@@ -145,15 +145,15 @@ int main(int argc, char *argv[]) {
 		ast_dot(&ctx.ast, stdout);
 		return EXIT_SUCCESS;
 	case CMD_AST_AFTER:
-		eval(&ctx.eval_ctx, &ctx.ast, stderr);
+		eval(&ctx.eval_ctx, &ctx.ast, stderr, &ctx.libraries);
 		ast_dot(&ctx.ast, stdout);
 		return EXIT_SUCCESS;
 	case CMD_AST_AND_SCOPES:
-		eval(&ctx.eval_ctx, &ctx.ast, stderr);
+		eval(&ctx.eval_ctx, &ctx.ast, stderr, &ctx.libraries);
 		dot_ast_and_scopes(&ctx.ast.nodes, &ctx.eval_ctx.scopes, stdout);
 		return EXIT_SUCCESS;
 	case CMD_SCOPES:
-		eval(&ctx.eval_ctx, &ctx.ast, stderr);
+		eval(&ctx.eval_ctx, &ctx.ast, stderr, &ctx.libraries);
 		eval_dot(&ctx.eval_ctx, stdout);
 		return EXIT_SUCCESS;
 	default:
