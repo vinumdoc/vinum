@@ -248,6 +248,44 @@ int vunit_run_vinumc(struct vunit_test_ctx *ctx, char* input, char **output, cha
 	}
 }
 
+void vunit_str_to_file(struct vunit_test_ctx *ctx, const char* file_path, const char *str) {
+	FILE *fp = fopen(file_path, "w+");
+	VUNIT_ASSERT_NEQ(ctx, fp, NULL);
+
+	unsigned long len = strlen(str);
+
+	int ret;
+
+	fwrite(str, sizeof(*str), len, fp);
+
+	ret = fclose(fp);
+	VUNIT_ASSERT_NEQ(ctx, ret, EOF);
+}
+
+char* vunit_file_to_str(struct vunit_test_ctx *ctx, const char* file_path) {
+	FILE *fp = fopen(file_path, "r");
+	VUNIT_ASSERT_NEQ(ctx, fp, NULL);
+
+	int ret;
+
+	ret = fseek(fp, 0, SEEK_END);
+	VUNIT_ASSERT_NEQ(ctx, ret, -1);
+
+	long file_size = ftell(fp);
+	VUNIT_ASSERT_NEQ(ctx, file_size, -1);
+	rewind(fp);
+
+	char *ret_str = calloc(file_size, sizeof(*ret_str));
+	VUNIT_ASSERT_NEQ(ctx, ret_str, NULL);
+
+	fread(ret_str, sizeof(*ret_str), file_size, fp);
+
+	ret = fclose(fp);
+	VUNIT_ASSERT_NEQ(ctx, ret, EOF);
+
+	return ret_str;
+}
+
 int vunit_run_vinumcv(struct vunit_test_ctx *ctx, char* input, char **output, char **error,
 		      va_list ap) {
 	char **argv = NULL;
