@@ -179,7 +179,7 @@ int vunit_run_vinumc(struct vunit_test_ctx *ctx, char* input, char **output, cha
 	VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "pipe");
 
 	pid_t pid = fork();
-	VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "pipe");
+	VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "fork");
 
 	if (pid != 0) {
 		int tx = father_to_child_pipe[1];
