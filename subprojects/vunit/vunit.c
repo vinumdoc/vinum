@@ -8,7 +8,7 @@
 
 #include <vunit.h>
 
-static char* alloc_printf(const char* fmt, ...) {
+static char *alloc_printf(const char *fmt, ...) {
 	va_list ap;
 
 	char *ret = NULL;
@@ -27,7 +27,6 @@ static char* alloc_printf(const char* fmt, ...) {
 	vsnprintf(ret, len, fmt, ap);
 	va_end(ap);
 
-
 	return ret;
 }
 
@@ -37,10 +36,9 @@ void __vunit_assert(struct vunit_test_ctx *ctx, const bool predicate, const char
 		return;
 
 	ctx->lonjmp_msg = alloc_printf(TAP_TAB "---\n"
-				       "%s"
-				       TAP_TAB "condition: %s\n"
-				       TAP_TAB "location: %s:%d\n"
-				       TAP_TAB "...", yaml, predicate_str, file_path, linenum);
+					       "%s" TAP_TAB "condition: %s\n" TAP_TAB
+					       "location: %s:%d\n" TAP_TAB "...",
+				       yaml, predicate_str, file_path, linenum);
 
 	longjmp(ctx->env, -1);
 }
@@ -62,32 +60,33 @@ void __vunit_assert_strcmp(struct vunit_test_ctx *ctx, const char *lhs, const ch
 		return;
 
 	switch (desire) {
-		case EQ:
-			new_yaml = alloc_printf(TAP_TAB "reason: \"Strings are not equal!\"\n"
-						TAP_TAB "lhs: '%s'\n"
-						TAP_TAB "rhs: '%s'\n"
-						"%s", lhs, rhs, yaml);
-			break;
-		case NEQ:
-			new_yaml = alloc_printf(TAP_TAB "reason: \"Strings are equal!\"\n"
-						TAP_TAB "string: '%s'\n"
-						"%s", lhs, yaml);
-			break;
-		case LT:
-			new_yaml = alloc_printf(TAP_TAB "reason: \"Lhs string is not smaller than rhs\"\n"
-						TAP_TAB "lhs: '%s'\n"
-						TAP_TAB "rhs: '%s'\n"
-						"%s", lhs, rhs, yaml);
-			break;
-		case GT:
-			new_yaml = alloc_printf(TAP_TAB "reason: \"Lhs string is not bigger than rhs\"\n"
-						TAP_TAB "lhs: '%s'\n"
-						TAP_TAB "rhs: '%s'\n"
-						"%s", lhs, rhs, yaml);
-			break;
+	case EQ:
+		new_yaml = alloc_printf(TAP_TAB "reason: \"Strings are not equal!\"\n" TAP_TAB
+						"lhs: '%s'\n" TAP_TAB "rhs: '%s'\n"
+						"%s",
+					lhs, rhs, yaml);
+		break;
+	case NEQ:
+		new_yaml = alloc_printf(TAP_TAB "reason: \"Strings are equal!\"\n" TAP_TAB
+						"string: '%s'\n"
+						"%s",
+					lhs, yaml);
+		break;
+	case LT:
+		new_yaml = alloc_printf(TAP_TAB
+					"reason: \"Lhs string is not smaller than rhs\"\n" TAP_TAB
+					"lhs: '%s'\n" TAP_TAB "rhs: '%s'\n"
+					"%s",
+					lhs, rhs, yaml);
+		break;
+	case GT:
+		new_yaml = alloc_printf(TAP_TAB
+					"reason: \"Lhs string is not bigger than rhs\"\n" TAP_TAB
+					"lhs: '%s'\n" TAP_TAB "rhs: '%s'\n"
+					"%s",
+					lhs, rhs, yaml);
+		break;
 	}
-
-
 
 	__vunit_assert(ctx, 0, "NOT APPLIED", new_yaml, file_path, linenum);
 }
@@ -126,8 +125,7 @@ int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
 		bool test_failed = false;
 		if (!ret) {
 			test->test_func(&ctx);
-		}
-		else {
+		} else {
 			test_failed = true;
 		}
 
@@ -143,14 +141,14 @@ int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
 	return 0;
 }
 
-static char* read_all_from_pipe(struct vunit_test_ctx *ctx, int fd) {
+static char *read_all_from_pipe(struct vunit_test_ctx *ctx, int fd) {
 	static char tmp_buf[1024];
 
 	ssize_t read_len = 0;
 	size_t total_len = 0;
 	char *ret = malloc(sizeof(*ret));
 
-	while((read_len = read(fd, tmp_buf, sizeof(tmp_buf))) > 0) {
+	while ((read_len = read(fd, tmp_buf, sizeof(tmp_buf))) > 0) {
 		ret = realloc(ret, (total_len + read_len) * sizeof(*ret));
 		memcpy(ret + total_len, tmp_buf, sizeof(*ret) * read_len);
 		total_len += read_len;
@@ -158,17 +156,16 @@ static char* read_all_from_pipe(struct vunit_test_ctx *ctx, int fd) {
 	VUNIT_ASSERT_EQ(ctx, read_len, 0);
 
 	ret[total_len] = 0;
-	
+
 	return ret;
 }
 
-int vunit_run_vinumc(struct vunit_test_ctx *ctx, char* input, char **output, char **error,
+int vunit_run_vinumc(struct vunit_test_ctx *ctx, char *input, char **output, char **error,
 		     char *const argv[], const int argc) {
 	// These variable names refer to the direction of the messsages
 	int father_to_child_pipe[2];
 	int child_to_father_pipe_stdout[2];
 	int child_to_father_pipe_stderr[2];
-
 
 	int ret;
 	if (input != NULL) {
@@ -250,7 +247,7 @@ int vunit_run_vinumc(struct vunit_test_ctx *ctx, char* input, char **output, cha
 			VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "dup2");
 		}
 
-		char**args_to_send = malloc((argc + 2) * sizeof(*args_to_send));
+		char **args_to_send = malloc((argc + 2) * sizeof(*args_to_send));
 		VUNIT_ASSERT_NEQ(ctx, args_to_send, NULL);
 
 		// TODO: Get the absolute path
@@ -260,17 +257,14 @@ int vunit_run_vinumc(struct vunit_test_ctx *ctx, char* input, char **output, cha
 		memcpy(args_to_send + 1, argv, argc * sizeof(*argv));
 		args_to_send[argc + 1] = NULL;
 
-		ret = execvp(
-			prg_name,
-			args_to_send
-		);
+		ret = execvp(prg_name, args_to_send);
 
 		VUNIT_ASSERT(ctx, 0 && "unreachable");
 		return -1;
 	}
 }
 
-void vunit_str_to_file(struct vunit_test_ctx *ctx, const char* file_path, const char *str) {
+void vunit_str_to_file(struct vunit_test_ctx *ctx, const char *file_path, const char *str) {
 	FILE *fp = fopen(file_path, "w+");
 	VUNIT_ASSERT_NEQ(ctx, fp, NULL);
 
@@ -284,7 +278,7 @@ void vunit_str_to_file(struct vunit_test_ctx *ctx, const char* file_path, const 
 	VUNIT_ASSERT_NEQ(ctx, ret, EOF);
 }
 
-char* vunit_file_to_str(struct vunit_test_ctx *ctx, const char* file_path) {
+char *vunit_file_to_str(struct vunit_test_ctx *ctx, const char *file_path) {
 	FILE *fp = fopen(file_path, "r");
 	VUNIT_ASSERT_NEQ(ctx, fp, NULL);
 
@@ -308,12 +302,12 @@ char* vunit_file_to_str(struct vunit_test_ctx *ctx, const char* file_path) {
 	return ret_str;
 }
 
-int vunit_run_vinumcv(struct vunit_test_ctx *ctx, char* input, char **output, char **error,
+int vunit_run_vinumcv(struct vunit_test_ctx *ctx, char *input, char **output, char **error,
 		      va_list ap) {
 	char **argv = NULL;
 	size_t argc = 0;
 	char *curr_arg;
-	while ((curr_arg = va_arg(ap, char*)) != NULL) {
+	while ((curr_arg = va_arg(ap, char *)) != NULL) {
 		argc++;
 		argv = realloc(argv, argc * sizeof(*argv));
 		argv[argc - 1] = curr_arg;
@@ -322,7 +316,7 @@ int vunit_run_vinumcv(struct vunit_test_ctx *ctx, char* input, char **output, ch
 	return vunit_run_vinumc(ctx, input, output, error, argv, argc);
 }
 
-void vunit_run_vinumc_ok(struct vunit_test_ctx *ctx, char* input, char **output, ...) {
+void vunit_run_vinumc_ok(struct vunit_test_ctx *ctx, char *input, char **output, ...) {
 	char *err = NULL;
 
 	va_list ap;
@@ -330,6 +324,6 @@ void vunit_run_vinumc_ok(struct vunit_test_ctx *ctx, char* input, char **output,
 	int ret = vunit_run_vinumcv(ctx, input, output, &err, ap);
 	va_end(ap);
 
-	VUNIT_ASSERT_EQ(ctx, ret, 0);	
+	VUNIT_ASSERT_EQ(ctx, ret, 0);
 	VUNIT_ASSERT_EQ(ctx, strlen(err), 0);
 }

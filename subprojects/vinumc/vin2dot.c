@@ -1,7 +1,7 @@
+#include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 
 #include "vinumc.h"
 
@@ -17,7 +17,7 @@ struct ctx ctx_new() {
 }
 
 void yyerror(char *s, ...) {
-	va_list	ap;
+	va_list ap;
 	va_start(ap, s);
 
 	fprintf(stderr, "[ERROR]:");
@@ -34,7 +34,7 @@ enum command {
 	CMD_SCOPES,
 };
 
-static const char* pop_argv(int *argc, char **argv[]) {
+static const char *pop_argv(int *argc, char **argv[]) {
 	if (argc == 0)
 		return NULL;
 
@@ -51,7 +51,8 @@ static void show_usage(const char *prgname) {
 	fprintf(stderr, "Commands:\n");
 	fprintf(stderr, "  ast\tShow the AST in the dot format\n");
 	fprintf(stderr, "  ast-after\tShow the AST after evaluation in the dot format\n");
-	fprintf(stderr, "  ast-scopes\tShow the AST linked with the scope tree in the dot format\n");
+	fprintf(stderr,
+		"  ast-scopes\tShow the AST linked with the scope tree in the dot format\n");
 	fprintf(stderr, "  scopes\tShow the scope tree in the dot format\n");
 }
 
@@ -96,9 +97,8 @@ static void dot_ast_and_scopes(struct ast_nodes_t *ast, struct eval_ctx_scopes_t
 
 		for (size_t j = 0; j < sc->namespace.len; j++) {
 			struct namespace_entry *entry = &VEC_AT(&sc->namespace, j);
-			fprintf(stream, "s_%zu:<%d> -> an_%d [style=dotted]", i,
-					entry->ast_node_id,
-					entry->ast_node_id);
+			fprintf(stream, "s_%zu:<%d> -> an_%d [style=dotted]", i, entry->ast_node_id,
+				entry->ast_node_id);
 		}
 
 		for (size_t j = 0; j < sc->childs.len; j++) {
@@ -127,8 +127,8 @@ int main(int argc, char *argv[]) {
 		cmd = CMD_AST;
 	} else if (!strcmp(cmd_str, "ast-after")) {
 		cmd = CMD_AST_AFTER;
- 	} else if (!strcmp(cmd_str, "ast-scopes")) {
- 		cmd = CMD_AST_AND_SCOPES;
+	} else if (!strcmp(cmd_str, "ast-scopes")) {
+		cmd = CMD_AST_AND_SCOPES;
 	} else if (!strcmp(cmd_str, "scopes")) {
 		cmd = CMD_SCOPES;
 	} else {
@@ -141,22 +141,22 @@ int main(int argc, char *argv[]) {
 	yyparse();
 
 	switch (cmd) {
-		case CMD_AST:
-			ast_dot(&ctx.ast, stdout);
-			return EXIT_SUCCESS;
-		case CMD_AST_AFTER:
-			eval(&ctx.eval_ctx, &ctx.ast, stderr);
-			ast_dot(&ctx.ast, stdout);
-			return EXIT_SUCCESS;
-		case CMD_AST_AND_SCOPES:
-			eval(&ctx.eval_ctx, &ctx.ast, stderr);
-			dot_ast_and_scopes(&ctx.ast.nodes, &ctx.eval_ctx.scopes, stdout);
-			return EXIT_SUCCESS;
-		case CMD_SCOPES:
-			eval(&ctx.eval_ctx, &ctx.ast, stderr);
-			eval_dot(&ctx.eval_ctx, stdout);
-			return EXIT_SUCCESS;
-		default:
-			assert(0 && "unreachable"); // This should never happen
+	case CMD_AST:
+		ast_dot(&ctx.ast, stdout);
+		return EXIT_SUCCESS;
+	case CMD_AST_AFTER:
+		eval(&ctx.eval_ctx, &ctx.ast, stderr);
+		ast_dot(&ctx.ast, stdout);
+		return EXIT_SUCCESS;
+	case CMD_AST_AND_SCOPES:
+		eval(&ctx.eval_ctx, &ctx.ast, stderr);
+		dot_ast_and_scopes(&ctx.ast.nodes, &ctx.eval_ctx.scopes, stdout);
+		return EXIT_SUCCESS;
+	case CMD_SCOPES:
+		eval(&ctx.eval_ctx, &ctx.ast, stderr);
+		eval_dot(&ctx.eval_ctx, stdout);
+		return EXIT_SUCCESS;
+	default:
+		assert(0 && "unreachable"); // This should never happen
 	}
 }
