@@ -31,3 +31,24 @@ jobs:
 
       - name: Run tests
         run: meson test -C buildir --print-errorlogs
+
+  check-formating:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            bison \
+            meson \
+            ninja-build \
+            clang-format
+
+      - name: Configure build dir
+        run: meson setup buildir
+
+      - name: Check formatting
+        run: meson compile -C buildir --ninja-args=clang-format-check
