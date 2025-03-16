@@ -1,7 +1,9 @@
 fs = import('fs')
 
 tests = [
-  'simple_test.c'
+  'help_flag_test.c',
+  'output_flag_test.c',
+  'simple_test.c',
 ]
 
 vunit_dep = dependency('vunit', fallback : ['vunit', 'vunit_dep'])

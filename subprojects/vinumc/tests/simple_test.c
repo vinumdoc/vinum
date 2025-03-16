@@ -53,10 +53,30 @@ void test_function_call_args(struct vunit_test_ctx *ctx) {
 	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!\n");
 }
 
+void test_file_input(struct vunit_test_ctx *ctx) {
+	vunit_str_to_file(ctx, "input.vin",
+		"[a: Hello World!]\n"
+		"[b: $*]\n"
+		"[b [a]]\n"
+	);
+
+	char *out = NULL;
+
+	vunit_run_vinumc_ok(ctx,
+		NULL,
+		&out,
+		"input.vin",
+		NULL
+	);
+
+	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!\n");
+}
+
 VUNIT_TEST_SUITE("suite",
 	{"Basic test", test_basic},
 	{"Symbol defined later", test_define_later},
 	{"Function with text args", test_function_text_args},
 	{"Function with function calls args", test_function_call_args},
+	{"File as input", test_file_input},
 	{},
 )

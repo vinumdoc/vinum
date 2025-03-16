@@ -169,64 +169,86 @@ int vunit_run_vinumc(struct vunit_test_ctx *ctx, char* input, char **output, cha
 	int child_to_father_pipe_stdout[2];
 	int child_to_father_pipe_stderr[2];
 
-	int ret = pipe(father_to_child_pipe);
-	VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "pipe");
 
-	ret = pipe(child_to_father_pipe_stdout);
-	VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "pipe");
+	int ret;
+	if (input != NULL) {
+		int ret = pipe(father_to_child_pipe);
+		VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "pipe");
+	}
+
+	if (output != NULL) {
+		ret = pipe(child_to_father_pipe_stdout);
+		VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "pipe");
+	}
 
 	ret = pipe(child_to_father_pipe_stderr);
 	VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "pipe");
 
 	pid_t pid = fork();
-	VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "pipe");
+	VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "fork");
 
 	if (pid != 0) {
-		int tx = father_to_child_pipe[1];
-		int rx_stdout = child_to_father_pipe_stdout[0];
-		int rx_stderr = child_to_father_pipe_stderr[0];
+		if (input != NULL) {
+			int tx = father_to_child_pipe[1];
+			close(father_to_child_pipe[0]);
+			size_t len = strlen(input);
+			ssize_t wrote_len = write(tx, input, len);
+			VUNIT_ASSERT(ctx, wrote_len >= 0);
+			VUNIT_ASSERT(ctx, (size_t)wrote_len == len);
+			close(tx);
+		}
 
-		close(father_to_child_pipe[0]);
-		close(child_to_father_pipe_stdout[1]);
-		close(child_to_father_pipe_stderr[1]);
+		int rx_stdout = -1;
+		if (output != NULL) {
+			rx_stdout = child_to_father_pipe_stdout[0];
+			close(child_to_father_pipe_stdout[1]);
+		}
 
-		size_t len = strlen(input);
-		ssize_t wrote_len = write(tx, input, len);
-		VUNIT_ASSERT(ctx, wrote_len >= 0);
-		VUNIT_ASSERT(ctx, (size_t)wrote_len == len);
+		int rx_stderr = -1;
+		if (error != NULL) {
+			rx_stderr = child_to_father_pipe_stderr[0];
+			close(child_to_father_pipe_stderr[1]);
+		}
 
-		close(tx);
 		int stat;
 		ret = wait(&stat);
 		VUNIT_ASSERT(ctx, ret == pid && "wait");
 
-		*output = read_all_from_pipe(ctx, rx_stdout);
-		*error = read_all_from_pipe(ctx, rx_stderr);
+		if (output != NULL) {
+			*output = read_all_from_pipe(ctx, rx_stdout);
+			close(rx_stdout);
+		}
 
-		close(rx_stdout);
-		close(rx_stderr);
+		if (error != NULL) {
+			*error = read_all_from_pipe(ctx, rx_stderr);
+			close(rx_stderr);
+		}
 
 		VUNIT_ASSERT_NEQ(ctx, WIFEXITED(stat), 0);
 
 		return WEXITSTATUS(stat);
 	} else {
-		int rx = father_to_child_pipe[0];
-		int tx_stdout = child_to_father_pipe_stdout[1];
-		int tx_stderr = child_to_father_pipe_stderr[1];
+		if (input != NULL) {
+			int rx = father_to_child_pipe[0];
+			close(father_to_child_pipe[1]);
+			// Redirect stdin, stdout and stderr to the created pipes
+			ret = dup2(rx, STDIN_FILENO);
+			VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "dup2");
+		}
 
-		close(child_to_father_pipe_stdout[0]);
-		close(child_to_father_pipe_stderr[0]);
-		close(father_to_child_pipe[1]);
+		if (output != NULL) {
+			int tx_stdout = child_to_father_pipe_stdout[1];
+			close(child_to_father_pipe_stdout[0]);
+			ret = dup2(tx_stdout, STDOUT_FILENO);
+			VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "dup2");
+		}
 
-		// Redirect stdin, stdout and stderr to the created pipes
-		ret = dup2(rx, STDIN_FILENO);
-		VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "dup2");
-
-		ret = dup2(tx_stdout, STDOUT_FILENO);
-		VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "dup2");
-
-		ret = dup2(tx_stderr, STDERR_FILENO);
-		VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "dup2");
+		if (error != NULL) {
+			int tx_stderr = child_to_father_pipe_stderr[1];
+			close(child_to_father_pipe_stderr[0]);
+			ret = dup2(tx_stderr, STDERR_FILENO);
+			VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "dup2");
+		}
 
 		char**args_to_send = malloc((argc + 2) * sizeof(*args_to_send));
 		VUNIT_ASSERT_NEQ(ctx, args_to_send, NULL);
@@ -246,6 +268,44 @@ int vunit_run_vinumc(struct vunit_test_ctx *ctx, char* input, char **output, cha
 		VUNIT_ASSERT(ctx, 0 && "unreachable");
 		return -1;
 	}
+}
+
+void vunit_str_to_file(struct vunit_test_ctx *ctx, const char* file_path, const char *str) {
+	FILE *fp = fopen(file_path, "w+");
+	VUNIT_ASSERT_NEQ(ctx, fp, NULL);
+
+	unsigned long len = strlen(str);
+
+	int ret;
+
+	fwrite(str, sizeof(*str), len, fp);
+
+	ret = fclose(fp);
+	VUNIT_ASSERT_NEQ(ctx, ret, EOF);
+}
+
+char* vunit_file_to_str(struct vunit_test_ctx *ctx, const char* file_path) {
+	FILE *fp = fopen(file_path, "r");
+	VUNIT_ASSERT_NEQ(ctx, fp, NULL);
+
+	int ret;
+
+	ret = fseek(fp, 0, SEEK_END);
+	VUNIT_ASSERT_NEQ(ctx, ret, -1);
+
+	long file_size = ftell(fp);
+	VUNIT_ASSERT_NEQ(ctx, file_size, -1);
+	rewind(fp);
+
+	char *ret_str = calloc(file_size, sizeof(*ret_str));
+	VUNIT_ASSERT_NEQ(ctx, ret_str, NULL);
+
+	fread(ret_str, sizeof(*ret_str), file_size, fp);
+
+	ret = fclose(fp);
+	VUNIT_ASSERT_NEQ(ctx, ret, EOF);
+
+	return ret_str;
 }
 
 int vunit_run_vinumcv(struct vunit_test_ctx *ctx, char* input, char **output, char **error,
