@@ -38,6 +38,7 @@ extern FILE *yyin;
 enum flag_kind {
 	FLAG_BOOLEAN,
 	FLAG_ARGUMENT,
+	FLAG_MULTI_ARGUMENTS,
 };
 
 struct flag {
@@ -49,6 +50,7 @@ struct flag {
 	union {
 		bool *boolean;
 		char **str;
+		struct str_vec *str_vec;
 	} ref_as;
 };
 
@@ -81,6 +83,7 @@ static void parse_cmdline(const int argc, char **argv, struct ctx *ctx, struct f
 		struct option opt = { .name = f->name, .val = f->short_name };
 
 		switch (f->kind) {
+		case FLAG_MULTI_ARGUMENTS:
 		case FLAG_ARGUMENT:
 			opt.has_arg = required_argument;
 			optstring[optstring_i++] = ':';
@@ -107,6 +110,10 @@ static void parse_cmdline(const int argc, char **argv, struct ctx *ctx, struct f
 		case FLAG_BOOLEAN:
 			*f->ref_as.boolean = true;
 			break;
+		case FLAG_MULTI_ARGUMENTS: {
+			char *tmp = strdup(optarg);
+			VEC_PUT(f->ref_as.str_vec, tmp);
+		} break;
 		}
 	}
 
@@ -125,8 +132,16 @@ static void parse_cmdline(const int argc, char **argv, struct ctx *ctx, struct f
 static void free_flags(struct flag *flags, size_t flags_len) {
 	for (size_t i = 0; i < flags_len; i++) {
 		struct flag *f = &flags[i];
-		if (f->kind == FLAG_ARGUMENT)
+		switch (f->kind) {
+		case FLAG_ARGUMENT:
 			free(*f->ref_as.str);
+			break;
+		case FLAG_MULTI_ARGUMENTS:
+			// TODO create free for VEC
+			break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -135,7 +150,7 @@ static struct flag *print_help(const char *prg_name, struct flag *flags, size_t 
 	for (size_t i = 0; i < flags_len; i++) {
 		struct flag *f = &flags[i];
 		printf("[-%c | --%s", f->short_name, f->name);
-		if (f->kind == FLAG_ARGUMENT) {
+		if (f->kind == FLAG_ARGUMENT || f->kind == FLAG_MULTI_ARGUMENTS) {
 			assert(f->placeholder_name != NULL);
 			printf(" <%s>", f->placeholder_name);
 		}
@@ -146,7 +161,11 @@ static struct flag *print_help(const char *prg_name, struct flag *flags, size_t 
 	for (size_t i = 0; i < flags_len; i++) {
 		struct flag *f = &flags[i];
 		assert(f->help_desc != NULL);
-		printf("\n  -%c, --%s\n\t%s\n", f->short_name, f->name, f->help_desc);
+		printf("\n  -%c, --%s", f->short_name, f->name);
+		if (f->kind == FLAG_MULTI_ARGUMENTS) {
+			printf(" (can be specified multiple times)");
+		}
+		printf("\n\t%s\n", f->help_desc);
 	}
 	return NULL;
 }
