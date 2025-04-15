@@ -2,6 +2,7 @@ fs = import('fs')
 
 tests = [
   'help_flag_test.c',
+  'library_test.c',
   'output_flag_test.c',
   'simple_test.c',
 ]
@@ -29,3 +30,14 @@ foreach t : tests
     depends: vinumc,
   )
 endforeach
+
+testlib_srcs = [
+  'testlib.c',
+]
+
+testlib = shared_library(
+  'testlib',
+  testlib_srcs,
+  dependencies : vinumc_dep,
+  install : true,
+)
