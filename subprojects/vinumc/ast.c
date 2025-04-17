@@ -32,7 +32,7 @@ ast_node_id_t ast_add_node(struct ast *ast, const struct ast_node node) {
 ast_node_id_t ast_copy_node(struct ast *ast, ast_node_id_t node_id) {
 	struct ast_node no_childs_copy = VEC_AT(&ast->nodes, node_id);
 
-	no_childs_copy.childs = (struct ast_node_childs_t){0};
+	no_childs_copy.childs = (struct ast_node_childs_t){ 0 };
 
 	size_t node_copy_id = ast_add_node(ast, no_childs_copy);
 	struct ast_node *node_copy = &VEC_AT(&ast->nodes, node_copy_id);
@@ -40,7 +40,7 @@ ast_node_id_t ast_copy_node(struct ast *ast, ast_node_id_t node_id) {
 	struct ast_node_childs_t childs = VEC_AT(&ast->nodes, node_id).childs;
 	VEC_RESERVE(&node_copy->childs, childs.len);
 
-	for(size_t i = 0; i < childs.len; i++) {
+	for (size_t i = 0; i < childs.len; i++) {
 		size_t child_copy_id = ast_copy_node(ast, VEC_AT(&childs, i));
 		struct ast_node *node_copy = &VEC_AT(&ast->nodes, node_copy_id);
 		ast_node_add_child(node_copy, child_copy_id);
@@ -49,24 +49,33 @@ ast_node_id_t ast_copy_node(struct ast *ast, ast_node_id_t node_id) {
 	return node_copy_id;
 }
 
-const char* token_to_str(enum yytokentype token) {
+const char *token_to_str(enum yytokentype token) {
 	switch (token) {
-		case ASSIGNMENT: return "ASSIGNMENT";
-		case CALL: return "CALL";
-		case ARGS: return "ARGS";
-		case ARG_REF_ALL_ARGS: return "ARG_REF_ALL_ARGS";
-		case PROGRAM: return "PROGRAM";
-		case SYMBOL: return "SYMBOL";
-		case TEXT: return "TEXT";
-		case WORD: return "WORD";
-		default: return NULL;
+	case ASSIGNMENT:
+		return "ASSIGNMENT";
+	case CALL:
+		return "CALL";
+	case ARGS:
+		return "ARGS";
+	case ARG_REF_ALL_ARGS:
+		return "ARG_REF_ALL_ARGS";
+	case PROGRAM:
+		return "PROGRAM";
+	case SYMBOL:
+		return "SYMBOL";
+	case TEXT:
+		return "TEXT";
+	case WORD:
+		return "WORD";
+	default:
+		return NULL;
 	}
 }
 
 static void ast_print_rec(const struct ast *ast, const int id, const int level) {
 	const struct ast_node *node = &VEC_AT(&ast->nodes, id);
 
-	for(int i = 0; i < level; i++) {
+	for (int i = 0; i < level; i++) {
 		printf("    ");
 	}
 
@@ -81,7 +90,7 @@ static void ast_print_rec(const struct ast *ast, const int id, const int level) 
 	}
 	printf("\n");
 
-	for(size_t i = 0; i < node->childs.len; i++) {
+	for (size_t i = 0; i < node->childs.len; i++) {
 		ast_print_rec(ast, VEC_AT(&node->childs, i), level + 1);
 	}
 }

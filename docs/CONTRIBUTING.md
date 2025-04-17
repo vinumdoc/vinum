@@ -28,7 +28,7 @@ Contributing to Vinum
     * fork the project
     * create a local branch for the issue (see branch naming below).
     * edit the relevant files in the branch
-    * run lint check if available (see 'Developer tools' below)
+    * run `meson compile --ninja-args=clang-format` to format your code changes
     * push your branch into your repository
     * got to github and make it into a pull/merge request
 
@@ -66,6 +66,10 @@ Contributing to Vinum
 
  * Comments are text. Use caption and punctuation accordingly.
 
+ This project uses clang-format for ensuring all code is equally formatted.
+
+ You can run `meson compile --ninja-args=clang-format`  on your build directory
+ to format your changes.
 
  Attribution and licensing
  ------------------------------
