@@ -149,7 +149,7 @@ static char *read_all_from_pipe(struct vunit_test_ctx *ctx, int fd) {
 	char *ret = malloc(sizeof(*ret));
 
 	while ((read_len = read(fd, tmp_buf, sizeof(tmp_buf))) > 0) {
-		ret = realloc(ret, (total_len + read_len) * sizeof(*ret));
+		ret = realloc(ret, (total_len + read_len + 1) * sizeof(*ret));
 		memcpy(ret + total_len, tmp_buf, sizeof(*ret) * read_len);
 		total_len += read_len;
 	}
