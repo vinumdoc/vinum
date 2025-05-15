@@ -26,6 +26,7 @@ common_srcs = [
   parse.process('dry_bison.y'),
   lex.process('dry_flex.l'),
   'eval.c',
+  'str.c',
 ]
 
 vinumc_srcs = common_srcs + [
