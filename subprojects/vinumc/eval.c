@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "eval.h"
+#include "str.h"
 #include "utils.h"
 
 struct eval_ctx eval_ctx_new() {
@@ -184,7 +185,7 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls) {
 }
 
 #define DO_CALLS_FUNC_SIGNATURE(func_name)                                                         \
-	static void func_name(struct eval_ctx *ctx, const struct ast *ast, FILE *out,              \
+	static void func_name(struct eval_ctx *ctx, const struct ast *ast, struct str *out,        \
 			      size_t ast_node_id)
 
 DO_CALLS_FUNC_SIGNATURE(do_calls);
@@ -221,11 +222,11 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_text) {
 			return;
 		}
 
-		fprintf(out, "%s", child->text);
+		PUT_STR(out, child->text);
 		if (i != ast_node->childs.len - 1)
-			fprintf(out, " ");
+			PUT_STR(out, " ");
 	}
-	fprintf(out, "\n");
+	PUT_STR(out, "\n");
 }
 
 DO_CALLS_FUNC_SIGNATURE(do_calls) {
@@ -256,7 +257,9 @@ void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out) {
 
 	resolve_symbols(ctx, ast, 0, 0);
 	resolve_calls(ctx, ast, 0, 0);
-	do_calls(ctx, ast, out, 0);
+	struct str str_out = {};
+	do_calls(ctx, ast, &str_out, 0);
+	fprintf(out, "%s", str_out.base);
 }
 
 void eval_dot(const struct eval_ctx *ctx, FILE *stream) {
