@@ -33,4 +33,28 @@
 		(arr)->base = realloc((arr)->base, (arr)->capacity * sizeof(*(arr)->base));        \
 	} while (0)
 
+#define VEC_FREE(vec)                                                                              \
+	do {                                                                                       \
+		free((vec)->base);                                                                 \
+		(vec)->base = NULL;                                                                \
+		(vec)->len = 0;                                                                    \
+		(vec)->capacity = 0;                                                               \
+	} while (0)
+
+#define VEC_POP(arr)                                                                               \
+	do {                                                                                       \
+		(arr)->len--;                                                                      \
+	} while (0)
+
+#define VEC_PUT_MANY(to, from, from_size)                                                          \
+	do {                                                                                       \
+		if ((to)->len + from_size > (to)->capacity) {                                      \
+			VEC_RESERVE((to), (to)->len + from_size + 1);                              \
+		}                                                                                  \
+		for (size_t _i = 0; _i < from_size; ++_i) {                                        \
+			(to)->base[(to)->len + _i] = from[_i];                                     \
+		}                                                                                  \
+		(to)->len += from_size;                                                            \
+	} while (0)
+
 #endif // __VEC_H__
