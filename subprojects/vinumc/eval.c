@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "eval.h"
+#include "utils.h"
 
 struct eval_ctx eval_ctx_new() {
 	struct eval_ctx ret = {};
@@ -183,14 +184,15 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls) {
 }
 
 #define DO_CALLS_FUNC_SIGNATURE(func_name)                                                         \
-	static void func_name(const struct ast *ast, FILE *out, size_t ast_node_id)
+	static void func_name(struct eval_ctx *ctx, const struct ast *ast, FILE *out,              \
+			      size_t ast_node_id)
 
 DO_CALLS_FUNC_SIGNATURE(do_calls);
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_program) {
 	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
 	for (size_t i = 0; i < ast_node->childs.len; i++) {
-		do_calls(ast, out, VEC_AT(&ast_node->childs, i));
+		do_calls(ctx, ast, out, VEC_AT(&ast_node->childs, i));
 	}
 }
 
@@ -204,11 +206,12 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 	const struct ast_node *args_node = &VEC_AT(&ast->nodes, VEC_AT(&ast_node->childs, 1));
 
 	for (size_t i = 0; i < args_node->childs.len; i++) {
-		do_calls(ast, out, VEC_AT(&args_node->childs, i));
+		do_calls(ctx, ast, out, VEC_AT(&args_node->childs, i));
 	}
 }
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_text) {
+	UNUSED(ctx);
 	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
 
 	for (size_t i = 0; i < ast_node->childs.len; i++) {
@@ -231,13 +234,13 @@ DO_CALLS_FUNC_SIGNATURE(do_calls) {
 	switch (ast_node->type) {
 	case PROGRAM:
 	case ARGS:
-		do_calls_program(ast, out, ast_node_id);
+		do_calls_program(ctx, ast, out, ast_node_id);
 		break;
 	case CALL:
-		do_calls_call(ast, out, ast_node_id);
+		do_calls_call(ctx, ast, out, ast_node_id);
 		break;
 	case TEXT:
-		do_calls_text(ast, out, ast_node_id);
+		do_calls_text(ctx, ast, out, ast_node_id);
 		break;
 	default:
 		break;
@@ -253,7 +256,7 @@ void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out) {
 
 	resolve_symbols(ctx, ast, 0, 0);
 	resolve_calls(ctx, ast, 0, 0);
-	do_calls(ast, out, 0);
+	do_calls(ctx, ast, out, 0);
 }
 
 void eval_dot(const struct eval_ctx *ctx, FILE *stream) {
