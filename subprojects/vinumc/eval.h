@@ -21,6 +21,7 @@ struct namespace_entry {
 		int ast_node_id;
 		extern_function_pointer func;
 	} as;
+	mem_handle_t memory;
 };
 
 struct scope_namespace_t VEC_DEF(struct namespace_entry);

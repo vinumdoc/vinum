@@ -5,6 +5,6 @@ char *return_arg(char *arg) {
 }
 
 struct extern_function *expose_library() {
-	static struct extern_function lib[] = { { "return_arg", return_arg }, {} };
+	static struct extern_function lib[] = { { "return_arg", return_arg, non_freeable }, {} };
 	return lib;
 }

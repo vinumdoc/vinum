@@ -236,7 +236,9 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 		// put the extern function call return on the out str
 		char *call_return = symbol_info->as.func(tmp_out.base);
 		put_str(out, call_return);
-		if (call_return != tmp_out.base) {
+
+		if (symbol_info->memory == freeable) {
+			printf ("Freeing.\n");
 			free(call_return);
 		}
 		VEC_FREE(&tmp_out);
@@ -294,6 +296,7 @@ void resolve_extern_functions(struct eval_ctx *ctx, struct loaded_lib lib) {
 			.name = f.name,
 			.type = ENTRY_EXTERNAL,
 			.as.func = f.fp,
+			.memory = f.memory,
 		};
 
 		VEC_PUT(&curr_scope->namespace, entry);
