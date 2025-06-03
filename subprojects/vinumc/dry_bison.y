@@ -26,7 +26,7 @@ program:
 	struct ast_node node = ast_node_new_nvl(PROGRAM);
 	$$ = ast_add_node(&ctx.ast, node);
        }
-       | program block {
+       | program args {
 	struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
 	ast_node_add_child(node, $2);
@@ -118,7 +118,7 @@ symbol: WORD {
 	wchar_t *wtext = (wchar_t*)malloc(len * sizeof(wchar_t));
 	// TODO: handle the function return value
 	mbstowcs(wtext, text, len);
-	
+
 	for(size_t i = 0; i < len; i++) {
 		wtext[i] = towlower(wtext[i]);
 	}
