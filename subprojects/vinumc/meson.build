@@ -40,7 +40,11 @@ vinumc_dep = declare_dependency(
   include_directories : inc,
 )
 
-dl_dep = dependency('dl')
+if meson.version().version_compare('>=0.62.0')
+  dl_dep = dependency('dl')
+else
+  dl_dep = meson.get_compiler('c').find_library('dl', required: true)
+endif
 
 headers = [
   'include/extern_library.h',
