@@ -1,4 +1,4 @@
-project('vinumc', 'c')
+project('vinumc', 'c', version: '0.1.0')
 
 flex = find_program('flex')
 bison = find_program('bison')
@@ -26,16 +26,34 @@ common_srcs = [
   parse.process('dry_bison.y'),
   lex.process('dry_flex.l'),
   'eval.c',
+  'str.c',
+  'extern_library.c',
 ]
 
 vinumc_srcs = common_srcs + [
   'vinumc.c',
 ]
 
+inc = include_directories('include')
+
+vinumc_dep = declare_dependency(
+  include_directories : inc,
+)
+
+dl_dep = dependency('dl')
+
+headers = [
+  'include/extern_library.h',
+]
+
+install_headers(headers, subdir: 'vinumc')
+
 vinumc = executable(
   'vinumc',
   vinumc_srcs,
+  include_directories : inc,
   install : true,
+  dependencies: dl_dep
 )
 
 vin2dot_srcs = common_srcs + [
@@ -46,7 +64,9 @@ if get_option('build_vin2dot')
   executable(
     'vin2dot',
     vin2dot_srcs,
+    include_directories : inc,
     install : true,
+    dependencies: dl_dep
   )
 endif
 

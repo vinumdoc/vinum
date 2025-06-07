@@ -63,6 +63,8 @@ const char *token_to_str(enum yytokentype token) {
 		return "PROGRAM";
 	case SYMBOL:
 		return "SYMBOL";
+	case FUNCTION:
+		return "FUNCTION";
 	case TEXT:
 		return "TEXT";
 	case WORD:
