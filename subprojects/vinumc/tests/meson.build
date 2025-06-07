@@ -4,12 +4,13 @@ tests = [
   'help_flag_test.c',
   'output_flag_test.c',
   'simple_test.c',
+  'text_as_program_child_test.c',
 ]
 
 vunit_dep = dependency('vunit', fallback : ['vunit', 'vunit_dep'])
 
 foreach t : tests
-  basename = fs.stem(t) 
+  basename = fs.stem(t)
 
   test_exe = executable(
     basename,
