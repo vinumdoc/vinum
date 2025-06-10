@@ -54,7 +54,8 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    CONTENT = 258                  /* CONTENT  */
+    NAME = 258,                    /* NAME  */
+    CONTENT = 259                  /* CONTENT  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -63,11 +64,21 @@ extern int yydebug;
 #define YYEOF 0
 #define YYerror 256
 #define YYUNDEF 257
-#define CONTENT 258
+#define NAME 258
+#define CONTENT 259
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+union YYSTYPE
+{
+#line 21 "sweet_bison.y"
+
+    char* str;
+
+#line 79 "sweet_bison.h"
+
+};
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
