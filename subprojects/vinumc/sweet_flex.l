@@ -3,75 +3,55 @@
 %{
 #include <string.h>
 #include <stdio.h>
-
+#include <stdlib.h>
 #include "sweet_bison.h"
 #include "sweet_vinumc.h"
 
 #define YY_NO_INPUT
-#define YY_NO_UNPUT
 %}
 
-%x READING_NAME
-
-name [^ \t\r\n\(\)\.]
-content [^\(\)\.] 
-blank [ \t\r\n]
-
+/* Define custom lexer state */
+%s AFTER_DOT
 
 %%
 
-"(" { 
-  yylval.str = strdup(yytext); 
-  return '('; 
+"(" { return '('; }
+")" { return ')'; }
+
+"."[a-zA-Z_] {
+/* Dot followed by identifier: return dot and leave identifier for next token */
+  unput(yytext[1]);
+/* Switch to AFTER_DOT mode */
+  BEGIN(AFTER_DOT); 
+  return '.'; 
 }
 
-")" { 
-  yylval.str = strdup(yytext); 
-  return ')'; 
-}
-
-"." {
-  yylval.str = strdup(yytext); 
-  BEGIN(READING_NAME); 
-  return '.';
-}
-
-<READING_NAME>{name}+ {
-  yylval.str = strdup(yytext); 
-  printf("\n token NAME: %s", yytext);
+<AFTER_DOT>[a-zA-Z_][a-zA-Z0-9_]* {
+/* In AFTER_DOT state: match NAME */
+  yylval.str = strdup(yytext);
+  BEGIN(INITIAL); // back to default state
   return NAME;
 }
 
-<READING_NAME>"." {
-  yylval.str = strdup(yytext); 
-  return '.';
-}
-
-<READING_NAME>{blank} {
-  yylval.str = strdup(yytext); 
-  BEGIN(INITIAL); 
+<AFTER_DOT>. {
+/* In AFTER_DOT state: fallback to CONTENT and revert state */
+  // Not a valid NAME after dot, treat it as content
+  char* s = malloc(strlen(yytext) + 2);
+  snprintf(s, strlen(yytext) + 2, "%s", yytext);
+  yylval.str = s;
+  BEGIN(INITIAL);
   return CONTENT;
 }
 
-<READING_NAME>"(" {
-  yylval.str = strdup(yytext); 
-  BEGIN(INITIAL); 
-  return '(';
-}
-
-<READING_NAME>")" {
-  yylval.str = strdup(yytext); 
-  BEGIN(INITIAL); 
-  return ')';
-}
-
-{content}+ {
-  yylval.str = strdup(yytext); 
-  printf("\n token CONTENT: %s", yytext);
+[ \t\n]+ {
+/* Whitespace or newline: CONTENT */
+  yylval.str = strdup(yytext);
   return CONTENT;
 }
 
-<<EOF>> { 
-  printf("\nFim da entrada\n"); 
-  return 0; 
+. {
+/* Any other character: also CONTENT */
+  yylval.str = strdup(yytext);
+  return CONTENT;
 }
+%%

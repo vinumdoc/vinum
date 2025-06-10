@@ -5,122 +5,190 @@
 
 #include "sweet_vinumc.h"
 
+// Forward declaration
 int yylex();
 
-char *include_content(char *content, char *block){
-    int block_size = strlen(block);
-    int content_size = strlen(content);
-    int len = block_size + content_size + 2;
-    char *complete_block = malloc(sizeof(char) * (len));
-    int pos;
+// Utility function declarations
+char* concat(const char* a, const char* b);
+char* format_block(const char* name, const char* content);
+char* format_call(const char* outer, const char* inner);
+char* put_in_chain(const char* inner_block, const char* call_chain);
 
-    for(pos = block_size; pos >= 0; pos--)
-        if(block[pos-1] != ']') break;
-    
-    int i = 0;
-    for(int new_i = 0; new_i < len; new_i++){
-        if(new_i == pos){
-            complete_block[new_i] = ' ';
-            new_i++;
-
-            for(int j = 0; j <= content_size; j++)
-                complete_block[new_i+j] = content[j];
-            
-            new_i += content_size;
-        }
-        complete_block[new_i] = block[i];
-        i++;
-    }
-
-    return complete_block;
-}
-
+// Output file pointer
+extern FILE* output_file;
 %}
 
 %union {
-  char* str;
+    char* str;
 }
 
-%type<str> program block content name call
-%token<str> CONTENT NAME '(' ')' '.'
+%token<str> NAME CONTENT
+%type<str> program block call final_
 
 %%
 
+// Entry point of the parser; prints the fully transpiled result
+final_: 
+    program {
+        $$ = strdup($1); 
+        free($1);
+        if (output_file) {
+            fprintf(output_file, "%s", $$);
+        }
+    }
+;
+
+// Program: sequence of blocks or empty
 program:
-    // Programa vazio 
-    { $$ = strdup(""); }
+    /* empty */ { $$ = strdup(""); }
     | program block {
-        // Concatena as linhas do programa
-        size_t len = strlen($1) + strlen($2) + 1;
-        $$ = malloc(len + 1);
-        snprintf($$, len + 1, "%s%s", $1, $2);
-        free($1);
+        $$ = concat($1, $2);
+        free($1); 
         free($2);
-        printf("\nprogram: %s", $$);
-    };
+    }
+;
 
+// Block constructs
 block:
-    '(' block ')' call {
-        // Transforma blocos Sweet em Dry
-        $$ = include_content($2, $4);
+    // Parenthesized block
+    '(' program ')' {
+        size_t len = strlen($2) + 3;
+        $$ = malloc(len);
+        snprintf($$, len, "(%s)", $2);
         free($2);
-        free($4);
     }
+    // Parenthesized block with call chain
+    | '(' program ')' '.' NAME call {
+        char* first_block = format_block($5, $2);
+        char* chained_block = put_in_chain(first_block, $6);
+        $$ = format_block(chained_block, "");
+        free($5); 
+        free($2);
+        free($6);
+    }
+    // Parenthesized block with single call
+    | '(' program ')' call {
+        $$ = format_block($4, $2);
+        free($4); 
+        free($2);
+    }
+    // Call without arguments block
     | call {
-        $$ = $1;
-    }
-    | content {
-        $$ = $1;
-    }
-    | block block {
-        size_t len = strlen($1) + strlen($2) + 1; 
-        $$ = malloc(len);
-        snprintf($$, len, "%s%s", $1, $2);
+        $$ = format_block($1, "");
         free($1);
-        free($2);
-    };
-    // | content NEW_LINE NEW_LINE {
-    //     // É um parágrafo
-    //     size_t len = strlen($2) + 7; // "[par content]"
-    //     $$ = malloc(len);
-    //     snprintf($$, len, "[par %s]", $2);
-    //     free($2);
-    // }
+    }
+    // Raw content
+    | CONTENT { 
+        $$ = strdup($1); 
+        free($1); 
+    }
+;
 
+// Chained function calls
 call:
-    '.' name {
-        size_t len = strlen($2) + 3; // "[name]"
-        $$ = malloc(len);
-        snprintf($$, len, "[%s]", $2);
+    '.' NAME {
+        $$ = strdup($2); 
         free($2);
     }
-    | call '.' name {
-        size_t len = strlen($1) + strlen($3) + 4; // "[name call]"
-        $$ = malloc(len);
-        snprintf($$, len, "[%s %s]", $3, $1);
+    | call '.' NAME {
+        $$ = format_call($3, $1);
+        free($1); 
         free($3);
-        free($1);
-    };
-
-content: //content pode ter (, ) e . -> ainda nao vi isso 
-    name content{ 
-        size_t len = strlen($1) + strlen($2) + 1; 
-        $$ = malloc(len);
-        snprintf($$, len, "%s%s", $1, $2);
-        free($1);
-        free($2); 
     }
-    | CONTENT {
-        $$ = strdup($1);
-    }
-    | /* ε */ {
-        $$ = strdup("");
-    };
-
-
-name:
-    NAME { $$ = strdup($1); };
+;
 
 %%
 
+/**
+ * Concatenates two strings. If either string is empty, returns a copy of the other.
+ *
+ * @param a First string
+ * @param b Second string
+ * @return Concatenated result
+ */
+char* concat(const char* a, const char* b) {
+    if (strlen(a) == 0) return strdup(b);
+    if (strlen(b) == 0) return strdup(a);
 
+    size_t len = strlen(a) + strlen(b) + 2; // +1 for NULL and extra safety
+    char* result = malloc(len);
+    snprintf(result, len, "%s%s", a, b);
+    return result;
+}
+
+/**
+ * Formats a function block in the dry flavor: [name content] or [name] if content is empty.
+ *
+ * @param name Function name
+ * @param content Block content
+ * @return Formatted dry-style block
+ */
+char* format_block(const char* name, const char* content) {
+    size_t len = strlen(name) + strlen(content) + 4; // [], space and NULL
+    char* result = malloc(len);
+
+    if (strlen(content) > 0)
+        snprintf(result, len, "[%s %s]", name, content);
+    else
+        snprintf(result, len, "[%s]", name);
+
+    return result;
+}
+
+/**
+ * Formats a function call inside another: returns a string like `outer [inner]`.
+ *
+ * @param outer Outer function name
+ * @param inner Inner block
+ * @return Nested block string
+ */
+char* format_call(const char* outer, const char* inner) {
+    size_t len = strlen(outer) + strlen(inner) + 5; // '[', ' ', ']', NULL
+    char* result = malloc(len);
+    snprintf(result, len, "%s [%s]", outer, inner);
+    return result;
+}
+
+/**
+ * Inserts an inner block into the last nested position of a call chain.
+ *
+ * For example:
+ *   call_chain = "bar [baz [qux]]"
+ *   inner_block = "[foo content]"
+ *   result = "bar [baz [qux [foo content]]]"
+ *
+ * @param inner_block The block to be inserted (e.g., "[foo content]")
+ * @param call_chain  The chain of nested calls (e.g., "bar [baz [qux]]")
+ * @return A newly allocated string with inner_block inserted at the correct position.
+ */
+char* put_in_chain(const char* inner_block, const char* call_chain) {
+    if (!call_chain || strlen(call_chain) == 0) {
+        return strdup(inner_block);
+    }
+
+    size_t call_len = strlen(call_chain);
+    size_t inner_len = strlen(inner_block);
+
+    // Find the position where the final ']' sequence starts
+    ssize_t i = call_len - 1;
+    while (i >= 0 && call_chain[i] == ']') {
+        i--;
+    }
+    i++;
+
+    // Split the call_chain into prefix and suffix
+    char* prefix = strndup(call_chain, i);
+    char* suffix = strdup(&call_chain[i]);
+
+    size_t result_len = strlen(prefix) + inner_len + strlen(suffix) + 2; // +1 for space +1 for '\0'
+    char* result = malloc(result_len);
+
+    // Format the final string
+    snprintf(result, result_len, "%s %s%s", prefix, inner_block, suffix);
+
+    // Clean up temporary strings
+    free(prefix);
+    free(suffix);
+
+    return result;
+}
