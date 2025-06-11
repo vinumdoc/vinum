@@ -22,13 +22,18 @@ foreach t : tests
   test_env = environment()
   test_env.prepend('PATH', fs.parent(vinumc.full_path()))
 
+  test_kwargs = {}
+  if meson.version().version_compare('>=0.62.0')
+    test_kwargs += {'verbose': true}
+  endif
+
   test(
     basename,
     test_exe,
     env : test_env,
     protocol : 'tap',
-    verbose : true,
     depends: vinumc,
+    kwargs: test_kwargs,
   )
 endforeach
 
