@@ -6,6 +6,7 @@
 struct return_value {
 	char *ptr;
 	bool free;
+	unsigned int status;
 };
 
 typedef struct return_value (*extern_function_pointer)(char *argv);
