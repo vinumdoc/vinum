@@ -117,9 +117,9 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_descent) {
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 	struct scope *curr_scope = &VEC_AT(&ctx->scopes, curr_scope_id);
-	struct ast_node ast_node = VEC_AT(&ast->nodes, ast_node_id);
+	struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
 
-	char *call_name = VEC_AT(&ast->nodes, VEC_AT(&ast_node.childs, 0)).text;
+	char *call_name = VEC_AT(&ast->nodes, VEC_AT(&ast_node->childs, 0)).text;
 	if (call_name == NULL) {
 		fprintf(stderr, "ERROR: Symbol with no name\n");
 		return;
@@ -130,9 +130,9 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 
 	if (symbol_info != NULL) {
 		if (symbol_info->type == ENTRY_INTERNAL) {
-			if (ast_node.childs.len > 1) {
+			if (ast_node->childs.len > 1) {
 				if (symbol_info->as.ast_node_id < 0) {
-					ast_node.childs.len--;
+					ast_node->childs.len--;
 					return;
 				}
 
@@ -147,26 +147,31 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 
 					if (child->type == ARG_REF_ALL_ARGS) {
 						VEC_AT(&symbol_args_node->childs, i) =
-							VEC_AT(&ast_node.childs, 1);
+							VEC_AT(&ast_node->childs, 1);
 					}
 				}
-				VEC_AT(&VEC_AT(&ast->nodes, ast_node_id).childs, 1) =
-					symbol_args_node_id;
+				VEC_AT(&ast_node->childs, 1) = symbol_args_node_id;
 			} else {
 				if (symbol_info->as.ast_node_id >= 0) {
-					ast_node_add_child(&VEC_AT(&ast->nodes, ast_node_id),
-							   symbol_info->as.ast_node_id);
+					ast_node_add_child(ast_node, symbol_info->as.ast_node_id);
 				}
 			}
 
-			size_t new_node = VEC_AT(&VEC_AT(&ast->nodes, ast_node_id).childs, 1);
+			size_t new_node = VEC_AT(&ast_node->childs, 1);
 
 			resolve_symbols(ctx, ast, curr_scope_id, new_node);
 
 		} else if (symbol_info->type == ENTRY_EXTERNAL) {
 			struct ast_node *symbol_node =
-				&VEC_AT(&ast->nodes, VEC_AT(&ast_node.childs, 0));
+				&VEC_AT(&ast->nodes, VEC_AT(&ast_node->childs, 0));
 			symbol_node->type = FUNCTION;
+
+			if (ast_node->childs.len <= 1) {
+				// ensure that the call node has an ARGS node
+				// to prevent it from being skipped during evaluation
+				size_t args_node_id = ast_add_node(ast, ast_node_new_nvl(ARGS));
+				ast_node_add_child(ast_node, args_node_id);
+			}
 		}
 	} else {
 		fprintf(stderr, "ERROR: No symbol with name \"%s\" exist\n", call_name);
