@@ -29,6 +29,15 @@ void test_empty_nested_call(struct vunit_test_ctx *ctx) {
 	VUNIT_ASSERT_STREQ(ctx, out, "");
 }
 
+void test_call_no_args(struct vunit_test_ctx *ctx) {
+	char *out = NULL;
+
+	vunit_run_vinumc_ok(ctx, "[parenthesize]", &out, "--with",
+			    "subprojects/vinumc/tests/libtestlib.so", NULL);
+
+	VUNIT_ASSERT_STREQ(ctx, out, "()");
+}
+
 VUNIT_TEST_SUITE("suite", { "Test extern library call", test_call },
 		 { "Test extern library call inside call", test_nested_call },
 		 { "Test nested empty library calls", test_empty_nested_call }, {}, )
