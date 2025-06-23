@@ -40,4 +40,5 @@ void test_call_no_args(struct vunit_test_ctx *ctx) {
 
 VUNIT_TEST_SUITE("suite", { "Test extern library call", test_call },
 		 { "Test extern library call inside call", test_nested_call },
-		 { "Test nested empty library calls", test_empty_nested_call }, {}, )
+		 { "Test nested empty library calls", test_empty_nested_call },
+		 { "Test extern library call with no arguments", test_call_no_args }, {}, )
