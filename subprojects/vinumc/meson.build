@@ -52,6 +52,18 @@ headers = [
 
 install_headers(headers, subdir: 'vinumc')
 
+extern_library = library(
+  'extern_library',
+  'v_lib.c',
+  include_directories: inc,
+  install: true
+)
+
+extern_library_dep = declare_dependency(
+  link_with: extern_library,
+  include_directories: inc,
+)
+
 vinumc = executable(
   'vinumc',
   vinumc_srcs,
