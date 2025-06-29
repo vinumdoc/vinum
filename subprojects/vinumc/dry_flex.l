@@ -4,6 +4,7 @@
 %x DEFINE_CALL_NAME
 %x HAS_CALL_NAME
 %x CONTENT
+%x IN_LITERAL
 
 %{
 #include <string.h>
@@ -71,6 +72,27 @@ BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
 
 	return ARG_REF_ALL_ARGS;
 }
+
+<CONTENT>"{#" { yy_push_state(IN_LITERAL); }
+<IN_LITERAL>"#}" {
+	struct ast_node node = ast_node_new(LITERAL, strndup(yytext, yyleng - 2));
+	yylval = ast_add_node(&ctx.ast, node);
+
+	yy_pop_state();
+	return LITERAL;
+}
+<IN_LITERAL>(.|\n)/(.|\n) {
+	yymore();
+}
+<IN_LITERAL>(.|\n) {
+	// the next token is eof, so we yield the
+	// contents buffered so far
+	struct ast_node node = ast_node_new(LITERAL, strndup(yytext, yyleng));
+	yylval = ast_add_node(&ctx.ast, node);
+	yy_pop_state();
+	return LITERAL;
+}
+
 
 <CONTENT>\\(.|\n)/({BEFORE_TEXT_END}) {
 	VEC_PUT(&text_buffer, yytext[1]);

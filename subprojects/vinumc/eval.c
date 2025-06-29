@@ -298,6 +298,7 @@ DO_CALLS_FUNC_SIGNATURE(do_calls) {
 		do_calls_call(ctx, ast, out, ast_node_id, flags);
 		break;
 	case TEXT:
+	case LITERAL:
 		do_calls_text(ctx, ast, out, ast_node_id, flags);
 		break;
 	default:

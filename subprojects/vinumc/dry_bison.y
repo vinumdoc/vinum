@@ -19,6 +19,7 @@ int yylex();
 // TODO: FUNCTION is not used in bison but in eval
 %token FUNCTION
 %token TEXT
+%token LITERAL
 
 %%
 
@@ -62,51 +63,27 @@ block:
    ;
 
 args:
-	 TEXT {
+	args_child {
 		struct ast_node node = ast_node_new_nvl(ARGS);
-
-		ast_node_add_child(&node, $1);
-
-		size_t arg_node_id = ast_add_node(&ctx.ast, node);
-
-		$$ = arg_node_id;
-	 }
-	 | block {
-		struct ast_node node = ast_node_new_nvl(ARGS);
-
 		ast_node_add_child(&node, $1);
 
 		$$ = ast_add_node(&ctx.ast, node);
-	 }
-	 | ARG_REF_ALL_ARGS {
-		struct ast_node node = ast_node_new_nvl(ARGS);
-
-		ast_node_add_child(&node, $1);
-
-		$$ = ast_add_node(&ctx.ast, node);
-	 }
-	 | args TEXT {
+	}
+	| args args_child {
 		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
 		ast_node_add_child(node, $2);
 
 		$$ = $1;
-	 }
-	 | args block {
-		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
+	}
+	;
 
-		ast_node_add_child(node, $2);
-
-		$$ = $1;
-	 }
-	 | args ARG_REF_ALL_ARGS {
-		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
-
-		ast_node_add_child(node, $2);
-
-		$$ = $1;
-	 }
-	 ;
+args_child:
+	TEXT { $$ = $1; }
+	| block { $$ = $1; }
+	| ARG_REF_ALL_ARGS { $$ = $1; }
+	| LITERAL { $$ = $1; }
+	;
 
 symbol: SYMBOL {
 	// making so our symbols are case insensitive by making the whole string lowercase
