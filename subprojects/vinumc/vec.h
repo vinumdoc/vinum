@@ -27,10 +27,23 @@
 		(arr)->len++;                                                                      \
 	} while (0)
 
-#define VEC_RESERVE(arr, size)                                                                     \
+#define VEC_RESERVE_EXACT(arr, size)                                                               \
 	do {                                                                                       \
 		(arr)->capacity = (size);                                                          \
 		(arr)->base = realloc((arr)->base, (arr)->capacity * sizeof(*(arr)->base));        \
+	} while (0)
+
+#define VEC_RESERVE(arr, size)                                                                     \
+	do {                                                                                       \
+		size_t needed = (arr)->len + size;                                                 \
+		if (needed <= (arr)->capacity)                                                     \
+			break;                                                                     \
+		/* rounds needed to the nearest power of 2 >= its current value */                 \
+		needed--;                                                                          \
+		for (size_t i = 1; i < sizeof(size_t) * 8; i <<= 1)                                \
+			needed |= needed >> i;                                                     \
+		needed++;                                                                          \
+		VEC_RESERVE_EXACT(arr, needed);                                                    \
 	} while (0)
 
 #define VEC_FREE(vec)                                                                              \
