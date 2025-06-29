@@ -8,7 +8,7 @@ void test_basic(struct vunit_test_ctx *ctx) {
 			    "[a]\n",
 			    &out, NULL);
 
-	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!\n");
+	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!");
 }
 
 void test_define_later(struct vunit_test_ctx *ctx) {
@@ -19,7 +19,7 @@ void test_define_later(struct vunit_test_ctx *ctx) {
 			    "[a: Hello World!]\n",
 			    &out, NULL);
 
-	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!\n");
+	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!");
 }
 
 void test_function_text_args(struct vunit_test_ctx *ctx) {
@@ -30,7 +30,7 @@ void test_function_text_args(struct vunit_test_ctx *ctx) {
 			    "[a Hello World!]\n",
 			    &out, NULL);
 
-	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!\n");
+	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!");
 }
 
 void test_function_call_args(struct vunit_test_ctx *ctx) {
@@ -42,7 +42,7 @@ void test_function_call_args(struct vunit_test_ctx *ctx) {
 			    "[b [a]]\n",
 			    &out, NULL);
 
-	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!\n");
+	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!");
 }
 
 void test_file_input(struct vunit_test_ctx *ctx) {
@@ -55,7 +55,7 @@ void test_file_input(struct vunit_test_ctx *ctx) {
 
 	vunit_run_vinumc_ok(ctx, NULL, &out, "input.vin", NULL);
 
-	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!\n");
+	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!");
 }
 
 struct vunit_test tests[] = {

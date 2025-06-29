@@ -11,6 +11,12 @@
 #include "v_lib.h"
 #include "vec.h"
 
+enum do_calls_flag {
+	REDUCE_BLANKS = 1 << 0,
+	FIRST_CHILD = 1 << 1,
+	LAST_CHILD = 1 << 2,
+};
+
 struct eval_ctx eval_ctx_new() {
 	struct eval_ctx ret = {};
 
@@ -205,14 +211,22 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls) {
 
 #define DO_CALLS_FUNC_SIGNATURE(func_name)                                                         \
 	static void func_name(struct eval_ctx *ctx, const struct ast *ast, struct str *out,        \
-			      size_t ast_node_id)
+			      size_t ast_node_id, int flags)
 
 DO_CALLS_FUNC_SIGNATURE(do_calls);
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_program) {
 	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
 	for (size_t i = 0; i < ast_node->childs.len; i++) {
-		do_calls(ctx, ast, out, VEC_AT(&ast_node->childs, i));
+		size_t child_id = VEC_AT(&ast_node->childs, i);
+		int sub_flags = flags & ~(FIRST_CHILD | LAST_CHILD);
+		if (i == 0) {
+			sub_flags |= FIRST_CHILD;
+		}
+		if (i == ast_node->childs.len - 1) {
+			sub_flags |= LAST_CHILD;
+		}
+		do_calls(ctx, ast, out, child_id, sub_flags);
 	}
 }
 
@@ -224,17 +238,14 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 	}
 
 	const struct ast_node *symbol_node = &VEC_AT(&ast->nodes, VEC_AT(&ast_node->childs, 0));
-	const struct ast_node *args_node = &VEC_AT(&ast->nodes, VEC_AT(&ast_node->childs, 1));
+	size_t args_id = VEC_AT(&ast_node->childs, 1);
 
 	if (symbol_node->type == FUNCTION) {
 		// writes the returns of the arguments calls to a temporary buffer,
 		// so any nested call will be resolved normally
 		struct str tmp_out = {};
 		VEC_PUT(&tmp_out, '\0');
-
-		for (size_t i = 0; i < args_node->childs.len; i++) {
-			do_calls(ctx, ast, &tmp_out, VEC_AT(&args_node->childs, i));
-		}
+		do_calls(ctx, ast, &tmp_out, args_id, flags);
 
 		// find the extern function on the scope
 		struct scope *curr_scope = &VEC_AT(&ctx->scopes, 0);
@@ -246,16 +257,19 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 		struct return_value call_return = symbol_info->as.func(&cctx);
 
 		// put the extern function call return on the out str
-		put_str(out, call_return.ptr);
+
+		if ((flags & REDUCE_BLANKS) != 0) {
+			put_blank_reduced_str(out, call_return.ptr, true, true);
+		} else {
+			put_str(out, call_return.ptr);
+		}
 
 		if (call_return.free) {
 			free(call_return.ptr);
 		}
 		VEC_FREE(&tmp_out);
 	} else {
-		for (size_t i = 0; i < args_node->childs.len; i++) {
-			do_calls(ctx, ast, out, VEC_AT(&args_node->childs, i));
-		}
+		do_calls(ctx, ast, out, args_id, flags);
 	}
 }
 
@@ -263,18 +277,13 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_text) {
 	UNUSED(ctx);
 	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
 
-	for (size_t i = 0; i < ast_node->childs.len; i++) {
-		const struct ast_node *child = &VEC_AT(&ast->nodes, VEC_AT(&ast_node->childs, i));
-		if (child->type != WORD) {
-			fprintf(stderr, "ERROR: TEXT node must hold only WORDS\n");
-			return;
-		}
-
-		put_str(out, child->text);
-		if (i != ast_node->childs.len - 1)
-			put_str(out, " ");
+	if ((flags & REDUCE_BLANKS) != 0) {
+		bool trim_left = (flags & FIRST_CHILD) != 0;
+		bool trim_right = (flags & LAST_CHILD) != 0;
+		put_blank_reduced_str(out, ast_node->text, trim_left, trim_right);
+	} else {
+		put_str(out, ast_node->text);
 	}
-	put_str(out, "\n");
 }
 
 DO_CALLS_FUNC_SIGNATURE(do_calls) {
@@ -283,13 +292,13 @@ DO_CALLS_FUNC_SIGNATURE(do_calls) {
 	switch (ast_node->type) {
 	case PROGRAM:
 	case ARGS:
-		do_calls_program(ctx, ast, out, ast_node_id);
+		do_calls_program(ctx, ast, out, ast_node_id, flags);
 		break;
 	case CALL:
-		do_calls_call(ctx, ast, out, ast_node_id);
+		do_calls_call(ctx, ast, out, ast_node_id, flags);
 		break;
 	case TEXT:
-		do_calls_text(ctx, ast, out, ast_node_id);
+		do_calls_text(ctx, ast, out, ast_node_id, flags);
 		break;
 	default:
 		break;
@@ -349,7 +358,7 @@ void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out, struct str_vec *libr
 	struct str str_out = {};
 	VEC_PUT(&str_out, '\0');
 
-	do_calls(ctx, ast, &str_out, 0);
+	do_calls(ctx, ast, &str_out, 0, REDUCE_BLANKS);
 	fprintf(out, "%s", str_out.base);
 	unload_libs(loaded_libs);
 }

@@ -19,7 +19,6 @@ int yylex();
 // TODO: FUNCTION is not used in bison but in eval
 %token FUNCTION
 %token TEXT
-%token WORD
 
 %%
 
@@ -63,7 +62,7 @@ block:
    ;
 
 args:
-	 text {
+	 TEXT {
 		struct ast_node node = ast_node_new_nvl(ARGS);
 
 		ast_node_add_child(&node, $1);
@@ -86,7 +85,7 @@ args:
 
 		$$ = ast_add_node(&ctx.ast, node);
 	 }
-	 | args text {
+	 | args TEXT {
 		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
 
 		ast_node_add_child(node, $2);
@@ -109,9 +108,7 @@ args:
 	 }
 	 ;
 
-symbol: WORD {
-	VEC_AT(&ctx.ast.nodes, $1).type = SYMBOL;
-
+symbol: SYMBOL {
 	// making so our symbols are case insensitive by making the whole string lowercase
 	char *text = VEC_AT(&ctx.ast.nodes, $1).text;
 	size_t len = strlen(text);
@@ -120,7 +117,7 @@ symbol: WORD {
 	wchar_t *wtext = (wchar_t*)malloc(len * sizeof(wchar_t));
 	// TODO: handle the function return value
 	mbstowcs(wtext, text, len);
-	
+
 	for(size_t i = 0; i < len; i++) {
 		wtext[i] = towlower(wtext[i]);
 	}
@@ -139,26 +136,4 @@ symbol: WORD {
 	$$ = ast_add_node(&ctx.ast, node);
       }
       ;
-
-text:
-     word_text {
-	struct ast_node node = ast_node_new_nvl(TEXT);
-
-	ast_node_add_child(&node, $1);
-
-	$$ = ast_add_node(&ctx.ast, node);
-    }
-    | text word_text {
-	struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
-
-	ast_node_add_child(node, $2);
-
-	$$ = $1;
-    }
-    ;
-
-word_text: WORD { $$ = $1;}
-	 | ':'{ $$ = $1;}
-	 ;
-
 %%
