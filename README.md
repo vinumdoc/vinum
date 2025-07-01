@@ -73,5 +73,10 @@ meson test -C <build_dir>
 
 To run a binary without installing it:
 ```console
-./<build_dir>/<subproject>/<binary>
+./<build_dir>/subprojects/<subproject>/<binary>
+```
+
+To install them, simply run:
+```console
+meson install -C <build_dir>
 ```
