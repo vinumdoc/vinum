@@ -1,10 +1,12 @@
 name: build vinum
 
 on:
-  push:
   pull_request:
 
 permissions: read-all
+
+env:
+  TARGET_BRANCH: ${{ github.event.pull_request.base.ref }}
 
 jobs:
   build:
@@ -12,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install dependencies
         run: |
@@ -27,16 +31,32 @@ jobs:
         run: meson setup buildir
 
       - name: Build
-        run: meson compile -C buildir
+        run: |
+          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD)
+
+          for commit in $commits; do
+            echo "checking commit: $commit"
+            git checkout $commit
+            meson compile -C buildir
+          done
 
       - name: Run tests
-        run: meson test -C buildir --print-errorlogs
+        run: |
+          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD)
+
+          for commit in $commits; do
+            echo "checking commit: $commit"
+            git checkout $commit
+            meson test -C buildir --print-errorlogs
+          done
 
   check-formating:
     name: Check Formatting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install dependencies
         run: |
@@ -51,4 +71,12 @@ jobs:
         run: meson setup buildir
 
       - name: Check formatting
-        run: meson compile -C buildir --ninja-args=clang-format-check
+        run: |
+          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD)
+
+          for commit in $commits; do
+            echo "Checking commit: $commit"
+            git checkout $commit
+            meson compile -C buildir --ninja-args=clang-format-check
+          done
+
