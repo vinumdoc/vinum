@@ -70,3 +70,8 @@ If you want to run the unit tests:
 ```console
 meson test -C <build_dir>
 ```
+
+To run a binary without installing it:
+```console
+./<build_dir>/<subproject>/<binary>
+```
