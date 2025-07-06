@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 
+/// Defines the struct body for a vector of a given base type.
 #define VEC_DEF(base_type)                                                                         \
 	{                                                                                          \
 		base_type *base;                                                                   \
@@ -12,6 +13,9 @@
 
 #define VEC_AT(arr, idx) ((arr)->base[(idx)])
 
+/// Reserves the minimum capacity needed to hold exactly `size` more elements.
+///
+/// If the vector's current capacity is already enough, it does nothing.
 #define VEC_RESERVE_EXACT(arr, size)                                                               \
 	do {                                                                                       \
 		size_t needed = (arr)->len + (size);                                               \
@@ -21,6 +25,10 @@
 		(arr)->base = realloc((arr)->base, (arr)->capacity * sizeof(*(arr)->base));        \
 	} while (0)
 
+/// Ensures that the vector has enough capacity to hold at least `size` more elements, possibly
+/// reserving more space to speculatively avoid frequent reallocations.
+///
+/// If the vector's current capacity is already enough, it does nothing.
 #define VEC_RESERVE(arr, size)                                                                     \
 	do {                                                                                       \
 		size_t needed = (arr)->len + (size);                                               \
@@ -36,6 +44,7 @@
 		(arr)->base = realloc((arr)->base, (arr)->capacity * sizeof(*(arr)->base));        \
 	} while (0)
 
+/// Adds an element to the end of the vector, resizing it if necessary.
 #define VEC_PUT(arr, e)                                                                            \
 	do {                                                                                       \
 		if ((arr)->len >= (arr)->capacity) {                                               \
@@ -46,8 +55,10 @@
                                                                                                    \
 		(arr)->base[(arr)->len] = (e);                                                     \
 		(arr)->len++;                                                                      \
+                                                                                                   \
 	} while (0)
 
+/// Dealocates the vector. Resets `base` to `NULL` and `len` and `capacity` to 0.
 #define VEC_FREE(vec)                                                                              \
 	do {                                                                                       \
 		free((vec)->base);                                                                 \
@@ -56,6 +67,7 @@
 		(vec)->capacity = 0;                                                               \
 	} while (0)
 
+/// Decrements the length of the vector by one.
 #define VEC_POP(arr)                                                                               \
 	do {                                                                                       \
 		if ((arr)->len > 0) {                                                              \
@@ -63,6 +75,9 @@
 		}                                                                                  \
 	} while (0)
 
+/// Will append `from_size` elements from `from` to `to`.
+/// It will reserve enough space for `from_size + 1` elements in `to`.
+/// This ensures that there is space for a possible null terminator.
 #define VEC_PUT_MANY(to, from, from_size)                                                          \
 	do {                                                                                       \
 		VEC_RESERVE((to), from_size + 1);                                                  \
