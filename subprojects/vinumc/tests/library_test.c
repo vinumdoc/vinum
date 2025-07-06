@@ -38,7 +38,15 @@ void test_call_no_args(struct vunit_test_ctx *ctx) {
 	VUNIT_ASSERT_STREQ(ctx, out, "()");
 }
 
-VUNIT_TEST_SUITE("suite", { "Test extern library call", test_call },
-		 { "Test extern library call inside call", test_nested_call },
-		 { "Test nested empty library calls", test_empty_nested_call },
-		 { "Test extern library call with no arguments", test_call_no_args }, {}, )
+struct vunit_test tests[] = {
+	{ .name = "Test extern library call", .test_func = test_call },
+	{ .name = "Test extern library call inside call", .test_func = test_nested_call },
+	{ .name = "Test nested empty library calls", .test_func = test_empty_nested_call },
+	{
+		.name = "Test extern library call with no arguments",
+		.test_func = test_call_no_args,
+	},
+	{},
+};
+
+VUNIT_TEST_SUITE(tests)

@@ -21,9 +21,8 @@ struct vunit_test {
 
 #define VUNIT_MAX_NUM_TEST 1024
 
-#define VUNIT_TEST_SUITE(name, ...)                                                                \
+#define VUNIT_TEST_SUITE(tests)                                                                    \
 	int main(int argc, char *argv[]) {                                                         \
-		const struct vunit_test tests[] = { __VA_ARGS__ };                                 \
 		return __vunit_main(tests, argc, argv);                                            \
 	}
 

@@ -27,4 +27,9 @@ void test_output_flag(struct vunit_test_ctx *ctx) {
 	VUNIT_ASSERT_STREQ(ctx, out_file_str, "Hello World!\n");
 }
 
-VUNIT_TEST_SUITE("suite", { "Test output flag", test_output_flag }, {}, )
+struct vunit_test tests[] = {
+	{ .name = "Test output flag", .test_func = test_output_flag },
+	{},
+};
+
+VUNIT_TEST_SUITE(tests)
