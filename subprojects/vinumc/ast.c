@@ -38,7 +38,7 @@ ast_node_id_t ast_copy_node(struct ast *ast, ast_node_id_t node_id) {
 	struct ast_node *node_copy = &VEC_AT(&ast->nodes, node_copy_id);
 
 	struct ast_node_childs_t childs = VEC_AT(&ast->nodes, node_id).childs;
-	VEC_RESERVE(&node_copy->childs, childs.len);
+	VEC_RESERVE_EXACT(&node_copy->childs, childs.len);
 
 	for (size_t i = 0; i < childs.len; i++) {
 		size_t child_copy_id = ast_copy_node(ast, VEC_AT(&childs, i));
