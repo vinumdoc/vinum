@@ -12,30 +12,18 @@
 
 #define VEC_AT(arr, idx) ((arr)->base[(idx)])
 
-#define VEC_PUT(arr, e)                                                                            \
-	do {                                                                                       \
-		if ((arr)->len >= (arr)->capacity) {                                               \
-			if ((arr)->capacity == 0)                                                  \
-				(arr)->capacity = 1;                                               \
-                                                                                                   \
-			(arr)->capacity *= 2;                                                      \
-			(arr)->base =                                                              \
-				realloc((arr)->base, (arr)->capacity * sizeof(*(arr)->base));      \
-		}                                                                                  \
-                                                                                                   \
-		(arr)->base[(arr)->len] = (e);                                                     \
-		(arr)->len++;                                                                      \
-	} while (0)
-
 #define VEC_RESERVE_EXACT(arr, size)                                                               \
 	do {                                                                                       \
-		(arr)->capacity = (size);                                                          \
+		size_t needed = (arr)->len + (size);                                               \
+		if (needed <= (arr)->capacity)                                                     \
+			break;                                                                     \
+		(arr)->capacity = needed;                                                          \
 		(arr)->base = realloc((arr)->base, (arr)->capacity * sizeof(*(arr)->base));        \
 	} while (0)
 
 #define VEC_RESERVE(arr, size)                                                                     \
 	do {                                                                                       \
-		size_t needed = (arr)->len + size;                                                 \
+		size_t needed = (arr)->len + (size);                                               \
 		if (needed <= (arr)->capacity)                                                     \
 			break;                                                                     \
 		/* rounds needed to the nearest power of 2 >= its current value */                 \
@@ -43,7 +31,21 @@
 		for (size_t i = 1; i < sizeof(size_t) * 8; i <<= 1)                                \
 			needed |= needed >> i;                                                     \
 		needed++;                                                                          \
-		VEC_RESERVE_EXACT(arr, needed);                                                    \
+                                                                                                   \
+		(arr)->capacity = needed;                                                          \
+		(arr)->base = realloc((arr)->base, (arr)->capacity * sizeof(*(arr)->base));        \
+	} while (0)
+
+#define VEC_PUT(arr, e)                                                                            \
+	do {                                                                                       \
+		if ((arr)->len >= (arr)->capacity) {                                               \
+			size_t more = (arr)->capacity == 0 ? 2 : (arr)->capacity;                  \
+                                                                                                   \
+			VEC_RESERVE_EXACT((arr), more);                                            \
+		}                                                                                  \
+                                                                                                   \
+		(arr)->base[(arr)->len] = (e);                                                     \
+		(arr)->len++;                                                                      \
 	} while (0)
 
 #define VEC_FREE(vec)                                                                              \
@@ -56,14 +58,14 @@
 
 #define VEC_POP(arr)                                                                               \
 	do {                                                                                       \
-		(arr)->len--;                                                                      \
+		if ((arr)->len > 0) {                                                              \
+			(arr)->len--;                                                              \
+		}                                                                                  \
 	} while (0)
 
 #define VEC_PUT_MANY(to, from, from_size)                                                          \
 	do {                                                                                       \
-		if ((to)->len + from_size > (to)->capacity) {                                      \
-			VEC_RESERVE((to), (to)->len + from_size + 1);                              \
-		}                                                                                  \
+		VEC_RESERVE((to), from_size + 1);                                                  \
 		for (size_t _i = 0; _i < from_size; ++_i) {                                        \
 			(to)->base[(to)->len + _i] = from[_i];                                     \
 		}                                                                                  \
