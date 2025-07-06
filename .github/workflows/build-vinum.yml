@@ -1,0 +1,82 @@
+name: build vinum
+
+on:
+  pull_request:
+
+permissions: read-all
+
+env:
+  TARGET_BRANCH: ${{ github.event.pull_request.base.ref }}
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            bison \
+            flex \
+            gcc \
+            meson \
+            ninja-build
+
+      - name: Configure
+        run: meson setup buildir
+
+      - name: Build
+        run: |
+          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD)
+
+          for commit in $commits; do
+            echo "checking commit: $commit"
+            git checkout $commit
+            meson compile -C buildir
+          done
+
+      - name: Run tests
+        run: |
+          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD)
+
+          for commit in $commits; do
+            echo "checking commit: $commit"
+            git checkout $commit
+            meson test -C buildir --print-errorlogs
+          done
+
+  check-formating:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            bison \
+            meson \
+            ninja-build \
+            clang-format
+
+      - name: Configure build dir
+        run: meson setup buildir
+
+      - name: Check formatting
+        run: |
+          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD)
+
+          for commit in $commits; do
+            echo "Checking commit: $commit"
+            git checkout $commit
+            meson compile -C buildir --ninja-args=clang-format-check
+          done
+
