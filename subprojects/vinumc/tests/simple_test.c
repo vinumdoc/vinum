@@ -58,8 +58,13 @@ void test_file_input(struct vunit_test_ctx *ctx) {
 	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!\n");
 }
 
-VUNIT_TEST_SUITE("suite", { "Basic test", test_basic },
-		 { "Symbol defined later", test_define_later },
-		 { "Function with text args", test_function_text_args },
-		 { "Function with function calls args", test_function_call_args },
-		 { "File as input", test_file_input }, {}, )
+struct vunit_test tests[] = {
+	{ .name = "Basic test", .test_func = test_basic },
+	{ .name = "Symbol defined later", .test_func = test_define_later },
+	{ .name = "Function with text args", .test_func = test_function_text_args },
+	{ .name = "Function with function calls args", .test_func = test_function_call_args },
+	{ .name = "File as input", .test_func = test_file_input },
+	{},
+};
+
+VUNIT_TEST_SUITE(tests)

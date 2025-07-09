@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <sys/wait.h>
@@ -119,6 +120,11 @@ int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
 	for (size_t i = 0; i < num_test; i++) {
 		const struct vunit_test *test = &tests[i];
 		struct vunit_test_ctx ctx = {};
+
+		if (test->skip) {
+			printf("ok %zu - %s # SKIP\n", i + 1, test->name);
+			continue;
+		}
 
 		int ret = setjmp(ctx.env);
 

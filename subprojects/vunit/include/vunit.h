@@ -5,7 +5,6 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <string.h>
 
 struct vunit_test_ctx {
 	jmp_buf env;
@@ -17,13 +16,13 @@ typedef void (*vunit_test_func_t)(struct vunit_test_ctx *);
 struct vunit_test {
 	char *name;
 	vunit_test_func_t test_func;
+	bool skip;
 };
 
 #define VUNIT_MAX_NUM_TEST 1024
 
-#define VUNIT_TEST_SUITE(name, ...)                                                                \
+#define VUNIT_TEST_SUITE(tests)                                                                    \
 	int main(int argc, char *argv[]) {                                                         \
-		const struct vunit_test tests[] = { __VA_ARGS__ };                                 \
 		return __vunit_main(tests, argc, argv);                                            \
 	}
 
