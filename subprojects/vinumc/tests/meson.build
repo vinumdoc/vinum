@@ -43,6 +43,7 @@ testlib_srcs = [
 testlib = shared_library(
   'testlib',
   testlib_srcs,
-  dependencies : vinumc_dep,
+  dependencies : extern_library_dep,
+  link_depends: extern_library,
   install : true,
 )

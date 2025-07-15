@@ -1,4 +1,4 @@
-project('vinumc', 'c', version: '0.1.0')
+project('vinumc', 'c', version: '0.2.0')
 
 flex = find_program('flex')
 bison = find_program('bison')
@@ -27,7 +27,7 @@ common_srcs = [
   lex.process('dry_flex.l'),
   'eval.c',
   'str.c',
-  'extern_library.c',
+  'library_loader.c',
 ]
 
 vinumc_srcs = common_srcs + [
@@ -51,6 +51,18 @@ headers = [
 ]
 
 install_headers(headers, subdir: 'vinumc')
+
+extern_library = library(
+  'extern_library',
+  'v_lib.c',
+  include_directories: inc,
+  install: true
+)
+
+extern_library_dep = declare_dependency(
+  link_with: extern_library,
+  include_directories: inc,
+)
 
 vinumc = executable(
   'vinumc',

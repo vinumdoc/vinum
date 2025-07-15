@@ -8,6 +8,7 @@
 #include "library_loader.h"
 #include "str.h"
 #include "utils.h"
+#include "v_lib.h"
 #include "vec.h"
 
 struct eval_ctx eval_ctx_new() {
@@ -240,8 +241,11 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 		struct namespace_entry *symbol_info =
 			find_symbol_on_scopes(&ctx->scopes, curr_scope, symbol_node->text);
 
+		// expose context to external function
+		struct _call_ctx cctx = { .text = tmp_out.base };
+		struct return_value call_return = symbol_info->as.func(&cctx);
+
 		// put the extern function call return on the out str
-		struct return_value call_return = symbol_info->as.func(tmp_out.base);
 		put_str(out, call_return.ptr);
 
 		if (call_return.free) {
