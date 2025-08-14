@@ -67,8 +67,8 @@ const char *token_to_str(enum yytokentype token) {
 		return "FUNCTION";
 	case TEXT:
 		return "TEXT";
-	case WORD:
-		return "WORD";
+	case LITERAL:
+		return "LITERAL";
 	default:
 		return NULL;
 	}
@@ -87,7 +87,7 @@ static void ast_print_rec(const struct ast *ast, const int id, const int level) 
 		printf("%s", token_to_str(node->type));
 	}
 
-	if (node->type == WORD || node->type == SYMBOL) {
+	if (node->type == TEXT || node->type == SYMBOL || node->type == LITERAL) {
 		printf("(%s)", node->text);
 	}
 	printf("\n");
