@@ -1,4 +1,4 @@
-#include <vunit.h>
+#include <vunit/vunit.h>
 
 void test_call(struct vunit_test_ctx *ctx) {
 	char *out = NULL;

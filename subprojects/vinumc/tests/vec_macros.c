@@ -1,4 +1,4 @@
-#include <vunit.h>
+#include <vunit/vunit.h>
 
 #include "../vec.h"
 
