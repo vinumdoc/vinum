@@ -3,9 +3,10 @@
 
 #include <stdio.h>
 
+#include <vutils/vec.h>
+
 #include "ast.h"
 #include "extern_library.h"
-#include "vec.h"
 
 struct scope_childs_t VEC_DEF(size_t);
 

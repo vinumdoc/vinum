@@ -26,7 +26,6 @@ common_srcs = [
   parse.process('dry_bison.y'),
   lex.process('dry_flex.l'),
   'eval.c',
-  'str.c',
   'library_loader.c',
 ]
 
@@ -64,12 +63,17 @@ extern_library_dep = declare_dependency(
   include_directories: external_inc,
 )
 
+vutils_dep = dependency('vutils', fallback : ['vutils', 'vutils_dep'])
+
 vinumc = executable(
   'vinumc',
   vinumc_srcs,
   include_directories : local_inc,
   install : true,
-  dependencies: dl_dep
+  dependencies: [
+    dl_dep,
+    vutils_dep,
+  ],
 )
 
 vin2dot_srcs = common_srcs + [
@@ -82,7 +86,10 @@ if get_option('build_vin2dot')
     vin2dot_srcs,
     include_directories : local_inc,
     install : true,
-    dependencies: dl_dep
+    dependencies: [
+      dl_dep,
+      vutils_dep,
+    ],
   )
 endif
 

@@ -9,10 +9,11 @@
 %{
 #include <string.h>
 
+#include <vutils/str.h>
+
 #include "dry_bison.h"
 
 #include "vinumc.h"
-#include "str.h"
 
 /*
  * Disables input() and unput() function definitions from the generated .c

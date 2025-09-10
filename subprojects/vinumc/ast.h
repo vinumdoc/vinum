@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "vec.h"
+#include <vutils/vec.h>
 
 #include "dry_bison.h"
 

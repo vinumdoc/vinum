@@ -3,13 +3,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <vutils/str.h>
+#include <vutils/vec.h>
+
 #include "eval.h"
 #include "extern_library.h"
 #include "library_loader.h"
-#include "str.h"
 #include "utils.h"
 #include "v_lib.h"
-#include "vec.h"
 
 enum do_calls_flag {
 	REDUCE_BLANKS = 1 << 0,
