@@ -6,7 +6,7 @@ srcs = [
   'vunit.c',
 ]
 
-libvunit = static_library(
+libvunit = library(
   'vunit',
   srcs,
   include_directories : inc,
