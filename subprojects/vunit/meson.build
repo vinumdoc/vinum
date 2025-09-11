@@ -1,4 +1,4 @@
-project('vunit', 'c')
+project('vunit', 'c', version: '0.0.1')
 
 inc = include_directories('include')
 
