@@ -107,6 +107,32 @@ static size_t get_num_tests(const struct vunit_test *tests) {
 	return num;
 }
 
+enum test_return_status {
+	PASSED = 0,
+	FAILED,
+	SKIPPED,
+};
+
+static enum test_return_status run_test(const struct vunit_test *test, struct vunit_test_ctx *ctx) {
+	if (test->skip) {
+		return SKIPPED;
+	}
+
+	int ret = setjmp(ctx->env);
+
+	bool test_failed = false;
+	if (!ret) {
+		test->test_func(ctx);
+	} else {
+		test_failed = true;
+	}
+
+	if (test_failed)
+		return FAILED;
+
+	return PASSED;
+}
+
 int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
 	// TODO: Make use of the command args
 	(void)argc;
@@ -121,27 +147,21 @@ int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
 		const struct vunit_test *test = &tests[i];
 		struct vunit_test_ctx ctx = {};
 
-		if (test->skip) {
+		enum test_return_status status = run_test(test, &ctx);
+
+		switch (status) {
+		case PASSED:
+			printf("ok %zu - %s\n", i + 1, test->name);
+			break;
+		case FAILED:
+			printf("not ok %zu - %s\n", i + 1, test->name);
+			if (ctx.lonjmp_msg != NULL)
+				printf("%s\n", ctx.lonjmp_msg);
+			break;
+		case SKIPPED:
 			printf("ok %zu - %s # SKIP\n", i + 1, test->name);
-			continue;
+			break;
 		}
-
-		int ret = setjmp(ctx.env);
-
-		bool test_failed = false;
-		if (!ret) {
-			test->test_func(&ctx);
-		} else {
-			test_failed = true;
-		}
-
-		if (test_failed)
-			printf("not ");
-
-		printf("ok %zu - %s\n", i + 1, test->name);
-
-		if (test_failed && ctx.lonjmp_msg != NULL)
-			printf("%s\n", ctx.lonjmp_msg);
 	}
 
 	return 0;
