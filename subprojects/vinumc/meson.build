@@ -34,10 +34,11 @@ vinumc_srcs = common_srcs + [
   'vinumc.c',
 ]
 
-inc = include_directories('include')
+local_inc = include_directories('include/vinumc')
+external_inc = include_directories('include')
 
 vinumc_dep = declare_dependency(
-  include_directories : inc,
+  include_directories : external_inc,
 )
 
 if meson.version().version_compare('>=0.62.0')
@@ -54,19 +55,19 @@ install_subdir(
 extern_library = library(
   'extern_library',
   'v_lib.c',
-  include_directories: inc,
+  include_directories: local_inc,
   install: true
 )
 
 extern_library_dep = declare_dependency(
   link_with: extern_library,
-  include_directories: inc,
+  include_directories: external_inc,
 )
 
 vinumc = executable(
   'vinumc',
   vinumc_srcs,
-  include_directories : inc,
+  include_directories : local_inc,
   install : true,
   dependencies: dl_dep
 )
@@ -79,7 +80,7 @@ if get_option('build_vin2dot')
   executable(
     'vin2dot',
     vin2dot_srcs,
-    include_directories : inc,
+    include_directories : local_inc,
     install : true,
     dependencies: dl_dep
   )
