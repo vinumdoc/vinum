@@ -46,11 +46,10 @@ else
   dl_dep = meson.get_compiler('c').find_library('dl', required: true)
 endif
 
-headers = [
-  'include/extern_library.h',
-]
-
-install_headers(headers, subdir: 'vinumc')
+install_subdir(
+  'include',
+  install_dir: 'include',
+)
 
 extern_library = library(
   'extern_library',
