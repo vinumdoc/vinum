@@ -11,6 +11,18 @@ tests = [
 
 vunit_dep = dependency('vunit', fallback : ['vunit', 'vunit_dep'])
 
+testlib_srcs = [
+  'testlib.c',
+]
+
+testlib = shared_library(
+  'testlib',
+  testlib_srcs,
+  dependencies : extern_library_dep,
+  link_depends: extern_library,
+  install : true,
+)
+
 foreach t : tests
   basename = fs.stem(t)
 
@@ -33,19 +45,10 @@ foreach t : tests
     test_exe,
     env : test_env,
     protocol : 'tap',
-    depends: vinumc,
+    depends: [
+      vinumc,
+      testlib,
+    ],
     kwargs: test_kwargs,
   )
 endforeach
-
-testlib_srcs = [
-  'testlib.c',
-]
-
-testlib = shared_library(
-  'testlib',
-  testlib_srcs,
-  dependencies : extern_library_dep,
-  link_depends: extern_library,
-  install : true,
-)
