@@ -1,5 +1,6 @@
 #include <stdlib.h>
-#include <vunit.h>
+
+#include <vunit/vunit.h>
 
 void test_output_flag(struct vunit_test_ctx *ctx) {
 	char *out = NULL;

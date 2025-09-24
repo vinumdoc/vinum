@@ -26,7 +26,6 @@ common_srcs = [
   parse.process('dry_bison.y'),
   lex.process('dry_flex.l'),
   'eval.c',
-  'str.c',
   'library_loader.c',
 ]
 
@@ -34,10 +33,11 @@ vinumc_srcs = common_srcs + [
   'vinumc.c',
 ]
 
-inc = include_directories('include')
+local_inc = include_directories('include/vinumc')
+external_inc = include_directories('include')
 
 vinumc_dep = declare_dependency(
-  include_directories : inc,
+  include_directories : external_inc,
 )
 
 if meson.version().version_compare('>=0.62.0')
@@ -46,30 +46,34 @@ else
   dl_dep = meson.get_compiler('c').find_library('dl', required: true)
 endif
 
-headers = [
-  'include/extern_library.h',
-]
-
-install_headers(headers, subdir: 'vinumc')
+install_subdir(
+  'include',
+  install_dir: 'include',
+)
 
 extern_library = library(
   'extern_library',
   'v_lib.c',
-  include_directories: inc,
+  include_directories: local_inc,
   install: true
 )
 
 extern_library_dep = declare_dependency(
   link_with: extern_library,
-  include_directories: inc,
+  include_directories: external_inc,
 )
+
+vutils_dep = dependency('vutils', fallback : ['vutils', 'vutils_dep'])
 
 vinumc = executable(
   'vinumc',
   vinumc_srcs,
-  include_directories : inc,
+  include_directories : local_inc,
   install : true,
-  dependencies: dl_dep
+  dependencies: [
+    dl_dep,
+    vutils_dep,
+  ],
 )
 
 vin2dot_srcs = common_srcs + [
@@ -80,9 +84,12 @@ if get_option('build_vin2dot')
   executable(
     'vin2dot',
     vin2dot_srcs,
-    include_directories : inc,
+    include_directories : local_inc,
     install : true,
-    dependencies: dl_dep
+    dependencies: [
+      dl_dep,
+      vutils_dep,
+    ],
   )
 endif
 

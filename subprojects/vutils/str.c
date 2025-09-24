@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include "str.h"
+#include <str.h>
 
 static bool is_blank_char(char c) {
 	return c == ' ' || c == '\t' || c == '\n' || c == '\r';

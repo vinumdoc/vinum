@@ -1,6 +1,6 @@
-#include <vunit.h>
+#include <vunit/vunit.h>
 
-#include "../vec.h"
+#include <vutils/vec.h>
 
 struct int_vec_t VEC_DEF(int);
 
