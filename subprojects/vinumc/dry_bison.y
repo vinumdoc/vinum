@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <vutils/system_allocator.h>
+
 #include "vinumc.h"
 
 int yylex();
@@ -25,7 +27,7 @@ int yylex();
 
 program:
        {
-	struct ast_node node = ast_node_new_nvl(PROGRAM);
+	struct ast_node node = ast_node_new_nvl(PROGRAM, ctx.ast.allocator);
 	$$ = ast_add_node(&ctx.ast, node);
        }
        | program block {
@@ -38,7 +40,7 @@ program:
 
 block:
      '[' symbol ':' args ']'  {
-	struct ast_node node = ast_node_new_nvl(ASSIGNMENT);
+	struct ast_node node = ast_node_new_nvl(ASSIGNMENT, ctx.ast.allocator);
 
 	ast_node_add_child(&node, $2);
 	ast_node_add_child(&node, $4);
@@ -46,7 +48,7 @@ block:
 	$$ = ast_add_node(&ctx.ast, node);
    }
    | '[' symbol args ']'  {
-	struct ast_node node = ast_node_new_nvl(CALL);
+	struct ast_node node = ast_node_new_nvl(CALL, ctx.ast.allocator);
 
 	ast_node_add_child(&node, $2);
 	ast_node_add_child(&node, $3);
@@ -54,7 +56,7 @@ block:
 	$$ = ast_add_node(&ctx.ast, node);
    }
    | '[' symbol ']'  {
-	struct ast_node node = ast_node_new_nvl(CALL);
+	struct ast_node node = ast_node_new_nvl(CALL, ctx.ast.allocator);
 
 	ast_node_add_child(&node, $2);
 
@@ -64,7 +66,7 @@ block:
 
 args:
 	args_child {
-		struct ast_node node = ast_node_new_nvl(ARGS);
+		struct ast_node node = ast_node_new_nvl(ARGS, ctx.ast.allocator);
 		ast_node_add_child(&node, $1);
 
 		$$ = ast_add_node(&ctx.ast, node);
@@ -106,7 +108,7 @@ symbol: SYMBOL {
 	$$ = $1;
       }
       | block {
-	struct ast_node node = ast_node_new_nvl(SYMBOL);
+	struct ast_node node = ast_node_new_nvl(SYMBOL, ctx.ast.allocator);
 
 	ast_node_add_child(&node, $1);
 

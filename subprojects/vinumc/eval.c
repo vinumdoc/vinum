@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include <vutils/str.h>
+#include <vutils/system_allocator.h>
 #include <vutils/vec.h>
 
 #include "eval.h"
@@ -18,17 +19,31 @@ enum do_calls_flag {
 	LAST_CHILD = 1 << 2,
 };
 
-struct eval_ctx eval_ctx_new() {
-	struct eval_ctx ret = {};
+struct eval_ctx eval_ctx_new(struct vut_allocator *allocator) {
+	struct eval_ctx ret = {
+		.allocator = allocator,
+		.scopes = VUT_VEC_INIT(struct eval_ctx_scopes_t, allocator),
+	};
 
 	return ret;
 }
 
-static size_t add_scope_child(struct eval_ctx_scopes_t *scope_array, size_t scope_id,
-			      ast_node_id_t node) {
-	size_t new_scope_id = scope_array->len;
+static struct scope scope_new(ast_node_id_t node, int father, struct vut_allocator *allocator) {
+	struct scope new_scope = {
+		.father = father,
+		.node = node,
+		.childs = VUT_VEC_INIT(struct scope_childs_t, allocator),
+		.namespace = VUT_VEC_INIT(struct scope_namespace_t, allocator),
+	};
+	return new_scope;
+}
 
-	VUT_VEC_PUT(scope_array, ((struct scope){ .father = scope_id, node = node }));
+static size_t add_scope_child(struct eval_ctx_scopes_t *scope_array, size_t scope_id,
+			      ast_node_id_t node, struct vut_allocator *allocator) {
+	size_t new_scope_id = scope_array->len;
+	struct scope new_scope = scope_new(node, scope_id, allocator);
+
+	VUT_VEC_PUT(scope_array, new_scope);
 	struct scope *scope = &scope_array->base[scope_id];
 	VUT_VEC_PUT(&scope->childs, new_scope_id);
 
@@ -110,7 +125,8 @@ RESOLVE_FUNC_SIGNATURE(resolve_symbols) {
 		resolve_symbols_assignment(ctx, ast, curr_scope_id, ast_node_id);
 	} else {
 		if (ast_node->type == CALL)
-			curr_scope_id = add_scope_child(&ctx->scopes, curr_scope_id, ast_node_id);
+			curr_scope_id = add_scope_child(&ctx->scopes, curr_scope_id, ast_node_id,
+							ctx->allocator);
 		resolve_symbols_descent(ctx, ast, curr_scope_id, ast_node_id);
 	}
 }
@@ -147,6 +163,7 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 
 				size_t symbol_args_node_id =
 					ast_copy_node(ast, symbol_info->as.ast_node_id);
+				ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
 				struct ast_node *symbol_args_node =
 					&VUT_VEC_AT(&ast->nodes, symbol_args_node_id);
 
@@ -179,7 +196,8 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 			if (ast_node->childs.len <= 1) {
 				// ensure that the call node has an ARGS node
 				// to prevent it from being skipped during evaluation
-				size_t args_node_id = ast_add_node(ast, ast_node_new_nvl(ARGS));
+				size_t args_node_id =
+					ast_add_node(ast, ast_node_new_nvl(ARGS, ast->allocator));
 				ast_node_add_child(ast_node, args_node_id);
 			}
 		}
@@ -247,7 +265,7 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 	if (symbol_node->type == FUNCTION) {
 		// writes the returns of the arguments calls to a temporary buffer,
 		// so any nested call will be resolved normally
-		struct vut_str tmp_out = {};
+		struct vut_str tmp_out = VUT_VEC_INIT(struct vut_str, ctx->allocator);
 		VUT_VEC_PUT(&tmp_out, '\0');
 		do_calls(ctx, ast, &tmp_out, args_id, flags);
 
@@ -329,7 +347,10 @@ void resolve_extern_functions(struct eval_ctx *ctx, struct loaded_lib lib) {
 
 struct loaded_lib *load_libs(struct eval_ctx *ctx, struct str_vec *libraries) {
 	size_t len = libraries->len;
-	struct loaded_lib *loaded_libs = calloc(len, sizeof(struct loaded_lib));
+	if (len == 0)
+		return NULL;
+	struct loaded_lib *loaded_libs =
+		vut_allocator_calloc(ctx->allocator, sizeof(struct loaded_lib), len + 1);
 	for (size_t i = 0; i < len; i++) {
 		loaded_libs[i] = load_lib(VUT_VEC_AT(libraries, i));
 		resolve_extern_functions(ctx, loaded_libs[i]);
@@ -351,16 +372,14 @@ void unload_libs(struct loaded_lib *loaded_libs) {
 }
 
 void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out, struct str_vec *libraries) {
-	struct scope base_scope = {
-		.father = -1,
-		.node = 0,
-	};
+	struct scope base_scope = scope_new(0, -1, ctx->allocator);
 	VUT_VEC_PUT(&ctx->scopes, base_scope);
 
 	struct loaded_lib *loaded_libs = load_libs(ctx, libraries);
 	resolve_symbols(ctx, ast, 0, 0);
 	resolve_calls(ctx, ast, 0, 0);
-	struct vut_str str_out = {};
+
+	struct vut_str str_out = VUT_VEC_INIT(struct vut_str, ctx->allocator);
 	VUT_VEC_PUT(&str_out, '\0');
 
 	do_calls(ctx, ast, &str_out, 0, REDUCE_BLANKS);
