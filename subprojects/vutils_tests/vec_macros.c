@@ -112,12 +112,26 @@ void test_vec_put_many(struct vunit_test_ctx *ctx) {
 	VUT_VEC_FREE(&vec);
 }
 
+void test_vec_foreach(struct vunit_test_ctx *ctx) {
+	int source[] = { 9, 8, 7, 6 };
+	struct int_vec_t vec = VUT_VEC_INIT(struct int_vec_t, vut_get_system_allocator());
+
+	VUT_VEC_PUT_MANY(&vec, source, sizeof(source) / sizeof(source[0]));
+
+	VUT_VEC_FOREACH(&vec, i, int *v) {
+		VUNIT_ASSERT_EQ(ctx, *v, source[i]);
+	}
+
+	VUT_VEC_FREE(&vec);
+}
+
 struct vunit_test tests[] = {
 	{ .name = "Test VUT_VEC_RESERVE behavior", .test_func = test_vec_reserve },
 	{ .name = "Test VUT_VEC_RESERVE_EXACT behavior", .test_func = test_vec_reserve_exact },
 	{ .name = "Test VUT_VEC_PUT behavior", .test_func = test_vec_put },
 	{ .name = "Test VUT_VEC_POP behavior", .test_func = test_vec_pop },
 	{ .name = "Test VUT_VEC_PUT_MANY behavior", .test_func = test_vec_put_many },
+	{ .name = "Test VUT_VEC_FOREACH behavior", .test_func = test_vec_foreach },
 	{},
 };
 

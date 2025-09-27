@@ -95,4 +95,8 @@
 		(to)->len += from_size;                                                            \
 	} while (0)
 
+#define VUT_VEC_FOREACH(arr, idx, var)                                                             \
+	for (size_t(idx) = 0, _capture_var = 1; (idx) < (arr)->len; (idx)++, _capture_var = 1)     \
+		for (var = &(arr)->base[(idx)]; _capture_var; _capture_var = 0)
+
 #endif // __VUT_VEC_H__
