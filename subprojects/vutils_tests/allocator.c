@@ -2,6 +2,7 @@
 #include <vunit/vunit.h>
 
 #include <vutils/allocator.h>
+#include <vutils/arena_allocator.h>
 #include <vutils/system_allocator.h>
 
 #define ARRRAY_LEN(arr) (sizeof((arr))) / (sizeof((arr)[0]))
@@ -21,9 +22,26 @@ static struct vut_allocator gen_sys_allocator() {
 	return *vut_get_system_allocator();
 }
 
+static struct vut_allocator gen_arena_allocator() {
+	struct vut_arena *arena =
+		vut_allocator_malloc(vut_get_system_allocator(), sizeof(*arena), 1);
+	*arena = vut_arena_new(vut_get_system_allocator(), DEFAULT_ALLOC_SIZE * DEFAULT_ALLOC_SIZE);
+	return vut_arena_to_vut_allocator(arena);
+}
+
+static void destroy_arena_allocator(struct vut_allocator allocator) {
+	struct vut_arena *arena = allocator.base_allocator;
+	vut_arena_free_all(arena);
+	vut_allocator_free(vut_get_system_allocator(), arena);
+}
+
 static struct allocator_case allocator_cases[] = {
 	{
 		.gen_allocator = gen_sys_allocator,
+	},
+	{
+		.gen_allocator = gen_arena_allocator,
+		.destroy_allocator = destroy_arena_allocator,
 	},
 };
 
