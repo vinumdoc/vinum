@@ -26,7 +26,6 @@ void test_output_flag(struct vunit_test_ctx *ctx) {
 
 	VUNIT_ASSERT_STREQ(ctx, out, help_output);
 
-	free(out);
 	out = NULL;
 
 	vunit_run_vinumc_ok(ctx,
