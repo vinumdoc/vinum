@@ -7,17 +7,11 @@
 #include "allocator.h"
 #include "vec.h"
 
-struct arena_buffer {
-	uint8_t *buffer;
-	size_t used;
-};
-
-struct vut_arena_allocations VUT_VEC_DEF(struct arena_buffer);
-
 struct vut_arena {
-	struct vut_arena_allocations allocations;
 	struct vut_allocator *base_allocator;
-	size_t common_max_allocation_size;
+	uint8_t *buffer;
+	size_t buffer_size;
+	uint8_t *free_ptr;
 };
 
 struct vut_arena vut_arena_new(struct vut_allocator *base_allocator,
