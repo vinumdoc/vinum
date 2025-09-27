@@ -9,3 +9,4 @@ project('vinum', 'c', meson_version: '>=0.61.2',
 subproject('vutils')
 subproject('vunit')
 subproject('vinumc')
+subproject('vutils_tests')

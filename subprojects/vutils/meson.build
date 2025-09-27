@@ -23,5 +23,3 @@ vutils_dep = declare_dependency(
   include_directories : external_inc,
   link_with : libvutils,
 )
-
-subdir('tests')
