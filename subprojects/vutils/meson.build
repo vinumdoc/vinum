@@ -9,6 +9,7 @@ install_subdir(
 )
 
 srcs = [
+  'allocator.c',
   'str.c',
 ]
 
