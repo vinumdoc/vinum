@@ -10,6 +10,7 @@ install_subdir(
 
 srcs = [
   'allocator.c',
+  'system_allocator.c',
   'str.c',
 ]
 
