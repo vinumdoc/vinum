@@ -80,9 +80,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             bison \
-            meson \
             ninja-build \
-            clang-format
+            clang-format \
+            python3-pip
+          pip install \
+            meson \
+            ninja
 
       - name: Check formatting
         run: |
@@ -96,6 +99,7 @@ jobs:
             git checkout $commit
             rm -rf buildir
             meson setup buildir
+            meson format -rsd
             meson compile -C buildir --ninja-args=clang-format-check
 
             echo "::endgroup::"
