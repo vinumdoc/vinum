@@ -1,4 +1,4 @@
-project('vutils', 'c', version: '0.0.0')
+project('vutils', 'c', version: '0.1.0')
 
 local_inc = include_directories('include/vutils')
 external_inc = include_directories('include')

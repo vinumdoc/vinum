@@ -29,7 +29,7 @@ static int yield_text_node(void);
 // used to handle character escaping inside the regular text blocks
 // preventing having two consecutive TEXT nodes
 // that could be just one node
-static struct str text_buffer = {};
+static struct vut_str text_buffer = {};
 %}
 
 BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
@@ -96,30 +96,30 @@ BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
 
 
 <CONTENT>\\(.|\n)/({BEFORE_TEXT_END}) {
-	VEC_PUT(&text_buffer, yytext[1]);
+	VUT_VEC_PUT(&text_buffer, yytext[1]);
 	return yield_text_node();
 }
 <CONTENT>\\(.|\n)/(.|\n) {
-	VEC_PUT(&text_buffer, yytext[1]);
+	VUT_VEC_PUT(&text_buffer, yytext[1]);
 }
 <CONTENT>\\(.|\n) {
 	// the next token is eof, so we yield the
 	// contents buffered so far
-	VEC_PUT(&text_buffer, yytext[1]);
+	VUT_VEC_PUT(&text_buffer, yytext[1]);
 	return yield_text_node();
 }
 
 <CONTENT>([^\[\]])/({BEFORE_TEXT_END}) {
-	VEC_PUT(&text_buffer, *yytext);
+	VUT_VEC_PUT(&text_buffer, *yytext);
 	return yield_text_node();
 }
 <CONTENT>([^\[\]])/(.|\n) {
-	VEC_PUT(&text_buffer, *yytext);
+	VUT_VEC_PUT(&text_buffer, *yytext);
 }
 <CONTENT>([^\[\]]) {
 	// the next token is eof, so we yield the
 	// contents buffered so far
-	VEC_PUT(&text_buffer, *yytext);
+	VUT_VEC_PUT(&text_buffer, *yytext);
 	return yield_text_node();
 }
 
@@ -133,10 +133,10 @@ static void replace_state(int new_state) {
 }
 
 static int yield_text_node(void) {
-	VEC_PUT(&text_buffer, '\0');
+	VUT_VEC_PUT(&text_buffer, '\0');
 	struct ast_node node = ast_node_new(TEXT, text_buffer.base);
 	// transfers the string to the ast node
-	text_buffer = (struct str){};
+	text_buffer = (struct vut_str){};
 	yylval = ast_add_node(&ctx.ast, node);
 	return TEXT;
 }

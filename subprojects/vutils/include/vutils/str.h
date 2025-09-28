@@ -1,14 +1,14 @@
-#ifndef __STR_H__
-#define __STR_H__
+#ifndef __VUT_STR_H__
+#define __VUT_STR_H__
 
 #include <stdbool.h>
 
 #include "vec.h"
 
-struct str VEC_DEF(char);
+struct vut_str VUT_VEC_DEF(char);
 
-void put_str(struct str *to, char *from);
+void vut_put_str(struct vut_str *to, char *from);
 
-void put_blank_reduced_str(struct str *to, char *from, bool trim_left, bool trim_right);
+void vut_put_blank_reduced_str(struct vut_str *to, char *from, bool trim_left, bool trim_right);
 
-#endif // __STR_H__
+#endif // __VUT_STR_H__

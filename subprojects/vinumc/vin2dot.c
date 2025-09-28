@@ -61,7 +61,7 @@ static void dot_ast_and_scopes(struct ast_nodes_t *ast, struct eval_ctx_scopes_t
 	fprintf(stream, "digraph {\n");
 
 	for (size_t i = 0; i < ast->len; i++) {
-		const struct ast_node *node = &VEC_AT(ast, i);
+		const struct ast_node *node = &VUT_VEC_AT(ast, i);
 
 		fprintf(stream, "\tan_%zu [label = \"", i);
 
@@ -78,17 +78,17 @@ static void dot_ast_and_scopes(struct ast_nodes_t *ast, struct eval_ctx_scopes_t
 		fprintf(stream, "\"]\n");
 
 		for (size_t j = 0; j < node->childs.len; j++) {
-			size_t child_id = VEC_AT(&node->childs, j);
+			size_t child_id = VUT_VEC_AT(&node->childs, j);
 			fprintf(stream, "\tan_%zu -> an_%zu\n", i, child_id);
 		}
 	}
 
 	for (size_t i = 0; i < scopes->len; i++) {
-		const struct scope *sc = &VEC_AT(scopes, i);
+		const struct scope *sc = &VUT_VEC_AT(scopes, i);
 
 		fprintf(stream, "\ts_%zu [shape=record, label=\" %zu |", i, i);
 		for (size_t j = 0; j < sc->namespace.len; j++) {
-			struct namespace_entry *entry = &VEC_AT(&sc->namespace, j);
+			struct namespace_entry *entry = &VUT_VEC_AT(&sc->namespace, j);
 			fprintf(stream, "<%d> %s", entry->as.ast_node_id, entry->name);
 			if (j < sc->namespace.len - 1)
 				fprintf(stream, " |");
@@ -96,13 +96,13 @@ static void dot_ast_and_scopes(struct ast_nodes_t *ast, struct eval_ctx_scopes_t
 		fprintf(stream, "\"]\n");
 
 		for (size_t j = 0; j < sc->namespace.len; j++) {
-			struct namespace_entry *entry = &VEC_AT(&sc->namespace, j);
+			struct namespace_entry *entry = &VUT_VEC_AT(&sc->namespace, j);
 			fprintf(stream, "s_%zu:<%d> -> an_%d [style=dotted]", i,
 				entry->as.ast_node_id, entry->as.ast_node_id);
 		}
 
 		for (size_t j = 0; j < sc->childs.len; j++) {
-			fprintf(stream, "\ts_%zu -> s_%zu\n", i, VEC_AT(&sc->childs, j));
+			fprintf(stream, "\ts_%zu -> s_%zu\n", i, VUT_VEC_AT(&sc->childs, j));
 		}
 
 		fprintf(stream, "\tan_%zu -> s_%zu  [style=dashed]\n", (size_t)sc->node, i);

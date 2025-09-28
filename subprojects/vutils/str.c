@@ -6,13 +6,13 @@ static bool is_blank_char(char c) {
 	return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
-void put_str(struct str *to, char *from) {
+void vut_put_str(struct vut_str *to, char *from) {
 	if ((to)->len > 0) {
-		VEC_POP(to);
+		VUT_VEC_POP(to);
 	}
 	size_t _len = strlen(from);
-	VEC_PUT_MANY(to, from, _len);
-	VEC_PUT(to, '\0');
+	VUT_VEC_PUT_MANY(to, from, _len);
+	VUT_VEC_PUT(to, '\0');
 }
 
 // Puts the contents of `from` into `to`, performing blank reduction,
@@ -20,9 +20,9 @@ void put_str(struct str *to, char *from) {
 //
 // If `trim_left` is true, leading blanks are removed.
 // If `trim_right` is true, trailing blanks are removed.
-void put_blank_reduced_str(struct str *to, char *from, bool trim_left, bool trim_right) {
+void vut_put_blank_reduced_str(struct vut_str *to, char *from, bool trim_left, bool trim_right) {
 	if (to->len > 0) {
-		VEC_POP(to);
+		VUT_VEC_POP(to);
 	}
 
 	size_t start = 0;
@@ -38,14 +38,14 @@ void put_blank_reduced_str(struct str *to, char *from, bool trim_left, bool trim
 		}
 	}
 
-	bool is_previous_blank = to->len == 0 || is_blank_char(VEC_AT(to, to->len - 1));
+	bool is_previous_blank = to->len == 0 || is_blank_char(VUT_VEC_AT(to, to->len - 1));
 
-	VEC_RESERVE(to, (end - start + 1));
+	VUT_VEC_RESERVE(to, (end - start + 1));
 	for (size_t i = start; i < end; i++) {
 		char c = from[i];
 
 		if (!is_blank_char(c)) {
-			VEC_PUT(to, c);
+			VUT_VEC_PUT(to, c);
 			is_previous_blank = false;
 			continue;
 		}
@@ -53,7 +53,7 @@ void put_blank_reduced_str(struct str *to, char *from, bool trim_left, bool trim
 			continue;
 		}
 		is_previous_blank = true;
-		VEC_PUT(to, ' ');
+		VUT_VEC_PUT(to, ' ');
 	}
-	VEC_PUT(to, '\0');
+	VUT_VEC_PUT(to, '\0');
 }
