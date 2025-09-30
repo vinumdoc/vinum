@@ -19,10 +19,12 @@ void test(struct vunit_test_ctx *ctx) {
 	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!");
 }
 
-VUNIT_TEST_SUITE("suite",
+struct vunit_test tests[] = {
 	{"Basic test", test},
 	{},
-)
+};
+
+VUNIT_TEST_SUITE(tests)
 ```
 
 For the output it uses the [TAP](https://testanything.org/) protocol.
