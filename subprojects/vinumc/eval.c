@@ -28,9 +28,9 @@ static size_t add_scope_child(struct eval_ctx_scopes_t *scope_array, size_t scop
 			      ast_node_id_t node) {
 	size_t new_scope_id = scope_array->len;
 
-	VEC_PUT(scope_array, ((struct scope){ .father = scope_id, node = node }));
+	VUT_VEC_PUT(scope_array, ((struct scope){ .father = scope_id, node = node }));
 	struct scope *scope = &scope_array->base[scope_id];
-	VEC_PUT(&scope->childs, new_scope_id);
+	VUT_VEC_PUT(&scope->childs, new_scope_id);
 
 	return new_scope_id;
 }
@@ -38,8 +38,8 @@ static size_t add_scope_child(struct eval_ctx_scopes_t *scope_array, size_t scop
 static struct namespace_entry *namespace_find_name(const struct scope_namespace_t *namespace,
 						   const char *name) {
 	for (size_t i = 0; i < namespace->len; i++) {
-		if (strcmp(name, VEC_AT(namespace, i).name) == 0)
-			return &VEC_AT(namespace, i);
+		if (strcmp(name, VUT_VEC_AT(namespace, i).name) == 0)
+			return &VUT_VEC_AT(namespace, i);
 	}
 
 	return NULL;
@@ -61,12 +61,12 @@ static struct namespace_entry *find_symbol_on_scopes(const struct eval_ctx_scope
 
 static int find_scope_child_by_node(const struct eval_ctx_scopes_t *scopes, size_t scope_id,
 				    size_t ast_node_id) {
-	const struct scope *curr_scope = &VEC_AT(scopes, scope_id);
+	const struct scope *curr_scope = &VUT_VEC_AT(scopes, scope_id);
 	int call_scope = -1;
 
 	for (size_t i = 0; i < curr_scope->childs.len; i++) {
-		size_t tmp_scope_id = VEC_AT(&curr_scope->childs, i);
-		struct scope *tmp_scope = &VEC_AT(scopes, tmp_scope_id);
+		size_t tmp_scope_id = VUT_VEC_AT(&curr_scope->childs, i);
+		struct scope *tmp_scope = &VUT_VEC_AT(scopes, tmp_scope_id);
 
 		if (tmp_scope->node == ast_node_id)
 			call_scope = tmp_scope_id;
@@ -82,28 +82,29 @@ static int find_scope_child_by_node(const struct eval_ctx_scopes_t *scopes, size
 RESOLVE_FUNC_SIGNATURE(resolve_symbols);
 
 RESOLVE_FUNC_SIGNATURE(resolve_symbols_descent) {
-	struct ast_node ast_node = VEC_AT(&ast->nodes, ast_node_id);
+	struct ast_node ast_node = VUT_VEC_AT(&ast->nodes, ast_node_id);
 	for (size_t i = 0; i < ast_node.childs.len; i++) {
-		resolve_symbols(ctx, ast, curr_scope_id, VEC_AT(&ast_node.childs, i));
+		resolve_symbols(ctx, ast, curr_scope_id, VUT_VEC_AT(&ast_node.childs, i));
 	}
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_symbols_assignment) {
-	struct scope *curr_scope = &VEC_AT(&ctx->scopes, curr_scope_id);
-	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
+	struct scope *curr_scope = &VUT_VEC_AT(&ctx->scopes, curr_scope_id);
+	const struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
 
-	char *name = VEC_AT(&ast->nodes, VEC_AT(&ast_node->childs, 0)).text;
+	char *name = VUT_VEC_AT(&ast->nodes, VUT_VEC_AT(&ast_node->childs, 0)).text;
 	struct namespace_entry entry = {
 		.name = name,
 		.type = ENTRY_INTERNAL,
-		.as.ast_node_id = ast_node->childs.len > 1 ? (int)VEC_AT(&ast_node->childs, 1) : -1,
+		.as.ast_node_id =
+			ast_node->childs.len > 1 ? (int)VUT_VEC_AT(&ast_node->childs, 1) : -1,
 	};
 
-	VEC_PUT(&curr_scope->namespace, entry);
+	VUT_VEC_PUT(&curr_scope->namespace, entry);
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_symbols) {
-	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
+	const struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
 
 	if (ast_node->type == ASSIGNMENT) {
 		resolve_symbols_assignment(ctx, ast, curr_scope_id, ast_node_id);
@@ -117,17 +118,17 @@ RESOLVE_FUNC_SIGNATURE(resolve_symbols) {
 RESOLVE_FUNC_SIGNATURE(resolve_calls);
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls_descent) {
-	const struct ast_node ast_node = VEC_AT(&ast->nodes, ast_node_id);
+	const struct ast_node ast_node = VUT_VEC_AT(&ast->nodes, ast_node_id);
 	for (size_t i = 0; i < ast_node.childs.len; i++) {
-		resolve_calls(ctx, ast, curr_scope_id, VEC_AT(&ast_node.childs, i));
+		resolve_calls(ctx, ast, curr_scope_id, VUT_VEC_AT(&ast_node.childs, i));
 	}
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
-	struct scope *curr_scope = &VEC_AT(&ctx->scopes, curr_scope_id);
-	struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
+	struct scope *curr_scope = &VUT_VEC_AT(&ctx->scopes, curr_scope_id);
+	struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
 
-	char *call_name = VEC_AT(&ast->nodes, VEC_AT(&ast_node->childs, 0)).text;
+	char *call_name = VUT_VEC_AT(&ast->nodes, VUT_VEC_AT(&ast_node->childs, 0)).text;
 	if (call_name == NULL) {
 		fprintf(stderr, "ERROR: Symbol with no name\n");
 		return;
@@ -147,31 +148,32 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 				size_t symbol_args_node_id =
 					ast_copy_node(ast, symbol_info->as.ast_node_id);
 				struct ast_node *symbol_args_node =
-					&VEC_AT(&ast->nodes, symbol_args_node_id);
+					&VUT_VEC_AT(&ast->nodes, symbol_args_node_id);
 
 				for (size_t i = 0; i < symbol_args_node->childs.len; i++) {
-					struct ast_node *child = &VEC_AT(
-						&ast->nodes, VEC_AT(&symbol_args_node->childs, i));
+					struct ast_node *child = &VUT_VEC_AT(
+						&ast->nodes,
+						VUT_VEC_AT(&symbol_args_node->childs, i));
 
 					if (child->type == ARG_REF_ALL_ARGS) {
-						VEC_AT(&symbol_args_node->childs, i) =
-							VEC_AT(&ast_node->childs, 1);
+						VUT_VEC_AT(&symbol_args_node->childs, i) =
+							VUT_VEC_AT(&ast_node->childs, 1);
 					}
 				}
-				VEC_AT(&ast_node->childs, 1) = symbol_args_node_id;
+				VUT_VEC_AT(&ast_node->childs, 1) = symbol_args_node_id;
 			} else {
 				if (symbol_info->as.ast_node_id >= 0) {
 					ast_node_add_child(ast_node, symbol_info->as.ast_node_id);
 				}
 			}
 
-			size_t new_node = VEC_AT(&ast_node->childs, 1);
+			size_t new_node = VUT_VEC_AT(&ast_node->childs, 1);
 
 			resolve_symbols(ctx, ast, curr_scope_id, new_node);
 
 		} else if (symbol_info->type == ENTRY_EXTERNAL) {
 			struct ast_node *symbol_node =
-				&VEC_AT(&ast->nodes, VEC_AT(&ast_node->childs, 0));
+				&VUT_VEC_AT(&ast->nodes, VUT_VEC_AT(&ast_node->childs, 0));
 			symbol_node->type = FUNCTION;
 
 			if (ast_node->childs.len <= 1) {
@@ -189,7 +191,7 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls) {
-	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
+	const struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
 
 	switch (ast_node->type) {
 	case ARGS:
@@ -211,15 +213,15 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls) {
 }
 
 #define DO_CALLS_FUNC_SIGNATURE(func_name)                                                         \
-	static void func_name(struct eval_ctx *ctx, const struct ast *ast, struct str *out,        \
+	static void func_name(struct eval_ctx *ctx, const struct ast *ast, struct vut_str *out,    \
 			      size_t ast_node_id, int flags)
 
 DO_CALLS_FUNC_SIGNATURE(do_calls);
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_program) {
-	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
+	const struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
 	for (size_t i = 0; i < ast_node->childs.len; i++) {
-		size_t child_id = VEC_AT(&ast_node->childs, i);
+		size_t child_id = VUT_VEC_AT(&ast_node->childs, i);
 		int sub_flags = flags & ~(FIRST_CHILD | LAST_CHILD);
 		if (i == 0) {
 			sub_flags |= FIRST_CHILD;
@@ -232,24 +234,25 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_program) {
 }
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
-	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
+	const struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
 
 	if (ast_node->childs.len <= 1) {
 		return;
 	}
 
-	const struct ast_node *symbol_node = &VEC_AT(&ast->nodes, VEC_AT(&ast_node->childs, 0));
-	size_t args_id = VEC_AT(&ast_node->childs, 1);
+	const struct ast_node *symbol_node =
+		&VUT_VEC_AT(&ast->nodes, VUT_VEC_AT(&ast_node->childs, 0));
+	size_t args_id = VUT_VEC_AT(&ast_node->childs, 1);
 
 	if (symbol_node->type == FUNCTION) {
 		// writes the returns of the arguments calls to a temporary buffer,
 		// so any nested call will be resolved normally
-		struct str tmp_out = {};
-		VEC_PUT(&tmp_out, '\0');
+		struct vut_str tmp_out = {};
+		VUT_VEC_PUT(&tmp_out, '\0');
 		do_calls(ctx, ast, &tmp_out, args_id, flags);
 
 		// find the extern function on the scope
-		struct scope *curr_scope = &VEC_AT(&ctx->scopes, 0);
+		struct scope *curr_scope = &VUT_VEC_AT(&ctx->scopes, 0);
 		struct namespace_entry *symbol_info =
 			find_symbol_on_scopes(&ctx->scopes, curr_scope, symbol_node->text);
 
@@ -260,15 +263,15 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 		// put the extern function call return on the out str
 
 		if ((flags & REDUCE_BLANKS) != 0) {
-			put_blank_reduced_str(out, call_return.ptr, true, true);
+			vut_put_blank_reduced_str(out, call_return.ptr, true, true);
 		} else {
-			put_str(out, call_return.ptr);
+			vut_put_str(out, call_return.ptr);
 		}
 
 		if (call_return.free) {
 			free(call_return.ptr);
 		}
-		VEC_FREE(&tmp_out);
+		VUT_VEC_FREE(&tmp_out);
 	} else {
 		do_calls(ctx, ast, out, args_id, flags);
 	}
@@ -276,19 +279,19 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_text) {
 	UNUSED(ctx);
-	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
+	const struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
 
 	if ((flags & REDUCE_BLANKS) != 0) {
 		bool trim_left = (flags & FIRST_CHILD) != 0;
 		bool trim_right = (flags & LAST_CHILD) != 0;
-		put_blank_reduced_str(out, ast_node->text, trim_left, trim_right);
+		vut_put_blank_reduced_str(out, ast_node->text, trim_left, trim_right);
 	} else {
-		put_str(out, ast_node->text);
+		vut_put_str(out, ast_node->text);
 	}
 }
 
 DO_CALLS_FUNC_SIGNATURE(do_calls) {
-	const struct ast_node *ast_node = &VEC_AT(&ast->nodes, ast_node_id);
+	const struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
 
 	switch (ast_node->type) {
 	case PROGRAM:
@@ -308,7 +311,7 @@ DO_CALLS_FUNC_SIGNATURE(do_calls) {
 }
 
 void resolve_extern_functions(struct eval_ctx *ctx, struct loaded_lib lib) {
-	struct scope *curr_scope = &VEC_AT(&ctx->scopes, 0);
+	struct scope *curr_scope = &VUT_VEC_AT(&ctx->scopes, 0);
 
 	int i = 0;
 	struct extern_function f = lib.functions[i];
@@ -319,7 +322,7 @@ void resolve_extern_functions(struct eval_ctx *ctx, struct loaded_lib lib) {
 			.as.func = f.fp,
 		};
 
-		VEC_PUT(&curr_scope->namespace, entry);
+		VUT_VEC_PUT(&curr_scope->namespace, entry);
 		f = lib.functions[++i];
 	}
 }
@@ -328,7 +331,7 @@ struct loaded_lib *load_libs(struct eval_ctx *ctx, struct str_vec *libraries) {
 	size_t len = libraries->len;
 	struct loaded_lib *loaded_libs = calloc(len, sizeof(struct loaded_lib));
 	for (size_t i = 0; i < len; i++) {
-		loaded_libs[i] = load_lib(VEC_AT(libraries, i));
+		loaded_libs[i] = load_lib(VUT_VEC_AT(libraries, i));
 		resolve_extern_functions(ctx, loaded_libs[i]);
 	}
 	loaded_libs[len].dl_handle = NULL;
@@ -352,13 +355,13 @@ void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out, struct str_vec *libr
 		.father = -1,
 		.node = 0,
 	};
-	VEC_PUT(&ctx->scopes, base_scope);
+	VUT_VEC_PUT(&ctx->scopes, base_scope);
 
 	struct loaded_lib *loaded_libs = load_libs(ctx, libraries);
 	resolve_symbols(ctx, ast, 0, 0);
 	resolve_calls(ctx, ast, 0, 0);
-	struct str str_out = {};
-	VEC_PUT(&str_out, '\0');
+	struct vut_str str_out = {};
+	VUT_VEC_PUT(&str_out, '\0');
 
 	do_calls(ctx, ast, &str_out, 0, REDUCE_BLANKS);
 	fprintf(out, "%s", str_out.base);
@@ -369,17 +372,17 @@ void eval_dot(const struct eval_ctx *ctx, FILE *stream) {
 	fprintf(stream, "digraph {\n");
 	fprintf(stream, "\tnode [shape=record];\n");
 	for (size_t i = 0; i < ctx->scopes.len; i++) {
-		const struct scope *sc = &VEC_AT(&ctx->scopes, i);
+		const struct scope *sc = &VUT_VEC_AT(&ctx->scopes, i);
 		fprintf(stream, "\t%zu [label=\" %zu |", i, i);
 		for (size_t j = 0; j < sc->namespace.len; j++) {
-			fprintf(stream, "%s", VEC_AT(&sc->namespace, j).name);
+			fprintf(stream, "%s", VUT_VEC_AT(&sc->namespace, j).name);
 			if (j < sc->namespace.len - 1)
 				fprintf(stream, " |");
 		}
 		fprintf(stream, "\"]\n");
 
 		for (size_t j = 0; j < sc->childs.len; j++) {
-			fprintf(stream, "\t%zu -> %zu\n", i, VEC_AT(&sc->childs, j));
+			fprintf(stream, "\t%zu -> %zu\n", i, VUT_VEC_AT(&sc->childs, j));
 		}
 	}
 	fprintf(stream, "}\n");

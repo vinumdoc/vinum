@@ -29,7 +29,7 @@ program:
 	$$ = ast_add_node(&ctx.ast, node);
        }
        | program block {
-	struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
+	struct ast_node *node = &VUT_VEC_AT(&ctx.ast.nodes, $1);
 
 	ast_node_add_child(node, $2);
 	$$ = $1;
@@ -70,7 +70,7 @@ args:
 		$$ = ast_add_node(&ctx.ast, node);
 	}
 	| args args_child {
-		struct ast_node *node = &VEC_AT(&ctx.ast.nodes, $1);
+		struct ast_node *node = &VUT_VEC_AT(&ctx.ast.nodes, $1);
 
 		ast_node_add_child(node, $2);
 
@@ -87,7 +87,7 @@ args_child:
 
 symbol: SYMBOL {
 	// making so our symbols are case insensitive by making the whole string lowercase
-	char *text = VEC_AT(&ctx.ast.nodes, $1).text;
+	char *text = VUT_VEC_AT(&ctx.ast.nodes, $1).text;
 	size_t len = strlen(text);
 
 	// we need to convert from multi-byte to wide-character string

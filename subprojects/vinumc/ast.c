@@ -15,7 +15,7 @@ struct ast_node ast_node_new(const int type, char *text) {
 }
 
 void ast_node_add_child(struct ast_node *dst, const ast_node_id_t child) {
-	VEC_PUT(&dst->childs, child);
+	VUT_VEC_PUT(&dst->childs, child);
 }
 
 struct ast ast_new() {
@@ -25,24 +25,24 @@ struct ast ast_new() {
 }
 
 ast_node_id_t ast_add_node(struct ast *ast, const struct ast_node node) {
-	VEC_PUT(&ast->nodes, node);
+	VUT_VEC_PUT(&ast->nodes, node);
 	return ast->nodes.len - 1;
 }
 
 ast_node_id_t ast_copy_node(struct ast *ast, ast_node_id_t node_id) {
-	struct ast_node no_childs_copy = VEC_AT(&ast->nodes, node_id);
+	struct ast_node no_childs_copy = VUT_VEC_AT(&ast->nodes, node_id);
 
 	no_childs_copy.childs = (struct ast_node_childs_t){ 0 };
 
 	size_t node_copy_id = ast_add_node(ast, no_childs_copy);
-	struct ast_node *node_copy = &VEC_AT(&ast->nodes, node_copy_id);
+	struct ast_node *node_copy = &VUT_VEC_AT(&ast->nodes, node_copy_id);
 
-	struct ast_node_childs_t childs = VEC_AT(&ast->nodes, node_id).childs;
-	VEC_RESERVE_EXACT(&node_copy->childs, childs.len);
+	struct ast_node_childs_t childs = VUT_VEC_AT(&ast->nodes, node_id).childs;
+	VUT_VEC_RESERVE_EXACT(&node_copy->childs, childs.len);
 
 	for (size_t i = 0; i < childs.len; i++) {
-		size_t child_copy_id = ast_copy_node(ast, VEC_AT(&childs, i));
-		struct ast_node *node_copy = &VEC_AT(&ast->nodes, node_copy_id);
+		size_t child_copy_id = ast_copy_node(ast, VUT_VEC_AT(&childs, i));
+		struct ast_node *node_copy = &VUT_VEC_AT(&ast->nodes, node_copy_id);
 		ast_node_add_child(node_copy, child_copy_id);
 	}
 
@@ -75,7 +75,7 @@ const char *token_to_str(enum yytokentype token) {
 }
 
 static void ast_print_rec(const struct ast *ast, const int id, const int level) {
-	const struct ast_node *node = &VEC_AT(&ast->nodes, id);
+	const struct ast_node *node = &VUT_VEC_AT(&ast->nodes, id);
 
 	for (int i = 0; i < level; i++) {
 		printf("    ");
@@ -93,7 +93,7 @@ static void ast_print_rec(const struct ast *ast, const int id, const int level) 
 	printf("\n");
 
 	for (size_t i = 0; i < node->childs.len; i++) {
-		ast_print_rec(ast, VEC_AT(&node->childs, i), level + 1);
+		ast_print_rec(ast, VUT_VEC_AT(&node->childs, i), level + 1);
 	}
 }
 
@@ -102,7 +102,7 @@ void ast_print(const struct ast *ast) {
 }
 
 static void ast_dot_rec(const struct ast *ast, FILE *stream, const size_t id) {
-	const struct ast_node *node = &VEC_AT(&ast->nodes, id);
+	const struct ast_node *node = &VUT_VEC_AT(&ast->nodes, id);
 
 	fprintf(stream, "\t%zu [label = \"", id);
 
@@ -119,7 +119,7 @@ static void ast_dot_rec(const struct ast *ast, FILE *stream, const size_t id) {
 	fprintf(stream, "\"]\n");
 
 	for (size_t i = 0; i < node->childs.len; i++) {
-		size_t child_id = VEC_AT(&node->childs, i);
+		size_t child_id = VUT_VEC_AT(&node->childs, i);
 		fprintf(stream, "\t%zu -> %zu\n", id, child_id);
 		ast_dot_rec(ast, stream, child_id);
 	}

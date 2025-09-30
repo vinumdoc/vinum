@@ -11,7 +11,7 @@
 
 typedef uint32_t ast_node_id_t;
 
-struct ast_node_childs_t VEC_DEF(ast_node_id_t);
+struct ast_node_childs_t VUT_VEC_DEF(ast_node_id_t);
 
 struct ast_node {
 	int type;
@@ -25,7 +25,7 @@ struct ast_node ast_node_new(const int type, char *value);
 
 void ast_node_add_child(struct ast_node *dst, const ast_node_id_t child);
 
-struct ast_nodes_t VEC_DEF(struct ast_node);
+struct ast_nodes_t VUT_VEC_DEF(struct ast_node);
 
 struct ast {
 	struct ast_nodes_t nodes;

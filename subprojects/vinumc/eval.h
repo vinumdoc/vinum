@@ -8,7 +8,7 @@
 #include "ast.h"
 #include "extern_library.h"
 
-struct scope_childs_t VEC_DEF(size_t);
+struct scope_childs_t VUT_VEC_DEF(size_t);
 
 enum entry_type {
 	ENTRY_INTERNAL,
@@ -24,7 +24,7 @@ struct namespace_entry {
 	} as;
 };
 
-struct scope_namespace_t VEC_DEF(struct namespace_entry);
+struct scope_namespace_t VUT_VEC_DEF(struct namespace_entry);
 
 struct scope {
 	int father;
@@ -35,7 +35,7 @@ struct scope {
 	struct scope_namespace_t namespace;
 };
 
-struct eval_ctx_scopes_t VEC_DEF(struct scope);
+struct eval_ctx_scopes_t VUT_VEC_DEF(struct scope);
 
 struct eval_ctx {
 	struct eval_ctx_scopes_t scopes;
@@ -43,7 +43,7 @@ struct eval_ctx {
 
 struct eval_ctx eval_ctx_new();
 
-struct str_vec VEC_DEF(char *);
+struct str_vec VUT_VEC_DEF(char *);
 
 void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out, struct str_vec *libraries);
 

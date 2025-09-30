@@ -112,7 +112,7 @@ static void parse_cmdline(const int argc, char **argv, struct ctx *ctx, struct f
 			break;
 		case FLAG_MULTI_ARGUMENTS: {
 			char *tmp = strdup(optarg);
-			VEC_PUT(f->ref_as.str_vec, tmp);
+			VUT_VEC_PUT(f->ref_as.str_vec, tmp);
 		} break;
 		}
 	}

@@ -1,9 +1,12 @@
+project('vutils_tests', 'c', version: '0.0.0')
+
 fs = import('fs')
 
 tests = [
   'vec_macros.c',
 ]
 
+vutils_dep = dependency('vutils', fallback : ['vutils', 'vutils_dep'])
 vunit_dep = dependency('vunit', fallback : ['vunit', 'vunit_dep'])
 
 foreach t : tests
