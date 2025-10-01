@@ -50,4 +50,7 @@ struct vut_str eval(struct compiler_ctx *cctx);
 
 void eval_dot(const struct eval_ctx *ctx, FILE *stream);
 
+struct namespace_entry *eval_find_symbol_on_scopes(const struct eval_ctx *ctx, size_t curr_scope,
+						   const struct vut_sv name);
+
 #endif // __EVAL_H__

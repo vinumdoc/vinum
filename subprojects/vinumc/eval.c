@@ -88,6 +88,12 @@ static int find_scope_by_ast_node(const struct eval_ctx_scopes_t *scope_array,
 	return -1;
 }
 
+struct namespace_entry *eval_find_symbol_on_scopes(const struct eval_ctx *ctx, size_t curr_scope,
+						   const struct vut_sv name) {
+	struct scope *sp = &VUT_VEC_AT(&ctx->scopes, curr_scope);
+	return find_symbol_on_scopes(&ctx->scopes, sp, name);
+}
+
 static int find_scope_child_by_node(const struct eval_ctx_scopes_t *scopes, size_t scope_id,
 				    ast_node_id_t ast_node) {
 	const struct scope *curr_scope = &VUT_VEC_AT(scopes, scope_id);
