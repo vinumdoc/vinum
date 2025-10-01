@@ -8,6 +8,7 @@
 #include <vutils/system_allocator.h>
 #include <vutils/vec.h>
 
+#include "ast.h"
 #include "eval.h"
 #include "extern_library.h"
 #include "library_loader.h"
@@ -417,15 +418,21 @@ struct vut_str eval(struct compiler_ctx *cctx) {
 	VUT_VEC_PUT(&ctx->scopes, base_scope);
 
 	struct loaded_lib *loaded_libs = load_libs(ctx, &cctx->libraries);
-	resolve_symbols(cctx, 0, 0);
-	resolve_calls(cctx, 0, 0);
 
 	struct vut_str str_out = vut_str_init(ctx->allocator);
-	do_calls(cctx, &str_out, 0, REDUCE_BLANKS);
+	eval_node(cctx, 0, 0, &str_out);
 
 	unload_libs(loaded_libs, ctx->allocator);
 
 	return str_out;
+}
+
+void eval_node(struct compiler_ctx *cctx, ast_node_id_t ast_node, size_t scope_id,
+	       struct vut_str *ret_str) {
+	resolve_symbols(cctx, scope_id, ast_node);
+	resolve_calls(cctx, scope_id, ast_node);
+
+	do_calls(cctx, ret_str, ast_node, REDUCE_BLANKS);
 }
 
 void eval_dot(const struct eval_ctx *ctx, FILE *stream) {

@@ -27,6 +27,8 @@ You can use this functions to get data from the callee context:
 ```c
 // get all the args text
 struct return_value ctx_get_arg(call_ctx ctx);
+// evalues and returns the text value of a symbol finding it by name
+struct return_value ctx_eval_symbol(call_ctx ctx, const char *name);
 ```
 
 ## 4. Register your functions

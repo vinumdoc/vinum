@@ -24,5 +24,6 @@ struct loaded_lib {
 };
 
 struct return_value ctx_get_arg(call_ctx ctx);
+struct return_value ctx_eval_symbol(call_ctx ctx, const char *name);
 
 #endif //__EXTERN_LIBRARY_H__
