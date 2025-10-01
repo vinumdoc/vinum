@@ -77,6 +77,17 @@ static struct namespace_entry *find_symbol_on_scopes(const struct eval_ctx_scope
 	return NULL;
 }
 
+static int find_scope_by_ast_node(const struct eval_ctx_scopes_t *scope_array,
+				  ast_node_id_t ast_node) {
+	for (size_t i = 0; i < scope_array->len; i++) {
+		struct scope *s = &VUT_VEC_AT(scope_array, i);
+		if (s->node == ast_node)
+			return i;
+	}
+
+	return -1;
+}
+
 static int find_scope_child_by_node(const struct eval_ctx_scopes_t *scopes, size_t scope_id,
 				    ast_node_id_t ast_node) {
 	const struct scope *curr_scope = &VUT_VEC_AT(scopes, scope_id);
@@ -292,14 +303,21 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 		struct scope *curr_scope = &VUT_VEC_AT(&ctx->scopes, 0);
 		struct namespace_entry *symbol_info =
 			find_symbol_on_scopes(&ctx->scopes, curr_scope, ast_get_text(ast, symbol));
+		int curr_scope_id = find_scope_by_ast_node(&ctx->scopes, ast_node);
+
+		assert(curr_scope_id != -1);
 
 		// expose context to external function
-		char *tmp_text = vut_str_move_to_cstr(&tmp_out);
-		struct _call_ctx cctx = { .arg_text = tmp_text };
-		struct return_value call_return = symbol_info->as.func(&cctx);
+		struct _call_ctx call_ctx = {
+			.arg_text = vut_str_move_to_cstr(&tmp_out),
+			.scope_id = curr_scope_id,
+			.ast_node = ast_node,
+			.compiler_ctx = cctx,
+		};
+
+		struct return_value call_return = symbol_info->as.func(&call_ctx);
 
 		// put the extern function call return on the out str
-
 		if ((flags & REDUCE_BLANKS) != 0) {
 			vut_str_put_blank_reduced_cstr(out, call_return.ptr, true, true);
 		} else {
@@ -309,7 +327,6 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 		if (call_return.free) {
 			free(call_return.ptr);
 		}
-		vut_allocator_free(ctx->allocator, tmp_text);
 	} else {
 		do_calls(cctx, out, args, flags);
 	}
