@@ -46,7 +46,7 @@ struct eval_ctx eval_ctx_new(struct vut_allocator allocator);
 
 struct sv_vec VUT_VEC_DEF(struct vut_sv);
 
-struct vut_str eval(struct eval_ctx *ctx, struct ast *ast, struct sv_vec *libraries);
+struct vut_str eval(struct compiler_ctx *cctx);
 
 void eval_dot(const struct eval_ctx *ctx, FILE *stream);
 

@@ -32,10 +32,10 @@ void compiler_parse(struct compiler_ctx *ctx, struct vut_str *program) {
 }
 
 struct vut_str compiler_eval(struct compiler_ctx *ctx) {
-	return eval(&ctx->eval_ctx, &ctx->ast, &ctx->libraries);
+	return eval(ctx);
 }
 
 struct vut_str compiler_compile(struct compiler_ctx *ctx, struct vut_str *program) {
 	compiler_parse(ctx, program);
-	return compiler_eval(ctx);
+	return eval(ctx);
 }

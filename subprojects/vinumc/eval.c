@@ -11,6 +11,7 @@
 #include "eval.h"
 #include "extern_library.h"
 #include "library_loader.h"
+#include "libvinumc.h"
 #include "utils.h"
 #include "v_lib.h"
 
@@ -93,20 +94,20 @@ static int find_scope_child_by_node(const struct eval_ctx_scopes_t *scopes, size
 }
 
 #define RESOLVE_FUNC_SIGNATURE(func_name)                                                          \
-	static void func_name(struct eval_ctx *ctx, struct ast *ast, size_t curr_scope_id,         \
-			      size_t ast_node_id)
+	static void func_name(struct compiler_ctx *cctx, size_t curr_scope_id, size_t ast_node_id)
 
 RESOLVE_FUNC_SIGNATURE(resolve_symbols);
 
 RESOLVE_FUNC_SIGNATURE(resolve_symbols_descent) {
-	for (size_t i = 0; i < ast_get_num_child(ast, ast_node_id); i++) {
-		resolve_symbols(ctx, ast, curr_scope_id, ast_get_nth_child(ast, ast_node_id, i));
+	for (size_t i = 0; i < ast_get_num_child(&cctx->ast, ast_node_id); i++) {
+		resolve_symbols(cctx, curr_scope_id, ast_get_nth_child(&cctx->ast, ast_node_id, i));
 	}
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_symbols_assignment) {
-	struct scope *curr_scope = &VUT_VEC_AT(&ctx->scopes, curr_scope_id);
+	struct scope *curr_scope = &VUT_VEC_AT(&cctx->eval_ctx.scopes, curr_scope_id);
 
+	struct ast *ast = &cctx->ast;
 	struct vut_sv name = ast_get_text(ast, ast_get_nth_child(ast, ast_node_id, 0));
 	struct namespace_entry entry = {
 		.name = name,
@@ -120,31 +121,36 @@ RESOLVE_FUNC_SIGNATURE(resolve_symbols_assignment) {
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_symbols) {
+	struct ast *ast = &cctx->ast;
+	struct eval_ctx *ctx = &cctx->eval_ctx;
 	if (ast_get_type(ast, ast_node_id) == ASSIGNMENT) {
-		resolve_symbols_assignment(ctx, ast, curr_scope_id, ast_node_id);
+		resolve_symbols_assignment(cctx, curr_scope_id, ast_node_id);
 	} else {
 		if (ast_get_type(ast, ast_node_id) == CALL)
 			curr_scope_id = add_scope_child(&ctx->scopes, curr_scope_id, ast_node_id,
 							ctx->allocator);
-		resolve_symbols_descent(ctx, ast, curr_scope_id, ast_node_id);
+		resolve_symbols_descent(cctx, curr_scope_id, ast_node_id);
 	}
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls);
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls_descent) {
+	struct ast *ast = &cctx->ast;
 	for (size_t i = 0; i < ast_get_num_child(ast, ast_node_id); i++) {
-		resolve_calls(ctx, ast, curr_scope_id, ast_get_nth_child(ast, ast_node_id, i));
+		resolve_calls(cctx, curr_scope_id, ast_get_nth_child(ast, ast_node_id, i));
 	}
 }
 
 #define DO_CALLS_FUNC_SIGNATURE(func_name)                                                         \
-	static void func_name(struct eval_ctx *ctx, const struct ast *ast, struct vut_str *out,    \
-			      size_t ast_node_id, int flags)
+	static void func_name(struct compiler_ctx *cctx, struct vut_str *out, size_t ast_node_id,  \
+			      int flags)
 
 DO_CALLS_FUNC_SIGNATURE(do_calls);
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
+	struct ast *ast = &cctx->ast;
+	struct eval_ctx *ctx = &cctx->eval_ctx;
 	struct scope *curr_scope = &VUT_VEC_AT(&ctx->scopes, curr_scope_id);
 
 	ast_node_id_t call_name_ast = ast_get_nth_child(ast, ast_node_id, 0);
@@ -161,11 +167,11 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 		} else {
 			ast_node_id_t call = ast_get_nth_child(ast, call_name_ast, 0);
 			assert(ast_get_type(ast, call) == CALL);
-			resolve_calls(ctx, ast, curr_scope_id, call);
+			resolve_calls(cctx, curr_scope_id, call);
 
 			call_name_str = vut_str_init(ctx->allocator);
 
-			do_calls(ctx, ast, &call_name_str, call, REDUCE_BLANKS);
+			do_calls(cctx, &call_name_str, call, REDUCE_BLANKS);
 
 			call_name = vut_sv_from_vut_str(&call_name_str);
 			allocated = true;
@@ -206,7 +212,7 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 
 			ast_node_id_t new_node = ast_get_nth_child(ast, ast_node_id, 1);
 
-			resolve_symbols(ctx, ast, curr_scope_id, new_node);
+			resolve_symbols(cctx, curr_scope_id, new_node);
 		} else if (symbol_info->type == ENTRY_EXTERNAL) {
 			ast_node_id_t symbol = ast_get_nth_child(ast, ast_node_id, 0);
 			ast_set_type(ast, symbol, FUNCTION);
@@ -224,7 +230,7 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 			VUT_SV_ARG(call_name));
 	}
 
-	resolve_calls_descent(ctx, ast, curr_scope_id, ast_node_id);
+	resolve_calls_descent(cctx, curr_scope_id, ast_node_id);
 
 exit:
 	if (allocated)
@@ -232,19 +238,21 @@ exit:
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls) {
+	struct ast *ast = &cctx->ast;
 	switch (ast_get_type(ast, ast_node_id)) {
 	case ARGS:
 	case PROGRAM:
-		resolve_calls_descent(ctx, ast, curr_scope_id, ast_node_id);
+		resolve_calls_descent(cctx, curr_scope_id, ast_node_id);
 		break;
 	case CALL:;
-		int new_scope = find_scope_child_by_node(&ctx->scopes, curr_scope_id, ast_node_id);
+		int new_scope = find_scope_child_by_node(&cctx->eval_ctx.scopes, curr_scope_id,
+							 ast_node_id);
 		if (new_scope > 0)
 			curr_scope_id = new_scope;
 		else
 			fprintf(stderr, "ERROR: Could not find call scope for node %zu\n",
 				ast_node_id);
-		resolve_calls_call(ctx, ast, curr_scope_id, ast_node_id);
+		resolve_calls_call(cctx, curr_scope_id, ast_node_id);
 		break;
 	default:
 		break;
@@ -252,6 +260,7 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls) {
 }
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_program) {
+	struct ast *ast = &cctx->ast;
 	for (size_t i = 0; i < ast_get_num_child(ast, ast_node_id); i++) {
 		size_t child_id = ast_get_nth_child(ast, ast_node_id, i);
 		int sub_flags = flags & ~(FIRST_CHILD | LAST_CHILD);
@@ -261,11 +270,13 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_program) {
 		if (i == ast_get_num_child(ast, ast_node_id) - 1) {
 			sub_flags |= LAST_CHILD;
 		}
-		do_calls(ctx, ast, out, child_id, sub_flags);
+		do_calls(cctx, out, child_id, sub_flags);
 	}
 }
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
+	struct ast *ast = &cctx->ast;
+	struct eval_ctx *ctx = &cctx->eval_ctx;
 	if (ast_get_num_child(ast, ast_node_id) <= 1) {
 		return;
 	}
@@ -277,7 +288,7 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 		// writes the returns of the arguments calls to a temporary buffer,
 		// so any nested call will be resolved normally
 		struct vut_str tmp_out = vut_str_init(ctx->allocator);
-		do_calls(ctx, ast, &tmp_out, args, flags);
+		do_calls(cctx, &tmp_out, args, flags);
 
 		// find the extern function on the scope
 		struct scope *curr_scope = &VUT_VEC_AT(&ctx->scopes, 0);
@@ -302,13 +313,12 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 		}
 		vut_allocator_free(ctx->allocator, tmp_text);
 	} else {
-		do_calls(ctx, ast, out, args, flags);
+		do_calls(cctx, out, args, flags);
 	}
 }
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_text) {
-	UNUSED(ctx);
-	struct vut_sv text = ast_get_text(ast, ast_node_id);
+	struct vut_sv text = ast_get_text(&cctx->ast, ast_node_id);
 
 	if ((flags & REDUCE_BLANKS) != 0) {
 		bool trim_left = (flags & FIRST_CHILD) != 0;
@@ -320,17 +330,17 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_text) {
 }
 
 DO_CALLS_FUNC_SIGNATURE(do_calls) {
-	switch (ast_get_type(ast, ast_node_id)) {
+	switch (ast_get_type(&cctx->ast, ast_node_id)) {
 	case PROGRAM:
 	case ARGS:
-		do_calls_program(ctx, ast, out, ast_node_id, flags);
+		do_calls_program(cctx, out, ast_node_id, flags);
 		break;
 	case CALL:
-		do_calls_call(ctx, ast, out, ast_node_id, flags);
+		do_calls_call(cctx, out, ast_node_id, flags);
 		break;
 	case TEXT:
 	case LITERAL:
-		do_calls_text(ctx, ast, out, ast_node_id, flags);
+		do_calls_text(cctx, out, ast_node_id, flags);
 		break;
 	default:
 		break;
@@ -380,16 +390,17 @@ void unload_libs(struct loaded_lib *loaded_libs, struct vut_allocator alloc) {
 	vut_allocator_free(alloc, loaded_libs);
 }
 
-struct vut_str eval(struct eval_ctx *ctx, struct ast *ast, struct sv_vec *libraries) {
+struct vut_str eval(struct compiler_ctx *cctx) {
+	struct eval_ctx *ctx = &cctx->eval_ctx;
 	struct scope base_scope = scope_new(0, -1, ctx->allocator);
 	VUT_VEC_PUT(&ctx->scopes, base_scope);
 
-	struct loaded_lib *loaded_libs = load_libs(ctx, libraries);
-	resolve_symbols(ctx, ast, 0, 0);
-	resolve_calls(ctx, ast, 0, 0);
+	struct loaded_lib *loaded_libs = load_libs(ctx, &cctx->libraries);
+	resolve_symbols(cctx, 0, 0);
+	resolve_calls(cctx, 0, 0);
 
 	struct vut_str str_out = vut_str_init(ctx->allocator);
-	do_calls(ctx, ast, &str_out, 0, REDUCE_BLANKS);
+	do_calls(cctx, &str_out, 0, REDUCE_BLANKS);
 
 	unload_libs(loaded_libs, ctx->allocator);
 
