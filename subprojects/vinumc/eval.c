@@ -97,34 +97,31 @@ static int find_scope_child_by_node(const struct eval_ctx_scopes_t *scopes, size
 RESOLVE_FUNC_SIGNATURE(resolve_symbols);
 
 RESOLVE_FUNC_SIGNATURE(resolve_symbols_descent) {
-	struct ast_node ast_node = VUT_VEC_AT(&ast->nodes, ast_node_id);
-	for (size_t i = 0; i < ast_node.childs.len; i++) {
-		resolve_symbols(ctx, ast, curr_scope_id, VUT_VEC_AT(&ast_node.childs, i));
+	for (size_t i = 0; i < ast_get_num_child(ast, ast_node_id); i++) {
+		resolve_symbols(ctx, ast, curr_scope_id, ast_get_nth_child(ast, ast_node_id, i));
 	}
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_symbols_assignment) {
 	struct scope *curr_scope = &VUT_VEC_AT(&ctx->scopes, curr_scope_id);
-	const struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
 
-	char *name = VUT_VEC_AT(&ast->nodes, VUT_VEC_AT(&ast_node->childs, 0)).text;
+	char *name = ast_get_text(ast, ast_get_nth_child(ast, ast_node_id, 0));
 	struct namespace_entry entry = {
 		.name = name,
 		.type = ENTRY_INTERNAL,
-		.as.ast_node_id =
-			ast_node->childs.len > 1 ? (int)VUT_VEC_AT(&ast_node->childs, 1) : -1,
+		.as.ast_node_id = ast_get_num_child(ast, ast_node_id) > 1
+					  ? (int)ast_get_nth_child(ast, ast_node_id, 1)
+					  : -1,
 	};
 
 	VUT_VEC_PUT(&curr_scope->namespace, entry);
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_symbols) {
-	const struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
-
-	if (ast_node->type == ASSIGNMENT) {
+	if (ast_get_type(ast, ast_node_id) == ASSIGNMENT) {
 		resolve_symbols_assignment(ctx, ast, curr_scope_id, ast_node_id);
 	} else {
-		if (ast_node->type == CALL)
+		if (ast_get_type(ast, ast_node_id) == CALL)
 			curr_scope_id = add_scope_child(&ctx->scopes, curr_scope_id, ast_node_id,
 							ctx->allocator);
 		resolve_symbols_descent(ctx, ast, curr_scope_id, ast_node_id);
@@ -134,17 +131,15 @@ RESOLVE_FUNC_SIGNATURE(resolve_symbols) {
 RESOLVE_FUNC_SIGNATURE(resolve_calls);
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls_descent) {
-	const struct ast_node ast_node = VUT_VEC_AT(&ast->nodes, ast_node_id);
-	for (size_t i = 0; i < ast_node.childs.len; i++) {
-		resolve_calls(ctx, ast, curr_scope_id, VUT_VEC_AT(&ast_node.childs, i));
+	for (size_t i = 0; i < ast_get_num_child(ast, ast_node_id); i++) {
+		resolve_calls(ctx, ast, curr_scope_id, ast_get_nth_child(ast, ast_node_id, i));
 	}
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 	struct scope *curr_scope = &VUT_VEC_AT(&ctx->scopes, curr_scope_id);
-	struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
 
-	char *call_name = VUT_VEC_AT(&ast->nodes, VUT_VEC_AT(&ast_node->childs, 0)).text;
+	char *call_name = ast_get_text(ast, ast_get_nth_child(ast, ast_node_id, 0));
 	if (call_name == NULL) {
 		fprintf(stderr, "ERROR: Symbol with no name\n");
 		return;
@@ -155,50 +150,47 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 
 	if (symbol_info != NULL) {
 		if (symbol_info->type == ENTRY_INTERNAL) {
-			if (ast_node->childs.len > 1) {
+			if (ast_get_num_child(ast, ast_node_id) > 1) {
 				if (symbol_info->as.ast_node_id < 0) {
-					ast_node->childs.len--;
+					struct ast_node *node =
+						&VUT_VEC_AT(&ast->nodes, ast_node_id);
+					node->childs.len--;
 					return;
 				}
 
-				size_t symbol_args_node_id =
+				ast_node_id_t symbol_args =
 					ast_copy_node(ast, symbol_info->as.ast_node_id);
-				ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
-				struct ast_node *symbol_args_node =
-					&VUT_VEC_AT(&ast->nodes, symbol_args_node_id);
 
-				for (size_t i = 0; i < symbol_args_node->childs.len; i++) {
-					struct ast_node *child = &VUT_VEC_AT(
-						&ast->nodes,
-						VUT_VEC_AT(&symbol_args_node->childs, i));
+				ast_node_id_t all_args = ast_get_nth_child(ast, ast_node_id, 1);
+				for (size_t i = 0; i < ast_get_num_child(ast, symbol_args); i++) {
+					ast_node_id_t child =
+						ast_get_nth_child(ast, symbol_args, i);
 
-					if (child->type == ARG_REF_ALL_ARGS) {
-						VUT_VEC_AT(&symbol_args_node->childs, i) =
-							VUT_VEC_AT(&ast_node->childs, 1);
+					if (ast_get_type(ast, child) == ARG_REF_ALL_ARGS) {
+						ast_set_nth_child(ast, symbol_args, i, all_args);
 					}
 				}
-				VUT_VEC_AT(&ast_node->childs, 1) = symbol_args_node_id;
+				ast_set_nth_child(ast, ast_node_id, 1, symbol_args);
 			} else {
 				if (symbol_info->as.ast_node_id >= 0) {
-					ast_node_add_child(ast_node, symbol_info->as.ast_node_id);
+					ast_add_child(ast, ast_node_id,
+						      symbol_info->as.ast_node_id);
 				}
 			}
 
-			size_t new_node = VUT_VEC_AT(&ast_node->childs, 1);
+			ast_node_id_t new_node = ast_get_nth_child(ast, ast_node_id, 1);
 
 			resolve_symbols(ctx, ast, curr_scope_id, new_node);
-
 		} else if (symbol_info->type == ENTRY_EXTERNAL) {
-			struct ast_node *symbol_node =
-				&VUT_VEC_AT(&ast->nodes, VUT_VEC_AT(&ast_node->childs, 0));
-			symbol_node->type = FUNCTION;
+			ast_node_id_t symbol = ast_get_nth_child(ast, ast_node_id, 0);
+			ast_set_type(ast, symbol, FUNCTION);
 
-			if (ast_node->childs.len <= 1) {
+			if (ast_get_num_child(ast, ast_node_id) <= 1) {
 				// ensure that the call node has an ARGS node
 				// to prevent it from being skipped during evaluation
 				size_t args_node_id =
 					ast_add_node(ast, ast_node_new_nvl(ARGS, ast->allocator));
-				ast_node_add_child(ast_node, args_node_id);
+				ast_add_child(ast, ast_node_id, args_node_id);
 			}
 		}
 	} else {
@@ -209,9 +201,7 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls) {
-	const struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
-
-	switch (ast_node->type) {
+	switch (ast_get_type(ast, ast_node_id)) {
 	case ARGS:
 	case PROGRAM:
 		resolve_calls_descent(ctx, ast, curr_scope_id, ast_node_id);
@@ -237,14 +227,13 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls) {
 DO_CALLS_FUNC_SIGNATURE(do_calls);
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_program) {
-	const struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
-	for (size_t i = 0; i < ast_node->childs.len; i++) {
-		size_t child_id = VUT_VEC_AT(&ast_node->childs, i);
+	for (size_t i = 0; i < ast_get_num_child(ast, ast_node_id); i++) {
+		size_t child_id = ast_get_nth_child(ast, ast_node_id, i);
 		int sub_flags = flags & ~(FIRST_CHILD | LAST_CHILD);
 		if (i == 0) {
 			sub_flags |= FIRST_CHILD;
 		}
-		if (i == ast_node->childs.len - 1) {
+		if (i == ast_get_num_child(ast, ast_node_id) - 1) {
 			sub_flags |= LAST_CHILD;
 		}
 		do_calls(ctx, ast, out, child_id, sub_flags);
@@ -252,27 +241,24 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_program) {
 }
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
-	const struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
-
-	if (ast_node->childs.len <= 1) {
+	if (ast_get_num_child(ast, ast_node_id) <= 1) {
 		return;
 	}
 
-	const struct ast_node *symbol_node =
-		&VUT_VEC_AT(&ast->nodes, VUT_VEC_AT(&ast_node->childs, 0));
-	size_t args_id = VUT_VEC_AT(&ast_node->childs, 1);
+	ast_node_id_t symbol = ast_get_nth_child(ast, ast_node_id, 0);
+	ast_node_id_t args = ast_get_nth_child(ast, ast_node_id, 1);
 
-	if (symbol_node->type == FUNCTION) {
+	if (ast_get_type(ast, symbol) == FUNCTION) {
 		// writes the returns of the arguments calls to a temporary buffer,
 		// so any nested call will be resolved normally
 		struct vut_str tmp_out = VUT_VEC_INIT(struct vut_str, ctx->allocator);
 		VUT_VEC_PUT(&tmp_out, '\0');
-		do_calls(ctx, ast, &tmp_out, args_id, flags);
+		do_calls(ctx, ast, &tmp_out, args, flags);
 
 		// find the extern function on the scope
 		struct scope *curr_scope = &VUT_VEC_AT(&ctx->scopes, 0);
 		struct namespace_entry *symbol_info =
-			find_symbol_on_scopes(&ctx->scopes, curr_scope, symbol_node->text);
+			find_symbol_on_scopes(&ctx->scopes, curr_scope, ast_get_text(ast, symbol));
 
 		// expose context to external function
 		struct _call_ctx cctx = { .text = tmp_out.base };
@@ -291,27 +277,25 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 		}
 		VUT_VEC_FREE(&tmp_out);
 	} else {
-		do_calls(ctx, ast, out, args_id, flags);
+		do_calls(ctx, ast, out, args, flags);
 	}
 }
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_text) {
 	UNUSED(ctx);
-	const struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
+	char *text = ast_get_text(ast, ast_node_id);
 
 	if ((flags & REDUCE_BLANKS) != 0) {
 		bool trim_left = (flags & FIRST_CHILD) != 0;
 		bool trim_right = (flags & LAST_CHILD) != 0;
-		vut_put_blank_reduced_str(out, ast_node->text, trim_left, trim_right);
+		vut_put_blank_reduced_str(out, text, trim_left, trim_right);
 	} else {
-		vut_put_str(out, ast_node->text);
+		vut_put_str(out, text);
 	}
 }
 
 DO_CALLS_FUNC_SIGNATURE(do_calls) {
-	const struct ast_node *ast_node = &VUT_VEC_AT(&ast->nodes, ast_node_id);
-
-	switch (ast_node->type) {
+	switch (ast_get_type(ast, ast_node_id)) {
 	case PROGRAM:
 	case ARGS:
 		do_calls_program(ctx, ast, out, ast_node_id, flags);
