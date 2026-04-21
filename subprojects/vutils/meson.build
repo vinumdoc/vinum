@@ -13,6 +13,7 @@ srcs = [
   'arena_allocator.c',
   'system_allocator.c',
   'str.c',
+  'futils.c',
 ]
 
 libvutils = library(

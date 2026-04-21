@@ -5,6 +5,7 @@ fs = import('fs')
 tests = [
   'allocator.c',
   'vec_macros.c',
+  'futils.c',
 ]
 
 vutils_dep = dependency('vutils', fallback : ['vutils', 'vutils_dep'])
