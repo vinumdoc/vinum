@@ -4,8 +4,13 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+
+#include <vutils/str.h>
+#include <vutils/system_allocator.h>
+#include <vutils/vec.h>
 
 #include "vinumc.h"
 
@@ -13,10 +18,14 @@
 
 struct ctx ctx;
 
-struct ctx ctx_new() {
+struct ctx ctx_new(struct vut_allocator *allocator) {
+	dry_flex_text_buffer = VUT_VEC_INIT(struct vut_str, allocator);
+
 	struct ctx ret = {
-		.ast = ast_new(),
-		.eval_ctx = eval_ctx_new(),
+		.ast = ast_new(allocator),
+		.eval_ctx = eval_ctx_new(allocator),
+		.libraries = VUT_VEC_INIT(struct str_vec, allocator),
+		.default_allocator = allocator,
 	};
 
 	return ret;
@@ -199,7 +208,7 @@ int main(int argc, char **argv) {
 		},
 	};
 
-	ctx = ctx_new();
+	ctx = ctx_new(vut_get_system_allocator());
 
 	parse_cmdline(argc, argv, &ctx, vinumc_flags, ARRAY_SIZE(vinumc_flags));
 

@@ -3,6 +3,7 @@ project('vutils_tests', 'c', version: '0.0.0')
 fs = import('fs')
 
 tests = [
+  'allocator.c',
   'vec_macros.c',
 ]
 

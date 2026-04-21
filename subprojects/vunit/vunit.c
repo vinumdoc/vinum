@@ -317,7 +317,7 @@ char *vunit_file_to_str(struct vunit_test_ctx *ctx, const char *file_path) {
 	VUNIT_ASSERT_NEQ(ctx, file_size, -1);
 	rewind(fp);
 
-	char *ret_str = calloc(file_size, sizeof(*ret_str));
+	char *ret_str = calloc(file_size + 1, sizeof(*ret_str));
 	VUNIT_ASSERT_NEQ(ctx, ret_str, NULL);
 
 	fread(ret_str, sizeof(*ret_str), file_size, fp);

@@ -5,11 +5,10 @@
 
 #include "ast.h"
 
-struct ast_node ast_node_new(const int type, char *text) {
-	struct ast_node ret = {
-		.type = type,
-		.text = text,
-	};
+struct ast_node ast_node_new(const int type, char *text, struct vut_allocator *allocator) {
+	struct ast_node ret = { .type = type,
+				.text = text,
+				.childs = VUT_VEC_INIT(struct ast_node_childs_t, allocator) };
 
 	return ret;
 }
@@ -18,8 +17,11 @@ void ast_node_add_child(struct ast_node *dst, const ast_node_id_t child) {
 	VUT_VEC_PUT(&dst->childs, child);
 }
 
-struct ast ast_new() {
-	struct ast ret = {};
+struct ast ast_new(struct vut_allocator *allocator) {
+	struct ast ret = {
+		.nodes = VUT_VEC_INIT(struct ast_nodes_t, allocator),
+		.allocator = allocator,
+	};
 
 	return ret;
 }
@@ -32,7 +34,7 @@ ast_node_id_t ast_add_node(struct ast *ast, const struct ast_node node) {
 ast_node_id_t ast_copy_node(struct ast *ast, ast_node_id_t node_id) {
 	struct ast_node no_childs_copy = VUT_VEC_AT(&ast->nodes, node_id);
 
-	no_childs_copy.childs = (struct ast_node_childs_t){ 0 };
+	no_childs_copy.childs = VUT_VEC_INIT(struct ast_node_childs_t, ast->allocator);
 
 	size_t node_copy_id = ast_add_node(ast, no_childs_copy);
 	struct ast_node *node_copy = &VUT_VEC_AT(&ast->nodes, node_copy_id);

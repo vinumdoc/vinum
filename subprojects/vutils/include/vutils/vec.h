@@ -1,7 +1,7 @@
 #ifndef __VUT_VEC_H__
 #define __VUT_VEC_H__
 
-#include <stdlib.h>
+#include "allocator.h"
 
 /// Defines the struct body for a vector of a given base type.
 #define VUT_VEC_DEF(base_type)                                                                     \
@@ -9,6 +9,12 @@
 		base_type *base;                                                                   \
 		size_t len;                                                                        \
 		size_t capacity;                                                                   \
+		struct vut_allocator *allocator;                                                   \
+	}
+
+#define VUT_VEC_INIT(vec_type, allocator_obj)                                                      \
+	(vec_type) {                                                                               \
+		.allocator = (allocator_obj)                                                       \
 	}
 
 #define VUT_VEC_AT(arr, idx) ((arr)->base[(idx)])
@@ -22,7 +28,8 @@
 		if (needed <= (arr)->capacity)                                                     \
 			break;                                                                     \
 		(arr)->capacity = needed;                                                          \
-		(arr)->base = realloc((arr)->base, (arr)->capacity * sizeof(*(arr)->base));        \
+		(arr)->base = vut_allocator_realloc((arr)->allocator, (arr)->base,                 \
+						    sizeof(*(arr)->base), (arr)->capacity);        \
 	} while (0)
 
 /// Ensures that the vector has enough capacity to hold at least `size` more elements, possibly
@@ -41,7 +48,8 @@
 		needed++;                                                                          \
                                                                                                    \
 		(arr)->capacity = needed;                                                          \
-		(arr)->base = realloc((arr)->base, (arr)->capacity * sizeof(*(arr)->base));        \
+		(arr)->base = vut_allocator_realloc((arr)->allocator, (arr)->base,                 \
+						    sizeof(*(arr)->base), (arr)->capacity);        \
 	} while (0)
 
 /// Adds an element to the end of the vector, resizing it if necessary.
@@ -61,7 +69,7 @@
 /// Dealocates the vector. Resets `base` to `NULL` and `len` and `capacity` to 0.
 #define VUT_VEC_FREE(vec)                                                                          \
 	do {                                                                                       \
-		free((vec)->base);                                                                 \
+		vut_allocator_free((vec)->allocator, (vec)->base);                                 \
 		(vec)->base = NULL;                                                                \
 		(vec)->len = 0;                                                                    \
 		(vec)->capacity = 0;                                                               \
@@ -86,5 +94,9 @@
 		}                                                                                  \
 		(to)->len += from_size;                                                            \
 	} while (0)
+
+#define VUT_VEC_FOREACH(arr, idx, var)                                                             \
+	for (size_t(idx) = 0, _capture_var = 1; (idx) < (arr)->len; (idx)++, _capture_var = 1)     \
+		for (var = &(arr)->base[(idx)]; _capture_var; _capture_var = 0)
 
 #endif // __VUT_VEC_H__

@@ -1,16 +1,19 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+#include <vutils/system_allocator.h>
 
 #include "vinumc.h"
 
 struct ctx ctx;
 
-struct ctx ctx_new() {
+struct ctx ctx_new(struct vut_allocator *allocator) {
 	struct ctx ret = {
-		.ast = ast_new(),
-		.eval_ctx = eval_ctx_new(),
+		.ast = ast_new(allocator),
+		.eval_ctx = eval_ctx_new(allocator),
 	};
 
 	return ret;
@@ -137,7 +140,7 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	ctx = ctx_new();
+	ctx = ctx_new(vut_get_system_allocator());
 	yyparse();
 
 	switch (cmd) {

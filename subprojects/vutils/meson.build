@@ -1,4 +1,4 @@
-project('vutils', 'c', version: '0.1.0')
+project('vutils', 'c', version: '0.2.0')
 
 local_inc = include_directories('include/vutils')
 external_inc = include_directories('include')
@@ -9,6 +9,9 @@ install_subdir(
 )
 
 srcs = [
+  'allocator.c',
+  'arena_allocator.c',
+  'system_allocator.c',
   'str.c',
 ]
 
