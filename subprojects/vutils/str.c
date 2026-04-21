@@ -65,3 +65,10 @@ void vut_put_blank_reduced_str(struct vut_str *to, char *from, bool trim_left, b
 	}
 	VUT_VEC_PUT(to, '\0');
 }
+
+char *vut_str_move_to_cstr(struct vut_str *str) {
+	VUT_VEC_PUT(str, '\0');
+	char *ret = str->base;
+	*str = (struct vut_str){};
+	return ret;
+}

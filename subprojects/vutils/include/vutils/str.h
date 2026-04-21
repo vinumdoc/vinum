@@ -14,4 +14,6 @@ void vut_put_str(struct vut_str *to, char *from);
 
 void vut_put_blank_reduced_str(struct vut_str *to, char *from, bool trim_left, bool trim_right);
 
+char *vut_str_move_to_cstr(struct vut_str *str);
+
 #endif // __VUT_STR_H__
