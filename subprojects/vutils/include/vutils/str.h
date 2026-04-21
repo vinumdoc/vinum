@@ -7,6 +7,8 @@
 
 struct vut_str VUT_VEC_DEF(char);
 
+struct vut_str vut_str_init(struct vut_allocator *alloc);
+
 void vut_put_str(struct vut_str *to, char *from);
 
 void vut_put_blank_reduced_str(struct vut_str *to, char *from, bool trim_left, bool trim_right);

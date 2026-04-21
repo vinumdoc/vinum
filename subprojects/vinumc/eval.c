@@ -251,7 +251,7 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 	if (ast_get_type(ast, symbol) == FUNCTION) {
 		// writes the returns of the arguments calls to a temporary buffer,
 		// so any nested call will be resolved normally
-		struct vut_str tmp_out = VUT_VEC_INIT(struct vut_str, ctx->allocator);
+		struct vut_str tmp_out = vut_str_init(ctx->allocator);
 		VUT_VEC_PUT(&tmp_out, '\0');
 		do_calls(ctx, ast, &tmp_out, args, flags);
 
@@ -363,7 +363,7 @@ void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out, struct str_vec *libr
 	resolve_symbols(ctx, ast, 0, 0);
 	resolve_calls(ctx, ast, 0, 0);
 
-	struct vut_str str_out = VUT_VEC_INIT(struct vut_str, ctx->allocator);
+	struct vut_str str_out = vut_str_init(ctx->allocator);
 	VUT_VEC_PUT(&str_out, '\0');
 
 	do_calls(ctx, ast, &str_out, 0, REDUCE_BLANKS);

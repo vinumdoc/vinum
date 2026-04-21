@@ -138,7 +138,7 @@ static int yield_text_node(void) {
 	VUT_VEC_PUT(&dry_flex_text_buffer, '\0');
 	struct ast_node node = ast_node_new(TEXT, dry_flex_text_buffer.base, ctx.ast.allocator);
 	// transfers the string to the ast node
-	dry_flex_text_buffer = VUT_VEC_INIT(struct vut_str, ctx.default_allocator);
+	dry_flex_text_buffer = vut_str_init(ctx.default_allocator);
 	yylval = ast_add_node(&ctx.ast, node);
 	return TEXT;
 }
