@@ -13,10 +13,6 @@ struct ast_node ast_node_new(const int type, char *text, struct vut_allocator *a
 	return ret;
 }
 
-void ast_node_add_child(struct ast_node *dst, const ast_node_id_t child) {
-	VUT_VEC_PUT(&dst->childs, child);
-}
-
 struct ast ast_new(struct vut_allocator *allocator) {
 	struct ast ret = {
 		.nodes = VUT_VEC_INIT(struct ast_nodes_t, allocator),
@@ -44,11 +40,47 @@ ast_node_id_t ast_copy_node(struct ast *ast, ast_node_id_t node_id) {
 
 	for (size_t i = 0; i < childs.len; i++) {
 		size_t child_copy_id = ast_copy_node(ast, VUT_VEC_AT(&childs, i));
-		struct ast_node *node_copy = &VUT_VEC_AT(&ast->nodes, node_copy_id);
-		ast_node_add_child(node_copy, child_copy_id);
+		ast_add_child(ast, node_copy_id, child_copy_id);
 	}
 
 	return node_copy_id;
+}
+
+ast_node_id_t ast_get_num_child(const struct ast *ast, ast_node_id_t id) {
+	struct ast_node *parent = &VUT_VEC_AT(&ast->nodes, id);
+	return parent->childs.len;
+}
+
+ast_node_id_t ast_get_nth_child(const struct ast *ast, ast_node_id_t id, ast_node_id_t n) {
+	struct ast_node *parent = &VUT_VEC_AT(&ast->nodes, id);
+	return VUT_VEC_AT(&parent->childs, n);
+}
+
+void ast_add_child(struct ast *ast, ast_node_id_t parent_id, ast_node_id_t child_id) {
+	struct ast_node *parent = &VUT_VEC_AT(&ast->nodes, parent_id);
+	VUT_VEC_PUT(&parent->childs, child_id);
+}
+
+void ast_set_nth_child(struct ast *ast, ast_node_id_t parent_id, ast_node_id_t n,
+		       ast_node_id_t child_id) {
+	struct ast_node *parent = &VUT_VEC_AT(&ast->nodes, parent_id);
+	assert(parent->childs.len > n);
+	parent->childs.base[n] = child_id;
+}
+
+int ast_get_type(const struct ast *ast, ast_node_id_t id) {
+	struct ast_node *node = &VUT_VEC_AT(&ast->nodes, id);
+	return node->type;
+}
+
+void ast_set_type(struct ast *ast, ast_node_id_t id, int type) {
+	struct ast_node *node = &VUT_VEC_AT(&ast->nodes, id);
+	node->type = type;
+}
+
+char *ast_get_text(const struct ast *ast, ast_node_id_t id) {
+	struct ast_node *node = &VUT_VEC_AT(&ast->nodes, id);
+	return node->text;
 }
 
 const char *token_to_str(enum yytokentype token) {
