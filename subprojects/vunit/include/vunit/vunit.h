@@ -5,10 +5,14 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
+
+#include <vutils/arena_allocator.h>
 
 struct vunit_test_ctx {
 	jmp_buf env;
 	char *lonjmp_msg;
+	struct vut_allocator allocator;
 };
 
 typedef void (*vunit_test_func_t)(struct vunit_test_ctx *);

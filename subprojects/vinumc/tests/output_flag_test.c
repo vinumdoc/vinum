@@ -14,9 +14,6 @@ void test_output_flag(struct vunit_test_ctx *ctx) {
 	VUNIT_ASSERT_STREQ(ctx, out_file_str, "Hello World!");
 	VUNIT_ASSERT_STREQ(ctx, out, "");
 
-	free(out_file_str);
-	free(out);
-
 	vunit_run_vinumc_ok(ctx,
 			    "[a: Hello World!]\n"
 			    "[a]\n",

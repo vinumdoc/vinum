@@ -7,9 +7,13 @@
 
 #include <sys/wait.h>
 
+#include <vutils/system_allocator.h>
+
 #include <vunit.h>
 
-static char *alloc_printf(const char *fmt, ...) {
+#define VUNIT_ARENA_SIZE 1024 * 1024
+
+static char *alloc_printf(struct vunit_test_ctx *ctx, const char *fmt, ...) {
 	va_list ap;
 
 	char *ret = NULL;
@@ -21,7 +25,7 @@ static char *alloc_printf(const char *fmt, ...) {
 	assert(len >= 0);
 	len++;
 
-	ret = malloc(len * sizeof(*ret));
+	ret = vut_allocator_malloc(&ctx->allocator, sizeof(*ret), len);
 	assert(ret != NULL);
 
 	va_start(ap, fmt);
@@ -36,7 +40,8 @@ void __vunit_assert(struct vunit_test_ctx *ctx, const bool predicate, const char
 	if (predicate)
 		return;
 
-	ctx->lonjmp_msg = alloc_printf(TAP_TAB "---\n"
+	ctx->lonjmp_msg = alloc_printf(ctx,
+				       TAP_TAB "---\n"
 					       "%s" TAP_TAB "condition: %s\n" TAP_TAB
 					       "location: %s:%d\n" TAP_TAB "...",
 				       yaml, predicate_str, file_path, linenum);
@@ -62,26 +67,30 @@ void __vunit_assert_strcmp(struct vunit_test_ctx *ctx, const char *lhs, const ch
 
 	switch (desire) {
 	case EQ:
-		new_yaml = alloc_printf(TAP_TAB "reason: \"Strings are not equal!\"\n" TAP_TAB
+		new_yaml = alloc_printf(ctx,
+					TAP_TAB "reason: \"Strings are not equal!\"\n" TAP_TAB
 						"lhs: '%s'\n" TAP_TAB "rhs: '%s'\n"
 						"%s",
 					lhs, rhs, yaml);
 		break;
 	case NEQ:
-		new_yaml = alloc_printf(TAP_TAB "reason: \"Strings are equal!\"\n" TAP_TAB
+		new_yaml = alloc_printf(ctx,
+					TAP_TAB "reason: \"Strings are equal!\"\n" TAP_TAB
 						"string: '%s'\n"
 						"%s",
 					lhs, yaml);
 		break;
 	case LT:
-		new_yaml = alloc_printf(TAP_TAB
+		new_yaml = alloc_printf(ctx,
+					TAP_TAB
 					"reason: \"Lhs string is not smaller than rhs\"\n" TAP_TAB
 					"lhs: '%s'\n" TAP_TAB "rhs: '%s'\n"
 					"%s",
 					lhs, rhs, yaml);
 		break;
 	case GT:
-		new_yaml = alloc_printf(TAP_TAB
+		new_yaml = alloc_printf(ctx,
+					TAP_TAB
 					"reason: \"Lhs string is not bigger than rhs\"\n" TAP_TAB
 					"lhs: '%s'\n" TAP_TAB "rhs: '%s'\n"
 					"%s",
@@ -145,7 +154,11 @@ int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
 
 	for (size_t i = 0; i < num_test; i++) {
 		const struct vunit_test *test = &tests[i];
-		struct vunit_test_ctx ctx = {};
+		struct vut_arena arena =
+			vut_arena_new(vut_get_system_allocator(), VUNIT_ARENA_SIZE);
+		struct vunit_test_ctx ctx = {
+			.allocator = vut_arena_to_vut_allocator(&arena),
+		};
 
 		enum test_return_status status = run_test(test, &ctx);
 
@@ -162,6 +175,8 @@ int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
 			printf("ok %zu - %s # SKIP\n", i + 1, test->name);
 			break;
 		}
+
+		vut_arena_free_all(&arena);
 	}
 
 	return 0;
@@ -172,10 +187,11 @@ static char *read_all_from_pipe(struct vunit_test_ctx *ctx, int fd) {
 
 	ssize_t read_len = 0;
 	size_t total_len = 0;
-	char *ret = malloc(sizeof(*ret));
+	char *ret = vut_allocator_malloc(&ctx->allocator, sizeof(*ret), 1);
 
 	while ((read_len = read(fd, tmp_buf, sizeof(tmp_buf))) > 0) {
-		ret = realloc(ret, (total_len + read_len + 1) * sizeof(*ret));
+		ret = vut_allocator_realloc(&ctx->allocator, ret, sizeof(*ret),
+					    total_len + read_len + 1);
 		memcpy(ret + total_len, tmp_buf, sizeof(*ret) * read_len);
 		total_len += read_len;
 	}
@@ -273,7 +289,8 @@ int vunit_run_vinumc(struct vunit_test_ctx *ctx, char *input, char **output, cha
 			VUNIT_ASSERT_NEQ_MSG(ctx, ret, -1, "dup2");
 		}
 
-		char **args_to_send = malloc((argc + 2) * sizeof(*args_to_send));
+		char **args_to_send =
+			vut_allocator_malloc(&ctx->allocator, sizeof(*args_to_send), argc + 2);
 		VUNIT_ASSERT_NEQ(ctx, args_to_send, NULL);
 
 		// TODO: Get the absolute path
@@ -317,7 +334,7 @@ char *vunit_file_to_str(struct vunit_test_ctx *ctx, const char *file_path) {
 	VUNIT_ASSERT_NEQ(ctx, file_size, -1);
 	rewind(fp);
 
-	char *ret_str = calloc(file_size + 1, sizeof(*ret_str));
+	char *ret_str = vut_allocator_calloc(&ctx->allocator, file_size + 1, sizeof(*ret_str));
 	VUNIT_ASSERT_NEQ(ctx, ret_str, NULL);
 
 	fread(ret_str, sizeof(*ret_str), file_size, fp);
@@ -335,7 +352,7 @@ int vunit_run_vinumcv(struct vunit_test_ctx *ctx, char *input, char **output, ch
 	char *curr_arg;
 	while ((curr_arg = va_arg(ap, char *)) != NULL) {
 		argc++;
-		argv = realloc(argv, argc * sizeof(*argv));
+		argv = vut_allocator_realloc(&ctx->allocator, argv, sizeof(*argv), argc);
 		argv[argc - 1] = curr_arg;
 	}
 
