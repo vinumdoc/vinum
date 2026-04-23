@@ -18,6 +18,7 @@ tests = [
   'document_test.c',
   'modules_test.c',
   'blanks_test.c',
+  'escapes_test.c',
 ]
 
 vunit_dep = dependency('vunit', fallback : ['vunit', 'vunit_dep'])
