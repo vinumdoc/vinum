@@ -21,6 +21,7 @@ tests = [
   'escapes_test.c',
   'filters_test.c',
   'automatics_test.c',
+  'deferral_test.c',
 ]
 
 vunit_dep = dependency('vunit', fallback : ['vunit', 'vunit_dep'])
