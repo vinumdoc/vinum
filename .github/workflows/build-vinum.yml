@@ -37,6 +37,10 @@ jobs:
           for commit in $commits; do
             echo "checking commit: $commit"
             git checkout $commit
+
+            rm -rf buildir
+            meson setup buildir
+
             meson compile -C buildir
           done
 

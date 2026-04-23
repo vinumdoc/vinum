@@ -343,7 +343,7 @@ struct loaded_lib *load_libs(struct eval_ctx *ctx, struct str_vec *libraries) {
 	return loaded_libs;
 }
 
-void unload_libs(struct loaded_lib *loaded_libs) {
+void unload_libs(struct loaded_lib *loaded_libs, struct vut_allocator *alloc) {
 	if (loaded_libs == NULL) {
 		return;
 	}
@@ -352,10 +352,10 @@ void unload_libs(struct loaded_lib *loaded_libs) {
 		unload_lib(loaded_libs[i]);
 		i++;
 	}
-	free(loaded_libs);
+	vut_allocator_free(alloc, loaded_libs);
 }
 
-void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out, struct str_vec *libraries) {
+struct vut_str eval(struct eval_ctx *ctx, struct ast *ast, struct str_vec *libraries) {
 	struct scope base_scope = scope_new(0, -1, ctx->allocator);
 	VUT_VEC_PUT(&ctx->scopes, base_scope);
 
@@ -366,10 +366,9 @@ void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out, struct str_vec *libr
 	struct vut_str str_out = vut_str_init(ctx->allocator);
 	do_calls(ctx, ast, &str_out, 0, REDUCE_BLANKS);
 
-	fprintf(out, VUT_STR_FMT, VUT_STR_ARG(str_out));
-	vut_str_free(&str_out);
+	unload_libs(loaded_libs, ctx->allocator);
 
-	unload_libs(loaded_libs);
+	return str_out;
 }
 
 void eval_dot(const struct eval_ctx *ctx, FILE *stream) {
