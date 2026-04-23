@@ -8,6 +8,7 @@ tests = [
   'output_flag_test.c',
   'simple_test.c',
   'text_handling_test.c',
+  'overview_test.c',
 ]
 
 vunit_dep = dependency('vunit', fallback : ['vunit', 'vunit_dep'])
