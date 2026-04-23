@@ -8,6 +8,7 @@
 #include <string.h>
 #include <strings.h>
 
+#include <vutils/futils.h>
 #include <vutils/str.h>
 #include <vutils/system_allocator.h>
 #include <vutils/vec.h>
@@ -179,6 +180,10 @@ static struct flag *print_help(const char *prg_name, struct flag *flags, size_t 
 	return NULL;
 }
 
+typedef struct yy_buffer_state *YY_BUFFER_STATE;
+extern YY_BUFFER_STATE yy_scan_string(const char *str);
+extern void yy_delete_buffer(YY_BUFFER_STATE buffer);
+
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "");
 
@@ -221,10 +226,22 @@ int main(int argc, char **argv) {
 	if (ctx.output_path != NULL)
 		out = fopen(ctx.output_path, "w");
 
-	if (ctx.input_path != NULL)
-		yyin = fopen(ctx.input_path, "r");
+	struct vut_str program_str;
+	if (ctx.input_path != NULL) {
+		FILE *input = fopen(ctx.input_path, "r");
+		program_str = vut_fut_read_all_FILE(input, ctx.default_allocator);
+		fclose(input);
+	} else {
+		program_str = vut_fut_read_all_FILE(stdin, ctx.default_allocator);
+	}
+	VUT_VEC_PUT(&program_str, '\0');
+
+	YY_BUFFER_STATE buffer = yy_scan_string(program_str.base);
 
 	yyparse();
+
+	yy_delete_buffer(buffer);
+	vut_str_free(&program_str);
 
 	eval(&ctx.eval_ctx, &ctx.ast, out, &ctx.libraries);
 
