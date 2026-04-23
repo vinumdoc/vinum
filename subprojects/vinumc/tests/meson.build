@@ -13,6 +13,7 @@ tests = [
   'expansion_test.c',
   'shots_test.c',
   'compounds_test.c',
+  'scope_test.c',
 ]
 
 vunit_dep = dependency('vunit', fallback : ['vunit', 'vunit_dep'])
