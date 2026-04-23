@@ -15,6 +15,7 @@ tests = [
   'compounds_test.c',
   'scope_test.c',
   'namespace_test.c',
+  'document_test.c',
 ]
 
 vunit_dep = dependency('vunit', fallback : ['vunit', 'vunit_dep'])
