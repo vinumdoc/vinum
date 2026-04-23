@@ -6,6 +6,10 @@ struct vut_str vut_str_init(struct vut_allocator *alloc) {
 	return VUT_VEC_INIT(struct vut_str, alloc);
 }
 
+void vut_str_free(struct vut_str *str) {
+	VUT_VEC_FREE(str);
+}
+
 static bool is_blank_char(char c) {
 	return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }

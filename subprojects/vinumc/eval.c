@@ -275,7 +275,7 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 		if (call_return.free) {
 			free(call_return.ptr);
 		}
-		VUT_VEC_FREE(&tmp_out);
+		vut_str_free(&tmp_out);
 	} else {
 		do_calls(ctx, ast, out, args, flags);
 	}
