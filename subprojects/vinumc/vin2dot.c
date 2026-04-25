@@ -4,31 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <vutils/futils.h>
 #include <vutils/system_allocator.h>
 
-#include "vinumc.h"
-
-struct ctx ctx;
-
-struct ctx ctx_new(struct vut_allocator *allocator) {
-	struct ctx ret = {
-		.ast = ast_new(allocator),
-		.eval_ctx = eval_ctx_new(allocator),
-	};
-
-	return ret;
-}
-
-void yyerror(char *s, ...) {
-	va_list ap;
-	va_start(ap, s);
-
-	fprintf(stderr, "[ERROR]:");
-	vfprintf(stderr, s, ap);
-	fprintf(stderr, "\n");
-
-	va_end(ap);
-}
+#include "libvinumc.h"
 
 enum command {
 	CMD_AST,
@@ -140,23 +119,26 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	ctx = ctx_new(vut_get_system_allocator());
-	yyparse();
+	struct compiler_ctx ctx = compiler_ctx_init(vut_get_system_allocator());
+
+	struct vut_str program = vut_fut_read_all_FILE(stdin, ctx.alloc);
+
+	compiler_parse(&ctx, &program);
 
 	switch (cmd) {
 	case CMD_AST:
 		ast_dot(&ctx.ast, stdout);
 		return EXIT_SUCCESS;
 	case CMD_AST_AFTER:
-		eval(&ctx.eval_ctx, &ctx.ast, stderr, &ctx.libraries);
+		compiler_eval(&ctx);
 		ast_dot(&ctx.ast, stdout);
 		return EXIT_SUCCESS;
 	case CMD_AST_AND_SCOPES:
-		eval(&ctx.eval_ctx, &ctx.ast, stderr, &ctx.libraries);
+		compiler_eval(&ctx);
 		dot_ast_and_scopes(&ctx.ast.nodes, &ctx.eval_ctx.scopes, stdout);
 		return EXIT_SUCCESS;
 	case CMD_SCOPES:
-		eval(&ctx.eval_ctx, &ctx.ast, stderr, &ctx.libraries);
+		compiler_eval(&ctx);
 		eval_dot(&ctx.eval_ctx, stdout);
 		return EXIT_SUCCESS;
 	default:
