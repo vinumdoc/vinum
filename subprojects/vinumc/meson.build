@@ -3,28 +3,56 @@ project('vinumc', 'c', version: '0.2.0')
 flex = find_program('flex')
 bison = find_program('bison')
 
-lex = generator(flex,
-    output : [ '@BASENAME@.c', '@BASENAME@.h' ],
-    arguments : [
-        '--outfile=@OUTPUT0@',
-        '--header-file=@OUTPUT1@',
-        '@INPUT@'
-    ]
+# Bison and flex run as custom_targets so their outputs land at a single
+# build-dir path the parser lib and the rest of the subproject can include.
+bison_gen = custom_target('dry_bison',
+    input : 'dry_bison.y',
+    output : [ 'dry_bison.c', 'dry_bison.h' ],
+    command : [
+        bison, '-d', '@INPUT@', '-v',
+        '--output=@OUTPUT0@',
+        '--defines=@OUTPUT1@',
+    ],
 )
 
-parse = generator(bison,
-    output : [ '@BASENAME@.c', '@BASENAME@.h' ],
-    arguments : [
-        '-d', '@INPUT@', '-v',
-        '--output=@OUTPUT0@',
-        '--defines=@OUTPUT1@'
-    ]
+lex_gen = custom_target('dry_flex',
+    input : 'dry_flex.l',
+    output : [ 'dry_flex.c', 'dry_flex.h' ],
+    command : [
+        flex,
+        '--outfile=@OUTPUT0@',
+        '--header-file=@OUTPUT1@',
+        '@INPUT@',
+    ],
+    depends : bison_gen,
+)
+
+cc = meson.get_compiler('c')
+
+local_inc = include_directories('include/vinumc')
+external_inc = include_directories('include')
+generated_inc = include_directories('.')
+
+vutils_dep = dependency('vutils', fallback : ['vutils', 'vutils_dep'])
+
+# Flex/Bison skeletons can trigger warnings we don't control. Add -Wno-error only for the
+# the generated sources.
+parser_lib = static_library('vinumc_parser',
+  bison_gen,
+  lex_gen,
+  include_directories : [local_inc, generated_inc],
+  dependencies : vutils_dep,
+  c_args : cc.get_supported_arguments(['-Wno-error']),
+)
+
+parser_dep = declare_dependency(
+  link_with : parser_lib,
+  sources : bison_gen[1],
+  include_directories : generated_inc,
 )
 
 common_srcs = [
   'ast.c',
-  parse.process('dry_bison.y'),
-  lex.process('dry_flex.l'),
   'eval.c',
   'library_loader.c',
 ]
@@ -33,9 +61,6 @@ vinumc_srcs = common_srcs + [
   'vinumc.c',
 ]
 
-local_inc = include_directories('include/vinumc')
-external_inc = include_directories('include')
-
 vinumc_dep = declare_dependency(
   include_directories : external_inc,
 )
@@ -43,7 +68,7 @@ vinumc_dep = declare_dependency(
 if meson.version().version_compare('>=0.62.0')
   dl_dep = dependency('dl')
 else
-  dl_dep = meson.get_compiler('c').find_library('dl', required: true)
+  dl_dep = cc.find_library('dl', required: true)
 endif
 
 install_subdir(
@@ -63,8 +88,6 @@ extern_library_dep = declare_dependency(
   include_directories: external_inc,
 )
 
-vutils_dep = dependency('vutils', fallback : ['vutils', 'vutils_dep'])
-
 vinumc = executable(
   'vinumc',
   vinumc_srcs,
@@ -73,6 +96,7 @@ vinumc = executable(
   dependencies: [
     dl_dep,
     vutils_dep,
+    parser_dep,
   ],
 )
 
@@ -89,6 +113,7 @@ if get_option('build_vin2dot')
     dependencies: [
       dl_dep,
       vutils_dep,
+      parser_dep,
     ],
   )
 endif
