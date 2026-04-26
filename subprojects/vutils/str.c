@@ -14,7 +14,7 @@ static bool is_blank_char(char c) {
 	return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
-void vut_put_str(struct vut_str *to, char *from) {
+void vut_put_str(struct vut_str *to, const char *from) {
 	if ((to)->len > 0) {
 		VUT_VEC_POP(to);
 	}
