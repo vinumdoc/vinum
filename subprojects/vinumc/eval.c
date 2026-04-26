@@ -251,8 +251,7 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 	if (ast_get_type(ast, symbol) == FUNCTION) {
 		// writes the returns of the arguments calls to a temporary buffer,
 		// so any nested call will be resolved normally
-		struct vut_str tmp_out = VUT_VEC_INIT(struct vut_str, ctx->allocator);
-		VUT_VEC_PUT(&tmp_out, '\0');
+		struct vut_str tmp_out = vut_str_init(ctx->allocator);
 		do_calls(ctx, ast, &tmp_out, args, flags);
 
 		// find the extern function on the scope
@@ -261,7 +260,8 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 			find_symbol_on_scopes(&ctx->scopes, curr_scope, ast_get_text(ast, symbol));
 
 		// expose context to external function
-		struct _call_ctx cctx = { .text = tmp_out.base };
+		char *tmp_text = vut_str_move_to_cstr(&tmp_out);
+		struct _call_ctx cctx = { .text = tmp_text };
 		struct return_value call_return = symbol_info->as.func(&cctx);
 
 		// put the extern function call return on the out str
@@ -275,7 +275,7 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 		if (call_return.free) {
 			free(call_return.ptr);
 		}
-		VUT_VEC_FREE(&tmp_out);
+		vut_allocator_free(ctx->allocator, tmp_text);
 	} else {
 		do_calls(ctx, ast, out, args, flags);
 	}
@@ -363,11 +363,12 @@ void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out, struct str_vec *libr
 	resolve_symbols(ctx, ast, 0, 0);
 	resolve_calls(ctx, ast, 0, 0);
 
-	struct vut_str str_out = VUT_VEC_INIT(struct vut_str, ctx->allocator);
-	VUT_VEC_PUT(&str_out, '\0');
-
+	struct vut_str str_out = vut_str_init(ctx->allocator);
 	do_calls(ctx, ast, &str_out, 0, REDUCE_BLANKS);
-	fprintf(out, "%s", str_out.base);
+
+	fprintf(out, VUT_STR_FMT, VUT_STR_ARG(str_out));
+	vut_str_free(&str_out);
+
 	unload_libs(loaded_libs);
 }
 

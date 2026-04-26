@@ -19,7 +19,7 @@
 struct ctx ctx;
 
 struct ctx ctx_new(struct vut_allocator *allocator) {
-	dry_flex_text_buffer = VUT_VEC_INIT(struct vut_str, allocator);
+	dry_flex_text_buffer = vut_str_init(allocator);
 
 	struct ctx ret = {
 		.ast = ast_new(allocator),
