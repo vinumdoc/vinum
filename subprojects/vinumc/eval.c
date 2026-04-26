@@ -364,10 +364,11 @@ void eval(struct eval_ctx *ctx, struct ast *ast, FILE *out, struct str_vec *libr
 	resolve_calls(ctx, ast, 0, 0);
 
 	struct vut_str str_out = vut_str_init(ctx->allocator);
-	VUT_VEC_PUT(&str_out, '\0');
-
 	do_calls(ctx, ast, &str_out, 0, REDUCE_BLANKS);
-	fprintf(out, "%s", str_out.base);
+
+	fprintf(out, VUT_STR_FMT, VUT_STR_ARG(str_out));
+	vut_str_free(&str_out);
+
 	unload_libs(loaded_libs);
 }
 

@@ -5,6 +5,9 @@
 
 #include "vec.h"
 
+#define VUT_STR_FMT "%.*s"
+#define VUT_STR_ARG(s) (int)(s).len, (s).base
+
 struct vut_str VUT_VEC_DEF(char);
 
 struct vut_str vut_str_init(struct vut_allocator *alloc);
