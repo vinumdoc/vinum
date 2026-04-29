@@ -17,6 +17,10 @@ static void *sys_calloc(void *_, size_t bytes, size_t times) {
 
 static void *sys_realloc(void *_, void *ptr, size_t bytes, size_t times) {
 	(void)_;
+	if (bytes * times == 0) {
+		free(ptr);
+		return NULL;
+	}
 	return realloc(ptr, bytes * times);
 }
 
