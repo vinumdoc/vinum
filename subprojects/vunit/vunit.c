@@ -162,13 +162,21 @@ int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
 
 		enum test_return_status status = run_test(test, &ctx);
 
+		const char *todo_str = "";
+		if (test->todo) {
+			if (test->todo_msg != NULL && test->todo_msg[0] != '\0')
+				todo_str = alloc_printf(&ctx, " # TODO %s", test->todo_msg);
+			else
+				todo_str = " # TODO";
+		}
+
 		switch (status) {
 		case PASSED:
-			printf("ok %zu - %s\n", i + 1, test->name);
+			printf("ok %zu - %s%s\n", i + 1, test->name, todo_str);
 			break;
 		case FAILED:
-			printf("not ok %zu - %s\n", i + 1, test->name);
-			if (ctx.lonjmp_msg != NULL)
+			printf("not ok %zu - %s%s\n", i + 1, test->name, todo_str);
+			if (ctx.lonjmp_msg != NULL && !test->todo)
 				printf("%s\n", ctx.lonjmp_msg);
 			break;
 		case SKIPPED:
