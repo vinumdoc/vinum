@@ -8,6 +8,7 @@
 #include <string.h>
 #include <strings.h>
 
+#include <vutils/futils.h>
 #include <vutils/str.h>
 #include <vutils/system_allocator.h>
 #include <vutils/vec.h>
@@ -16,33 +17,14 @@
 
 #define ARRAY_SIZE(arr) (sizeof((arr)) / sizeof(*(arr)))
 
-struct ctx ctx;
-
 struct ctx ctx_new(struct vut_allocator *allocator) {
-	dry_flex_text_buffer = vut_str_init(allocator);
-
 	struct ctx ret = {
-		.ast = ast_new(allocator),
-		.eval_ctx = eval_ctx_new(allocator),
-		.libraries = VUT_VEC_INIT(struct str_vec, allocator),
-		.default_allocator = allocator,
+		.compiler = compiler_ctx_init(allocator),
+		.alloc = allocator,
 	};
 
 	return ret;
 }
-
-void yyerror(char *s, ...) {
-	va_list ap;
-	va_start(ap, s);
-
-	fprintf(stderr, "[ERROR]:");
-	vfprintf(stderr, s, ap);
-	fprintf(stderr, "\n");
-
-	va_end(ap);
-}
-
-extern FILE *yyin;
 
 enum flag_kind {
 	FLAG_BOOLEAN,
@@ -182,6 +164,8 @@ static struct flag *print_help(const char *prg_name, struct flag *flags, size_t 
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "");
 
+	struct ctx ctx = ctx_new(vut_get_system_allocator());
+
 	struct flag vinumc_flags[] = {
 		{
 			.name = "output",
@@ -204,11 +188,9 @@ int main(int argc, char **argv) {
 			.help_desc = "Set a library to be loaded",
 			.placeholder_name = "libraries",
 			.kind = FLAG_MULTI_ARGUMENTS,
-			.ref_as.str_vec = &ctx.libraries,
+			.ref_as.str_vec = &ctx.compiler.libraries,
 		},
 	};
-
-	ctx = ctx_new(vut_get_system_allocator());
 
 	parse_cmdline(argc, argv, &ctx, vinumc_flags, ARRAY_SIZE(vinumc_flags));
 
@@ -221,12 +203,22 @@ int main(int argc, char **argv) {
 	if (ctx.output_path != NULL)
 		out = fopen(ctx.output_path, "w");
 
-	if (ctx.input_path != NULL)
-		yyin = fopen(ctx.input_path, "r");
+	struct vut_str program_str;
+	if (ctx.input_path != NULL) {
+		FILE *input = fopen(ctx.input_path, "r");
+		program_str = vut_fut_read_all_FILE(input, ctx.alloc);
+		fclose(input);
+	} else {
+		program_str = vut_fut_read_all_FILE(stdin, ctx.alloc);
+	}
 
-	yyparse();
+	struct vut_str str_out = compiler_compile(&ctx.compiler, &program_str);
 
-	eval(&ctx.eval_ctx, &ctx.ast, out, &ctx.libraries);
+	vut_str_free(&program_str);
+
+	fprintf(out, VUT_STR_FMT, VUT_STR_ARG(str_out));
+
+	vut_str_free(&str_out);
 
 exit:
 	free_flags(vinumc_flags, ARRAY_SIZE(vinumc_flags));

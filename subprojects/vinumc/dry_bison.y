@@ -4,11 +4,32 @@
 #include <wctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
-#include "vinumc.h"
+#include "libvinumc.h"
+#include "utils.h"
 
-int yylex();
+typedef void* yyscan_t;
+int yylex(YYSTYPE *yylval_param, yyscan_t yyscanner);
+
+void yyerror(yyscan_t scanner, struct compiler_ctx *ctx, const char *fmt, ...);
 %}
+
+%code requires {
+	/* This code goes into the header file (dry_bison.h) */
+	typedef void* yyscan_t;
+	struct compiler_ctx;
+}
+
+/* Generate a thread-safe (pure) parser */
+%define api.pure full
+
+/* Pass the scanner to yylex() */
+%lex-param   { yyscan_t scanner }
+
+/* Pass the scanner and your context to yyparse() */
+%parse-param { yyscan_t scanner }
+%parse-param { struct compiler_ctx *ctx }
 
 %token ASSIGNMENT
 %token CALL
@@ -25,36 +46,37 @@ int yylex();
 
 program:
        {
-	struct ast_node node = ast_node_new_nvl(PROGRAM, ctx.ast.allocator);
-	$$ = ast_add_node(&ctx.ast, node);
+       UNUSED(yynerrs);
+	struct ast_node node = ast_node_new_nvl(PROGRAM, ctx->ast.allocator);
+	$$ = ast_add_node(&ctx->ast, node);
        }
        | program block {
-	ast_add_child(&ctx.ast, $1, $2);
+	ast_add_child(&ctx->ast, $1, $2);
 	$$ = $1;
        }
        ;
 
 block:
      '[' symbol ':' args ']'  {
-	ast_node_id_t node = ast_add_node(&ctx.ast, ast_node_new_nvl(ASSIGNMENT, ctx.ast.allocator));
+	ast_node_id_t node = ast_add_node(&ctx->ast, ast_node_new_nvl(ASSIGNMENT, ctx->ast.allocator));
 
-	ast_add_child(&ctx.ast, node, $2);
-	ast_add_child(&ctx.ast, node, $4);
+	ast_add_child(&ctx->ast, node, $2);
+	ast_add_child(&ctx->ast, node, $4);
 
 	$$ = node;
    }
    | '[' symbol args ']'  {
-	ast_node_id_t node = ast_add_node(&ctx.ast, ast_node_new_nvl(CALL, ctx.ast.allocator));
+	ast_node_id_t node = ast_add_node(&ctx->ast, ast_node_new_nvl(CALL, ctx->ast.allocator));
 
-	ast_add_child(&ctx.ast, node, $2);
-	ast_add_child(&ctx.ast, node, $3);
+	ast_add_child(&ctx->ast, node, $2);
+	ast_add_child(&ctx->ast, node, $3);
 
 	$$ = node;
    }
    | '[' symbol ']'  {
-	ast_node_id_t node = ast_add_node(&ctx.ast, ast_node_new_nvl(CALL, ctx.ast.allocator));
+	ast_node_id_t node = ast_add_node(&ctx->ast, ast_node_new_nvl(CALL, ctx->ast.allocator));
 
-	ast_add_child(&ctx.ast, node, $2);
+	ast_add_child(&ctx->ast, node, $2);
 
 	$$ = node;
    }
@@ -62,13 +84,13 @@ block:
 
 args:
 	args_child {
-		ast_node_id_t node = ast_add_node(&ctx.ast, ast_node_new_nvl(ARGS, ctx.ast.allocator));
-		ast_add_child(&ctx.ast, node, $1);
+		ast_node_id_t node = ast_add_node(&ctx->ast, ast_node_new_nvl(ARGS, ctx->ast.allocator));
+		ast_add_child(&ctx->ast, node, $1);
 
 		$$ = node;
 	}
 	| args args_child {
-		ast_add_child(&ctx.ast, $1, $2);
+		ast_add_child(&ctx->ast, $1, $2);
 
 		$$ = $1;
 	}
@@ -83,7 +105,7 @@ args_child:
 
 symbol: SYMBOL {
 	// making so our symbols are case insensitive by making the whole string lowercase
-	char *text = VUT_VEC_AT(&ctx.ast.nodes, $1).text;
+	char *text = VUT_VEC_AT(&ctx->ast.nodes, $1).text;
 	size_t len = strlen(text);
 
 	// we need to convert from multi-byte to wide-character string
@@ -102,10 +124,24 @@ symbol: SYMBOL {
 	$$ = $1;
       }
       | block {
-	ast_node_id_t node = ast_add_node(&ctx.ast, ast_node_new_nvl(SYMBOL, ctx.ast.allocator));
-	ast_add_child(&ctx.ast, node, $1);
+	ast_node_id_t node = ast_add_node(&ctx->ast, ast_node_new_nvl(SYMBOL, ctx->ast.allocator));
+	ast_add_child(&ctx->ast, node, $1);
 
 	$$ = node;
       }
       ;
 %%
+
+
+void yyerror(yyscan_t scanner, struct compiler_ctx *ctx, const char *fmt, ...) {
+	UNUSED(scanner);
+	UNUSED(ctx);
+	va_list ap;
+	va_start(ap, fmt);
+
+	fprintf(stderr, "[ERROR]:");
+	vfprintf(stderr, fmt, ap);
+	fprintf(stderr, "\n");
+
+	va_end(ap);
+}

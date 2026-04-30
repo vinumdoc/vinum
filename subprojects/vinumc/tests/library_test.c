@@ -1,39 +1,42 @@
 #include <vunit/vunit.h>
 
-void test_call(struct vunit_test_ctx *ctx) {
-	char *out = NULL;
+#include "libvinumc.h"
 
-	vunit_run_vinumc_ok(ctx, "[return_arg test]\n", &out, "--with",
-			    "subprojects/vinumc/tests/libtestlib.so", NULL);
+static char *compile_program_with_testlib(const char *prg_cstr, struct vut_allocator *alloc) {
+	struct compiler_ctx comp = compiler_ctx_init(alloc);
+
+	struct vut_str prg = vut_str_init(alloc);
+	vut_put_str(&prg, prg_cstr);
+	VUT_VEC_PUT(&comp.libraries, "subprojects/vinumc/tests/libtestlib.so");
+
+	struct vut_str out = compiler_compile(&comp, &prg);
+
+	return vut_str_move_to_cstr(&out);
+}
+
+void test_call(struct vunit_test_ctx *ctx) {
+	const char *out = compile_program_with_testlib("[return_arg test]\n", &ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "test");
 }
 
 void test_nested_call(struct vunit_test_ctx *ctx) {
-	char *out = NULL;
-
-	vunit_run_vinumc_ok(ctx,
-			    "[a: This is a [return_arg Test!]!]\n"
-			    "[a]\n",
-			    &out, "--with", "subprojects/vinumc/tests/libtestlib.so", NULL);
+	const char *out = compile_program_with_testlib("[a: This is a [return_arg Test!]!]\n"
+						       "[a]\n",
+						       &ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "This is a Test!!");
 }
 
 void test_empty_nested_call(struct vunit_test_ctx *ctx) {
-	char *out = NULL;
-
-	vunit_run_vinumc_ok(ctx, "[return_arg [return_arg [return_arg]]]", &out, "--with",
-			    "subprojects/vinumc/tests/libtestlib.so", NULL);
+	const char *out = compile_program_with_testlib("[return_arg [return_arg [return_arg]]]",
+						       &ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "");
 }
 
 void test_call_no_args(struct vunit_test_ctx *ctx) {
-	char *out = NULL;
-
-	vunit_run_vinumc_ok(ctx, "[parenthesize]", &out, "--with",
-			    "subprojects/vinumc/tests/libtestlib.so", NULL);
+	const char *out = compile_program_with_testlib("[parenthesize]", &ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "()");
 }

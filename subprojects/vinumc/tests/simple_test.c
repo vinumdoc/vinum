@@ -1,46 +1,47 @@
 #include <vunit/vunit.h>
 
-void test_basic(struct vunit_test_ctx *ctx) {
-	char *out = NULL;
+#include "libvinumc.h"
 
-	vunit_run_vinumc_ok(ctx,
-			    "[a: Hello World!]\n"
-			    "[a]\n",
-			    &out, NULL);
+static char *compile_program(const char *prg_cstr, struct vut_allocator *alloc) {
+	struct compiler_ctx comp = compiler_ctx_init(alloc);
+
+	struct vut_str prg = vut_str_init(alloc);
+	vut_put_str(&prg, prg_cstr);
+
+	struct vut_str out = compiler_compile(&comp, &prg);
+
+	return vut_str_move_to_cstr(&out);
+}
+
+void test_basic(struct vunit_test_ctx *ctx) {
+	const char *out = compile_program("[a: Hello World!]\n"
+					  "[a]\n",
+					  &ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!");
 }
 
 void test_define_later(struct vunit_test_ctx *ctx) {
-	char *out = NULL;
-
-	vunit_run_vinumc_ok(ctx,
-			    "[a]\n"
-			    "[a: Hello World!]\n",
-			    &out, NULL);
+	const char *out = compile_program("[a]\n"
+					  "[a: Hello World!]\n",
+					  &ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!");
 }
 
 void test_function_text_args(struct vunit_test_ctx *ctx) {
-	char *out = NULL;
-
-	vunit_run_vinumc_ok(ctx,
-			    "[a: $*]\n"
-			    "[a Hello World!]\n",
-			    &out, NULL);
+	const char *out = compile_program("[a: $*]\n"
+					  "[a Hello World!]\n",
+					  &ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!");
 }
 
 void test_function_call_args(struct vunit_test_ctx *ctx) {
-	char *out = NULL;
-
-	vunit_run_vinumc_ok(ctx,
-			    "[a: Hello World!]\n"
-			    "[b: $*]\n"
-			    "[b [a]]\n",
-			    &out, NULL);
+	const char *out = compile_program("[a: Hello World!]\n"
+					  "[b: $*]\n"
+					  "[b [a]]\n",
+					  &ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!");
 }

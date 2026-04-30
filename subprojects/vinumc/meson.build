@@ -47,22 +47,9 @@ parser_lib = static_library('vinumc_parser',
 
 parser_dep = declare_dependency(
   link_with : parser_lib,
-  sources : bison_gen[1],
+  sources : [bison_gen, lex_gen],
   include_directories : generated_inc,
-)
-
-common_srcs = [
-  'ast.c',
-  'eval.c',
-  'library_loader.c',
-]
-
-vinumc_srcs = common_srcs + [
-  'vinumc.c',
-]
-
-vinumc_dep = declare_dependency(
-  include_directories : external_inc,
+  dependencies : vutils_dep,
 )
 
 if meson.version().version_compare('>=0.62.0')
@@ -76,44 +63,67 @@ install_subdir(
   install_dir: 'include',
 )
 
-extern_library = library(
-  'extern_library',
-  'v_lib.c',
-  include_directories: local_inc,
+libvinumc = library(
+  'libvinumc',
+  sources: [
+      'ast.c',
+      'eval.c',
+      'library_loader.c',
+      'libvinumc.c',
+      'v_lib.c',
+  ],
+  include_directories: [
+    local_inc,
+    generated_inc,
+  ],
+  dependencies: [
+     dl_dep,
+     vutils_dep,
+     parser_dep,
+   ],
   install: true
 )
 
-extern_library_dep = declare_dependency(
-  link_with: extern_library,
+libvinumc_dep = declare_dependency(
+  link_with: libvinumc,
   include_directories: external_inc,
+  dependencies: parser_dep,
+)
+
+libvinumc_dep_priv = declare_dependency(
+  link_with: libvinumc,
+  include_directories: [external_inc, libvinumc.private_dir_include()],
+  dependencies: parser_dep,
 )
 
 vinumc = executable(
   'vinumc',
-  vinumc_srcs,
+  sources: [
+    'vinumc.c',
+  ],
   include_directories : local_inc,
   install : true,
   dependencies: [
-    dl_dep,
     vutils_dep,
-    parser_dep,
+    libvinumc_dep_priv,
   ],
 )
 
-vin2dot_srcs = common_srcs + [
-  'vin2dot.c',
-]
+vinumc_dep = declare_dependency(
+  include_directories : external_inc,
+)
 
 if get_option('build_vin2dot')
   executable(
     'vin2dot',
-    vin2dot_srcs,
+    sources: [
+      'vin2dot.c',
+    ],
     include_directories : local_inc,
     install : true,
     dependencies: [
-      dl_dep,
       vutils_dep,
-      parser_dep,
+      libvinumc_dep_priv,
     ],
   )
 endif

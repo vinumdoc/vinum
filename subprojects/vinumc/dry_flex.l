@@ -1,6 +1,10 @@
 %option noyywrap nodefault yylineno noyy_top_state
 %option stack
 
+%option reentrant bison-bridge
+
+%option extra-type="struct compiler_ctx *"
+
 %x DEFINE_CALL_NAME
 %x HAS_CALL_NAME
 %x CONTENT
@@ -13,8 +17,7 @@
 #include <vutils/system_allocator.h>
 
 #include "dry_bison.h"
-
-#include "vinumc.h"
+#include "libvinumc.h"
 
 /*
  * Disables input() and unput() function definitions from the generated .c
@@ -24,13 +27,10 @@
 #define YY_NO_INPUT
 #define YY_NO_UNPUT
 
-static void replace_state(int new_state);
-static int yield_text_node(void);
+static void replace_state(int new_state, yyscan_t yyscanner);
+static int yield_text_node(yyscan_t yyscanner);
 
-// used to handle character escaping inside the regular text blocks
-// preventing having two consecutive TEXT nodes
-// that could be just one node
-struct vut_str dry_flex_text_buffer;
+void yyerror(yyscan_t scanner, struct compiler_ctx *ctx, const char *fmt, ...);
 %}
 
 BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
@@ -39,48 +39,48 @@ BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
 
 <INITIAL>[ \t\r\n]+ ;
 <INITIAL>[^\[\] \t\r\n]+ {
-	struct ast_node node = ast_node_new(TEXT, strdup(yytext), ctx.ast.allocator);
-	yylval = ast_add_node(&ctx.ast, node);
+	struct ast_node node = ast_node_new(TEXT, strdup(yytext), yyextra->ast.allocator);
+	*yylval = ast_add_node(&yyextra->ast, node);
 
 	return TEXT;
 }
 
-<INITIAL,CONTENT>"[" { yy_push_state(DEFINE_CALL_NAME); return *yytext; }
+<INITIAL,CONTENT>"[" { yy_push_state(DEFINE_CALL_NAME, yyscanner); return *yytext; }
 <INITIAL>"]" { return *yytext; }
-<CONTENT>"]" { yy_pop_state(); return *yytext; }
+<CONTENT>"]" { yy_pop_state(yyscanner); return *yytext; }
 
 <DEFINE_CALL_NAME>"[" {
-	replace_state(HAS_CALL_NAME);
-	yy_push_state(DEFINE_CALL_NAME);
+	replace_state(HAS_CALL_NAME, yyscanner);
+	yy_push_state(DEFINE_CALL_NAME, yyscanner);
 	return *yytext;
 }
-<DEFINE_CALL_NAME,HAS_CALL_NAME>"]" { yy_pop_state(); return *yytext; }
-<DEFINE_CALL_NAME,HAS_CALL_NAME>[ \t]*: { replace_state(CONTENT); return ':'; }
+<DEFINE_CALL_NAME,HAS_CALL_NAME>"]" { yy_pop_state(yyscanner); return *yytext; }
+<DEFINE_CALL_NAME,HAS_CALL_NAME>[ \t]*: { replace_state(CONTENT, yyscanner); return ':'; }
 <DEFINE_CALL_NAME>[ \t\r\n]+ ;
 <DEFINE_CALL_NAME>[^\[\]: \t\r\n]+ {
-	struct ast_node node = ast_node_new(SYMBOL, strdup(yytext), ctx.ast.allocator);
-	yylval = ast_add_node(&ctx.ast, node);
+	struct ast_node node = ast_node_new(SYMBOL, strdup(yytext), yyextra->ast.allocator);
+	*yylval = ast_add_node(&yyextra->ast, node);
 
-	replace_state(HAS_CALL_NAME);
+	replace_state(HAS_CALL_NAME, yyscanner);
 
 	return SYMBOL;
 }
-<HAS_CALL_NAME>[ \t\r\n] { replace_state(CONTENT); }
-<HAS_CALL_NAME>. { replace_state(CONTENT); yyless(0); }
+<HAS_CALL_NAME>[ \t\r\n] { replace_state(CONTENT, yyscanner); }
+<HAS_CALL_NAME>. { replace_state(CONTENT, yyscanner); yyless(0); }
 
 <CONTENT>"$*" {
-	struct ast_node node = ast_node_new_nvl(ARG_REF_ALL_ARGS, ctx.ast.allocator);
-	yylval = ast_add_node(&ctx.ast, node);
+	struct ast_node node = ast_node_new_nvl(ARG_REF_ALL_ARGS, yyextra->ast.allocator);
+	*yylval = ast_add_node(&yyextra->ast, node);
 
 	return ARG_REF_ALL_ARGS;
 }
 
-<CONTENT>"{#" { yy_push_state(IN_LITERAL); }
+<CONTENT>"{#" { yy_push_state(IN_LITERAL, yyscanner); }
 <IN_LITERAL>"#}" {
-	struct ast_node node = ast_node_new(LITERAL, strndup(yytext, yyleng - 2), ctx.ast.allocator);
-	yylval = ast_add_node(&ctx.ast, node);
+	struct ast_node node = ast_node_new(LITERAL, strndup(yytext, yyleng - 2), yyextra->ast.allocator);
+	*yylval = ast_add_node(&yyextra->ast, node);
 
-	yy_pop_state();
+	yy_pop_state(yyscanner);
 	return LITERAL;
 }
 <IN_LITERAL>(.|\n)/(.|\n) {
@@ -90,55 +90,64 @@ BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
 	// the next token is eof, so we yield the
 	// contents buffered so far
 	struct ast_node node = ast_node_new(LITERAL, strndup(yytext, yyleng),
-	ctx.ast.allocator);
-	yylval = ast_add_node(&ctx.ast, node);
-	yy_pop_state();
+	yyextra->ast.allocator);
+	*yylval = ast_add_node(&yyextra->ast, node);
+	yy_pop_state(yyscanner);
 	return LITERAL;
 }
 
 
 <CONTENT>\\(.|\n)/({BEFORE_TEXT_END}) {
-	VUT_VEC_PUT(&dry_flex_text_buffer, yytext[1]);
-	return yield_text_node();
+	VUT_VEC_PUT(&yyextra->dry_flex_text_buffer, yytext[1]);
+	return yield_text_node(yyscanner);
 }
 <CONTENT>\\(.|\n)/(.|\n) {
-	VUT_VEC_PUT(&dry_flex_text_buffer, yytext[1]);
+	VUT_VEC_PUT(&yyextra->dry_flex_text_buffer, yytext[1]);
 }
 <CONTENT>\\(.|\n) {
 	// the next token is eof, so we yield the
 	// contents buffered so far
-	VUT_VEC_PUT(&dry_flex_text_buffer, yytext[1]);
-	return yield_text_node();
+	VUT_VEC_PUT(&yyextra->dry_flex_text_buffer, yytext[1]);
+	return yield_text_node(yyscanner);
 }
 
 <CONTENT>([^\[\]])/({BEFORE_TEXT_END}) {
-	VUT_VEC_PUT(&dry_flex_text_buffer, *yytext);
-	return yield_text_node();
+	VUT_VEC_PUT(&yyextra->dry_flex_text_buffer, *yytext);
+	return yield_text_node(yyscanner);
 }
 <CONTENT>([^\[\]])/(.|\n) {
-	VUT_VEC_PUT(&dry_flex_text_buffer, *yytext);
+	VUT_VEC_PUT(&yyextra->dry_flex_text_buffer, *yytext);
 }
 <CONTENT>([^\[\]]) {
 	// the next token is eof, so we yield the
 	// contents buffered so far
-	VUT_VEC_PUT(&dry_flex_text_buffer, *yytext);
-	return yield_text_node();
+	VUT_VEC_PUT(&yyextra->dry_flex_text_buffer, *yytext);
+	return yield_text_node(yyscanner);
 }
 
-<*>. { yyerror("[ERROR]  \"%c\" not covered", *yytext); }
+<*>. { yyerror(yyscanner, yyextra, "[ERROR]  \"%c\" not covered", *yytext); }
 
 %%
 
-static void replace_state(int new_state) {
-	yy_pop_state();
-	yy_push_state(new_state);
+static void replace_state(int new_state, yyscan_t yyscanner) {
+	yy_pop_state(yyscanner);
+	yy_push_state(new_state, yyscanner);
 }
 
-static int yield_text_node(void) {
-	VUT_VEC_PUT(&dry_flex_text_buffer, '\0');
-	struct ast_node node = ast_node_new(TEXT, dry_flex_text_buffer.base, ctx.ast.allocator);
+static int yield_text_node(yyscan_t yyscanner) {
+
+	/* Manually get yylval and context from the scanner */
+	YYSTYPE * lval = yyget_lval(yyscanner);
+	struct compiler_ctx * extra = yyget_extra(yyscanner);
+
+	struct ast_node node = ast_node_new(
+		TEXT,
+		vut_str_move_to_cstr(&extra->dry_flex_text_buffer),
+		extra->ast.allocator
+	);
 	// transfers the string to the ast node
-	dry_flex_text_buffer = vut_str_init(ctx.default_allocator);
-	yylval = ast_add_node(&ctx.ast, node);
+	extra->dry_flex_text_buffer = vut_str_init(extra->ast.allocator);
+
+	*lval = ast_add_node(&extra->ast, node);
 	return TEXT;
 }

@@ -17,8 +17,11 @@ testlib_srcs = [
 testlib = shared_library(
   'testlib',
   testlib_srcs,
-  dependencies : extern_library_dep,
-  link_depends: extern_library,
+  include_directories : [
+    local_inc,
+    generated_inc,
+  ],
+  dependencies : libvinumc_dep_priv,
   install : true,
 )
 
@@ -28,7 +31,14 @@ foreach t : tests
   test_exe = executable(
     basename,
     t,
-    dependencies : vunit_dep,
+    include_directories : [
+      local_inc,
+      generated_inc,
+    ],
+    dependencies : [
+      vunit_dep,
+      libvinumc_dep_priv,
+    ],
   )
 
   test_env = environment()
