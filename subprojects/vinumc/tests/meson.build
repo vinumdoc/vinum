@@ -3,6 +3,7 @@ fs = import('fs')
 tests = [
   'help_flag_test.c',
   'library_test.c',
+  'metaprog_test.c',
   'output_flag_test.c',
   'simple_test.c',
   'text_handling_test.c',
