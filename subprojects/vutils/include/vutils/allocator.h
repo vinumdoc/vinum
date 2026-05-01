@@ -11,6 +11,9 @@ struct vut_allocator_funcs {
 	void (*free)(void *allocator, void *ptr);
 };
 
+/**
+ * The allocator interface
+ */
 struct vut_allocator {
 	void *base_allocator;
 	const struct vut_allocator_funcs *funcs;

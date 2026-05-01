@@ -1,0 +1,50 @@
+import os
+
+project = 'Vinum'
+copyright = '2026, Vinum Org'
+author = 'Vinum Org'
+
+extensions = [
+    'hawkmoth',
+]
+
+project_root = '@SOURCE_ROOT@'
+build_root = '@BUILD_ROOT@'
+
+hawkmoth_clang = [
+    '-I' + os.path.join(project_root, 'subprojects/vinumc/include'),
+    '-I' + os.path.join(project_root, 'subprojects/vutils/include'),
+    '-I' + os.path.join(build_root, 'subprojects/vinumc'),
+    '-std=c11',
+]
+
+hawkmoth_root = project_root
+hawkmoth_source_uri = 'https://github.com/vinumdoc/vinum/blob/develop/{source}#L{line}'
+
+templates_path = [os.path.join(project_root, 'docs', 'source' ,'_templates')]
+exclude_patterns = []
+
+resources = os.path.join(project_root, 'resources')
+html_static_path = [
+    os.path.join(project_root, 'docs', 'source', '_static/'),
+    resources,
+]
+
+html_logo = os.path.join(resources, 'logo', 'logo.svg')
+html_favicon = os.path.join(resources, 'logo', 'logo.svg')
+html_sidebars = {
+    '**': [
+        'about.html',
+        'searchbox.html',
+        "relations.html",
+        'navigation.html',
+    ]
+}
+
+html_theme_options = {
+        "page_width": "65em",
+        "sidebar_width": "15em",
+        "fixed_sidebar": True,
+        "font_size": "inherit",
+        "font_family": "serif",
+}

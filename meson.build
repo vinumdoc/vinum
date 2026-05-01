@@ -11,3 +11,7 @@ subproject('vutils')
 subproject('vunit')
 subproject('vinumc')
 subproject('vutils_tests')
+
+if get_option('docs').enabled()
+  subdir('docs')
+endif
