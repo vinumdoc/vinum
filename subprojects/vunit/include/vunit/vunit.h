@@ -21,6 +21,8 @@ struct vunit_test {
 	char *name;
 	vunit_test_func_t test_func;
 	bool skip;
+	bool todo;
+	const char *todo_msg;
 };
 
 #define VUNIT_MAX_NUM_TEST 1024
