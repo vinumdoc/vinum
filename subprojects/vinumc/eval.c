@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -136,15 +137,38 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_descent) {
 	}
 }
 
+#define DO_CALLS_FUNC_SIGNATURE(func_name)                                                         \
+	static void func_name(struct eval_ctx *ctx, const struct ast *ast, struct vut_str *out,    \
+			      size_t ast_node_id, int flags)
+
+DO_CALLS_FUNC_SIGNATURE(do_calls);
+
 RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 	struct scope *curr_scope = &VUT_VEC_AT(&ctx->scopes, curr_scope_id);
 
-	char *call_name = ast_get_text(ast, ast_get_nth_child(ast, ast_node_id, 0));
-	if (call_name == NULL) {
-		fprintf(stderr, "ERROR: Symbol with no name\n");
-		return;
-	}
+	ast_node_id_t call_name_ast = ast_get_nth_child(ast, ast_node_id, 0);
+	assert(ast_get_type(ast, call_name_ast) == SYMBOL);
 
+	bool allocated = false;
+	char *call_name = ast_get_text(ast, call_name_ast);
+
+	if (call_name == NULL) {
+		if (ast_get_num_child(ast, call_name_ast) == 0) {
+			fprintf(stderr, "ERROR: Symbol with no name\n");
+			return;
+		} else {
+			ast_node_id_t call = ast_get_nth_child(ast, call_name_ast, 0);
+			assert(ast_get_type(ast, call) == CALL);
+			resolve_calls(ctx, ast, curr_scope_id, call);
+
+			struct vut_str call_name_str = vut_str_init(ctx->allocator);
+
+			do_calls(ctx, ast, &call_name_str, call, REDUCE_BLANKS);
+
+			call_name = vut_str_move_to_cstr(&call_name_str);
+			allocated = true;
+		}
+	}
 	struct namespace_entry *symbol_info =
 		find_symbol_on_scopes(&ctx->scopes, curr_scope, call_name);
 
@@ -155,7 +179,7 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 					struct ast_node *node =
 						&VUT_VEC_AT(&ast->nodes, ast_node_id);
 					node->childs.len--;
-					return;
+					goto exit;
 				}
 
 				ast_node_id_t symbol_args =
@@ -198,6 +222,10 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 	}
 
 	resolve_calls_descent(ctx, ast, curr_scope_id, ast_node_id);
+
+exit:
+	if (allocated)
+		vut_allocator_free(ctx->allocator, call_name);
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls) {
@@ -219,12 +247,6 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls) {
 		break;
 	}
 }
-
-#define DO_CALLS_FUNC_SIGNATURE(func_name)                                                         \
-	static void func_name(struct eval_ctx *ctx, const struct ast *ast, struct vut_str *out,    \
-			      size_t ast_node_id, int flags)
-
-DO_CALLS_FUNC_SIGNATURE(do_calls);
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_program) {
 	for (size_t i = 0; i < ast_get_num_child(ast, ast_node_id); i++) {
