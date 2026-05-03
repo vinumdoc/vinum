@@ -148,7 +148,7 @@ static int yield_text_node(yyscan_t yyscanner) {
 		extra->ast.allocator
 	);
 	// transfers the string to the ast node
-	extra->dry_flex_text_buffer = vut_str_init(extra->ast.allocator);
+	extra->dry_flex_text_buffer = vut_str_init(extra->dry_arena);
 
 	*lval = ast_add_node(&extra->ast, node);
 	return TEXT;

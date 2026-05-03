@@ -106,7 +106,7 @@ args_child:
 symbol: SYMBOL {
 	// making so our symbols are case insensitive by making the whole string lowercase
 	struct vut_sv text = ast_get_text(&ctx->ast, $1);
-	struct vut_str tmp_str = vut_str_from_vut_sv(text, ctx->alloc);
+	struct vut_str tmp_str = vut_str_from_vut_sv(text, ctx->dry_arena);
 
 	// we need to convert from multi-byte to wide-character string
 	wchar_t *wtext = (wchar_t*)malloc(text.len * sizeof(wchar_t));

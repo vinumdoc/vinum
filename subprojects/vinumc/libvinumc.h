@@ -17,6 +17,7 @@ struct compiler_ctx {
 	// that could be just one node
 	struct vut_str dry_flex_text_buffer;
 
+	struct vut_allocator dry_arena;
 	struct vut_allocator alloc;
 };
 
