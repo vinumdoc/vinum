@@ -29,7 +29,7 @@ jobs:
 
       - name: Verify every commit
         run: |
-          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD)
+          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD --reverse)
 
           for commit in $commits; do
             echo "checking commit: $commit"
@@ -58,7 +58,7 @@ jobs:
 
       - name: Check formatting
         run: |
-          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD)
+          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD --reverse)
 
           for commit in $commits; do
             echo "Checking commit: $commit"
