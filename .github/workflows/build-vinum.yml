@@ -50,7 +50,7 @@ jobs:
             meson test -C buildir --print-errorlogs
           done
 
-  check-formating:
+  check-formatting:
     name: Check Formatting
     runs-on: ubuntu-latest
     steps:
