@@ -12,6 +12,18 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+
+    strategy:
+      # Prevents one failing compiler from cancelling the other
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+
+      # 2. Inject the matrix values into the environment
+
+    env:
+      CC: ${{ matrix.compiler }}
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,6 +36,7 @@ jobs:
             bison \
             flex \
             gcc \
+            clang \
             meson \
             ninja-build
 
