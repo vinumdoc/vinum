@@ -16,7 +16,7 @@ enum entry_type {
 };
 
 struct namespace_entry {
-	char *name;
+	struct vut_sv name;
 	enum entry_type type;
 	union {
 		int ast_node_id;

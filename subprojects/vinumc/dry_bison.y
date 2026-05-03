@@ -105,21 +105,24 @@ args_child:
 
 symbol: SYMBOL {
 	// making so our symbols are case insensitive by making the whole string lowercase
-	char *text = VUT_VEC_AT(&ctx->ast.nodes, $1).text;
-	size_t len = strlen(text);
+	struct vut_sv text = ast_get_text(&ctx->ast, $1);
+	struct vut_str tmp_str = vut_str_from_vut_sv(text, ctx->alloc);
 
 	// we need to convert from multi-byte to wide-character string
-	wchar_t *wtext = (wchar_t*)malloc(len * sizeof(wchar_t));
+	wchar_t *wtext = (wchar_t*)malloc(text.len * sizeof(wchar_t));
 	// TODO: handle the function return value
-	mbstowcs(wtext, text, len);
+	mbstowcs(wtext, text.base, text.len);
 
-	for(size_t i = 0; i < len; i++) {
+	for(size_t i = 0; i < text.len; i++) {
 		wtext[i] = towlower(wtext[i]);
 	}
 	// converting back to multi-byte
 	// TODO: handle the function return value
-	wcstombs(text, wtext, len);
+	wcstombs(tmp_str.base, wtext, text.len);
 	free(wtext);
+
+	// TODO: Find a way to free this tmp_str
+	ast_set_text(&ctx->ast, $1, vut_sv_from_vut_str(&tmp_str));
 
 	$$ = $1;
       }

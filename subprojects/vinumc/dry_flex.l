@@ -39,7 +39,7 @@ BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
 
 <INITIAL>[ \t\r\n]+ ;
 <INITIAL>[^\[\] \t\r\n]+ {
-	struct ast_node node = ast_node_new(TEXT, strdup(yytext), yyextra->ast.allocator);
+	struct ast_node node = ast_node_new(TEXT, vut_sv_from_cstr(yytext), yyextra->ast.allocator);
 	*yylval = ast_add_node(&yyextra->ast, node);
 
 	return TEXT;
@@ -58,7 +58,7 @@ BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
 <DEFINE_CALL_NAME,HAS_CALL_NAME>[ \t]*: { replace_state(CONTENT, yyscanner); return ':'; }
 <DEFINE_CALL_NAME>[ \t\r\n]+ ;
 <DEFINE_CALL_NAME>[^\[\]: \t\r\n]+ {
-	struct ast_node node = ast_node_new(SYMBOL, strdup(yytext), yyextra->ast.allocator);
+	struct ast_node node = ast_node_new(SYMBOL, vut_sv_from_cstr(yytext), yyextra->ast.allocator);
 	*yylval = ast_add_node(&yyextra->ast, node);
 
 	replace_state(HAS_CALL_NAME, yyscanner);
@@ -77,7 +77,7 @@ BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
 
 <CONTENT>"{#" { yy_push_state(IN_LITERAL, yyscanner); }
 <IN_LITERAL>"#}" {
-	struct ast_node node = ast_node_new(LITERAL, strndup(yytext, yyleng - 2), yyextra->ast.allocator);
+	struct ast_node node = ast_node_new(LITERAL, vut_sv_from_str(yytext, yyleng - 2), yyextra->ast.allocator);
 	*yylval = ast_add_node(&yyextra->ast, node);
 
 	yy_pop_state(yyscanner);
@@ -89,7 +89,7 @@ BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
 <IN_LITERAL>(.|\n) {
 	// the next token is eof, so we yield the
 	// contents buffered so far
-	struct ast_node node = ast_node_new(LITERAL, strndup(yytext, yyleng),
+	struct ast_node node = ast_node_new(LITERAL, vut_sv_from_str(yytext, yyleng),
 	yyextra->ast.allocator);
 	*yylval = ast_add_node(&yyextra->ast, node);
 	yy_pop_state(yyscanner);
@@ -142,7 +142,7 @@ static int yield_text_node(yyscan_t yyscanner) {
 
 	struct ast_node node = ast_node_new(
 		TEXT,
-		vut_str_move_to_cstr(&extra->dry_flex_text_buffer),
+		vut_sv_from_vut_str(&extra->dry_flex_text_buffer),
 		extra->ast.allocator
 	);
 	// transfers the string to the ast node
