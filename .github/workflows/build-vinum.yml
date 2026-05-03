@@ -27,9 +27,6 @@ jobs:
             meson \
             ninja-build
 
-      - name: Configure
-        run: meson setup buildir
-
       - name: Build
         run: |
           commits=$(git rev-list origin/$TARGET_BRANCH..HEAD)
@@ -47,6 +44,8 @@ jobs:
           for commit in $commits; do
             echo "checking commit: $commit"
             git checkout $commit
+            rm -rf buildir
+            meson setup buildir
             meson test -C buildir --print-errorlogs
           done
 
@@ -67,9 +66,6 @@ jobs:
             ninja-build \
             clang-format
 
-      - name: Configure build dir
-        run: meson setup buildir
-
       - name: Check formatting
         run: |
           commits=$(git rev-list origin/$TARGET_BRANCH..HEAD)
@@ -77,6 +73,8 @@ jobs:
           for commit in $commits; do
             echo "Checking commit: $commit"
             git checkout $commit
+            rm -rf buildir
+            meson setup buildir
             meson compile -C buildir --ninja-args=clang-format-check
           done
 
