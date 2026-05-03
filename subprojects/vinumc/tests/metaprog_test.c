@@ -2,7 +2,7 @@
 
 #include "libvinumc.h"
 
-static char *compile_program(const char *prg_cstr, struct vut_allocator *alloc) {
+static char *compile_program(const char *prg_cstr, struct vut_allocator alloc) {
 	struct compiler_ctx comp = compiler_ctx_init(alloc);
 
 	struct vut_str prg = vut_str_init(alloc);
@@ -17,7 +17,7 @@ void test_call_name_returned_by_another_call(struct vunit_test_ctx *ctx) {
 	const char *out = compile_program("[foo: bar]\n"
 					  "[bar: Hello World!]\n"
 					  "[[foo]]\n",
-					  &ctx->allocator);
+					  ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!");
 }

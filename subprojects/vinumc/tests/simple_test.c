@@ -2,7 +2,7 @@
 
 #include "libvinumc.h"
 
-static char *compile_program(const char *prg_cstr, struct vut_allocator *alloc) {
+static char *compile_program(const char *prg_cstr, struct vut_allocator alloc) {
 	struct compiler_ctx comp = compiler_ctx_init(alloc);
 
 	struct vut_str prg = vut_str_init(alloc);
@@ -16,7 +16,7 @@ static char *compile_program(const char *prg_cstr, struct vut_allocator *alloc) 
 void test_basic(struct vunit_test_ctx *ctx) {
 	const char *out = compile_program("[a: Hello World!]\n"
 					  "[a]\n",
-					  &ctx->allocator);
+					  ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!");
 }
@@ -24,7 +24,7 @@ void test_basic(struct vunit_test_ctx *ctx) {
 void test_define_later(struct vunit_test_ctx *ctx) {
 	const char *out = compile_program("[a]\n"
 					  "[a: Hello World!]\n",
-					  &ctx->allocator);
+					  ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!");
 }
@@ -32,7 +32,7 @@ void test_define_later(struct vunit_test_ctx *ctx) {
 void test_function_text_args(struct vunit_test_ctx *ctx) {
 	const char *out = compile_program("[a: $*]\n"
 					  "[a Hello World!]\n",
-					  &ctx->allocator);
+					  ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!");
 }
@@ -41,7 +41,7 @@ void test_function_call_args(struct vunit_test_ctx *ctx) {
 	const char *out = compile_program("[a: Hello World!]\n"
 					  "[b: $*]\n"
 					  "[b [a]]\n",
-					  &ctx->allocator);
+					  ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "Hello World!");
 }

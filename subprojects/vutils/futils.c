@@ -7,7 +7,7 @@ long vut_fut_get_size_FILE(FILE *fp) {
 	return size;
 }
 
-struct vut_str vut_fut_read_all_FILE(FILE *fp, struct vut_allocator *alloc) {
+struct vut_str vut_fut_read_all_FILE(FILE *fp, struct vut_allocator alloc) {
 	static const int READ_BUFF_CAPACITY = 1024;
 
 	struct vut_str str = vut_str_init(alloc);

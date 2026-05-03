@@ -22,17 +22,18 @@ struct ast_node {
 	struct ast_node_childs_t childs;
 };
 
-struct ast_node ast_node_new(const int type, struct vut_sv text, struct vut_allocator *allocator);
+struct ast_node ast_node_new(const int type, struct vut_sv text, struct vut_allocator allocator);
 #define ast_node_new_nvl(type, allocator) (ast_node_new((type), (struct vut_sv){ 0 }, (allocator)))
 
 struct ast_nodes_t VUT_VEC_DEF(struct ast_node);
 
 struct ast {
 	struct ast_nodes_t nodes;
-	struct vut_allocator *allocator;
+
+	struct vut_allocator allocator;
 };
 
-struct ast ast_new(struct vut_allocator *allocator);
+struct ast ast_new(struct vut_allocator allocator);
 
 const char *token_to_str(enum yytokentype token);
 ast_node_id_t ast_add_node(struct ast *ast, const struct ast_node node);

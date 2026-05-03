@@ -11,9 +11,8 @@
 
 struct vut_str VUT_VEC_DEF(char);
 
-struct vut_str vut_str_init(struct vut_allocator *alloc);
-struct vut_str vut_str_from_vut_sv(struct vut_sv sv, struct vut_allocator *alloc);
-
+struct vut_str vut_str_init(struct vut_allocator alloc);
+struct vut_str vut_str_from_vut_sv(struct vut_sv sv, struct vut_allocator alloc);
 void vut_str_free(struct vut_str *str);
 
 void vut_str_put_cstr(struct vut_str *to, const char *from);

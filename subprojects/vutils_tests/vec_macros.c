@@ -6,7 +6,7 @@
 struct int_vec_t VUT_VEC_DEF(int);
 
 void test_vec_reserve_exact(struct vunit_test_ctx *ctx) {
-	struct int_vec_t vec = VUT_VEC_INIT(struct int_vec_t, &ctx->allocator);
+	struct int_vec_t vec = VUT_VEC_INIT(struct int_vec_t, ctx->allocator);
 
 	VUT_VEC_RESERVE_EXACT(&vec, 5);
 	VUNIT_ASSERT_EQ(ctx, vec.len, 0);
@@ -25,7 +25,7 @@ void test_vec_reserve_exact(struct vunit_test_ctx *ctx) {
 }
 
 void test_vec_reserve(struct vunit_test_ctx *ctx) {
-	struct int_vec_t vec = VUT_VEC_INIT(struct int_vec_t, &ctx->allocator);
+	struct int_vec_t vec = VUT_VEC_INIT(struct int_vec_t, ctx->allocator);
 
 	VUT_VEC_RESERVE(&vec, 5);
 	VUNIT_ASSERT_EQ_MSG(ctx, vec.len, 0, "VUT_VEC_RESERVE should not change the length");
@@ -44,7 +44,7 @@ void test_vec_reserve(struct vunit_test_ctx *ctx) {
 }
 
 void test_vec_put(struct vunit_test_ctx *ctx) {
-	struct int_vec_t vec = VUT_VEC_INIT(struct int_vec_t, &ctx->allocator);
+	struct int_vec_t vec = VUT_VEC_INIT(struct int_vec_t, ctx->allocator);
 
 	VUT_VEC_RESERVE_EXACT(&vec, 3);
 	VUT_VEC_PUT(&vec, 1);
@@ -69,7 +69,7 @@ void test_vec_put(struct vunit_test_ctx *ctx) {
 }
 
 void test_vec_pop(struct vunit_test_ctx *ctx) {
-	struct int_vec_t vec = VUT_VEC_INIT(struct int_vec_t, &ctx->allocator);
+	struct int_vec_t vec = VUT_VEC_INIT(struct int_vec_t, ctx->allocator);
 
 	VUT_VEC_RESERVE_EXACT(&vec, 3);
 
@@ -96,7 +96,7 @@ void test_vec_pop(struct vunit_test_ctx *ctx) {
 
 void test_vec_put_many(struct vunit_test_ctx *ctx) {
 	int source[] = { 9, 8, 7, 6 };
-	struct int_vec_t vec = VUT_VEC_INIT(struct int_vec_t, &ctx->allocator);
+	struct int_vec_t vec = VUT_VEC_INIT(struct int_vec_t, ctx->allocator);
 
 	VUT_VEC_PUT_MANY(&vec, source, 4);
 
@@ -114,7 +114,7 @@ void test_vec_put_many(struct vunit_test_ctx *ctx) {
 
 void test_vec_foreach(struct vunit_test_ctx *ctx) {
 	int source[] = { 9, 8, 7, 6 };
-	struct int_vec_t vec = VUT_VEC_INIT(struct int_vec_t, &ctx->allocator);
+	struct int_vec_t vec = VUT_VEC_INIT(struct int_vec_t, ctx->allocator);
 
 	VUT_VEC_PUT_MANY(&vec, source, sizeof(source) / sizeof(source[0]));
 

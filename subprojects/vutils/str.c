@@ -2,11 +2,11 @@
 
 #include <str.h>
 
-struct vut_str vut_str_init(struct vut_allocator *alloc) {
+struct vut_str vut_str_init(struct vut_allocator alloc) {
 	return VUT_VEC_INIT(struct vut_str, alloc);
 }
 
-struct vut_str vut_str_from_vut_sv(struct vut_sv sv, struct vut_allocator *alloc) {
+struct vut_str vut_str_from_vut_sv(struct vut_sv sv, struct vut_allocator alloc) {
 	struct vut_str ret = vut_str_init(alloc);
 	vut_str_put_sv(&ret, sv);
 	return ret;

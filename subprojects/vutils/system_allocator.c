@@ -34,9 +34,9 @@ static const struct vut_allocator_funcs system_alloc_funcs = {
 
 struct vut_allocator sys_allocator = {
 	.base_allocator = NULL,
-	.funcs = system_alloc_funcs,
+	.funcs = &system_alloc_funcs,
 };
 
-struct vut_allocator *vut_get_system_allocator() {
-	return &sys_allocator;
+struct vut_allocator vut_get_system_allocator() {
+	return sys_allocator;
 }

@@ -17,7 +17,7 @@
 
 #define ARRAY_SIZE(arr) (sizeof((arr)) / sizeof(*(arr)))
 
-struct ctx ctx_new(struct vut_allocator *allocator) {
+struct ctx ctx_new(struct vut_allocator allocator) {
 	struct ctx ret = {
 		.compiler = compiler_ctx_init(allocator),
 		.alloc = allocator,

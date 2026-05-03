@@ -20,7 +20,7 @@ enum do_calls_flag {
 	LAST_CHILD = 1 << 2,
 };
 
-struct eval_ctx eval_ctx_new(struct vut_allocator *allocator) {
+struct eval_ctx eval_ctx_new(struct vut_allocator allocator) {
 	struct eval_ctx ret = {
 		.allocator = allocator,
 		.scopes = VUT_VEC_INIT(struct eval_ctx_scopes_t, allocator),
@@ -29,7 +29,7 @@ struct eval_ctx eval_ctx_new(struct vut_allocator *allocator) {
 	return ret;
 }
 
-static struct scope scope_new(ast_node_id_t node, int father, struct vut_allocator *allocator) {
+static struct scope scope_new(ast_node_id_t node, int father, struct vut_allocator allocator) {
 	struct scope new_scope = {
 		.father = father,
 		.node = node,
@@ -40,7 +40,7 @@ static struct scope scope_new(ast_node_id_t node, int father, struct vut_allocat
 }
 
 static size_t add_scope_child(struct eval_ctx_scopes_t *scope_array, size_t scope_id,
-			      ast_node_id_t node, struct vut_allocator *allocator) {
+			      ast_node_id_t node, struct vut_allocator allocator) {
 	size_t new_scope_id = scope_array->len;
 	struct scope new_scope = scope_new(node, scope_id, allocator);
 
@@ -368,7 +368,7 @@ struct loaded_lib *load_libs(struct eval_ctx *ctx, struct str_vec *libraries) {
 	return loaded_libs;
 }
 
-void unload_libs(struct loaded_lib *loaded_libs, struct vut_allocator *alloc) {
+void unload_libs(struct loaded_lib *loaded_libs, struct vut_allocator alloc) {
 	if (loaded_libs == NULL) {
 		return;
 	}
