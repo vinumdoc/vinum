@@ -43,6 +43,7 @@ struct eval_ctx {
 };
 
 struct eval_ctx eval_ctx_new(struct vut_allocator allocator);
+void eval_ctx_free(struct eval_ctx *ctx);
 
 struct sv_vec VUT_VEC_DEF(struct vut_sv);
 

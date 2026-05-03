@@ -31,6 +31,12 @@ struct eval_ctx eval_ctx_new(struct vut_allocator allocator) {
 	return ret;
 }
 
+void eval_ctx_free(struct eval_ctx *ctx) {
+	VUT_VEC_FREE(&ctx->scopes);
+
+	*ctx = (struct eval_ctx){ 0 };
+}
+
 static struct scope scope_new(ast_node_id_t node, int father, struct vut_allocator allocator) {
 	struct scope new_scope = {
 		.father = father,
