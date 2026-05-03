@@ -22,6 +22,12 @@ struct ast ast_new(struct vut_allocator allocator) {
 	return ret;
 }
 
+void ast_free(struct ast *ast) {
+	VUT_VEC_FREE(&ast->nodes);
+
+	*ast = (struct ast){};
+}
+
 ast_node_id_t ast_add_node(struct ast *ast, const struct ast_node node) {
 	VUT_VEC_PUT(&ast->nodes, node);
 	return ast->nodes.len - 1;

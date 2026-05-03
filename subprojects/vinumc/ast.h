@@ -34,6 +34,7 @@ struct ast {
 };
 
 struct ast ast_new(struct vut_allocator allocator);
+void ast_free(struct ast *ast);
 
 const char *token_to_str(enum yytokentype token);
 ast_node_id_t ast_add_node(struct ast *ast, const struct ast_node node);
