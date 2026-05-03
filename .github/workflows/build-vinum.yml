@@ -32,11 +32,19 @@ jobs:
           commits=$(git rev-list origin/$TARGET_BRANCH..HEAD --reverse)
 
           for commit in $commits; do
-            echo "checking commit: $commit"
+            short_sha=$(git rev-parse --short $commit)
+
+            echo "::group::[$short_sha] Checkout & Clean"
             git checkout $commit
             rm -rf buildir
+            echo "::endgroup::"
+
+            echo "::group::[$short_sha] Setup & Test"
             meson setup buildir
             meson test -C buildir --print-errorlogs
+            echo "::endgroup::"
+
+            echo "---------------------------------------------------"
           done
 
   check-formatting:
@@ -61,10 +69,17 @@ jobs:
           commits=$(git rev-list origin/$TARGET_BRANCH..HEAD --reverse)
 
           for commit in $commits; do
-            echo "Checking commit: $commit"
+            short_sha=$(git rev-parse --short $commit)
+
+            echo "::group::[$short_sha] Check formatting"
+
             git checkout $commit
             rm -rf buildir
             meson setup buildir
             meson compile -C buildir --ninja-args=clang-format-check
+
+            echo "::endgroup::"
+
+            echo "---------------------------------------------------"
           done
 
