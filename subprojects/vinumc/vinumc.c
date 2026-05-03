@@ -26,6 +26,12 @@ struct ctx ctx_new(struct vut_allocator allocator) {
 	return ret;
 }
 
+void ctx_free(struct ctx *ctx) {
+	compiler_ctx_free(&ctx->compiler);
+
+	*ctx = (struct ctx){ 0 };
+}
+
 enum flag_kind {
 	FLAG_BOOLEAN,
 	FLAG_ARGUMENT,
@@ -222,4 +228,5 @@ int main(int argc, char **argv) {
 exit:
 	free_flags(vinumc_flags, ARRAY_SIZE(vinumc_flags));
 	free(ctx.input_path);
+	ctx_free(&ctx);
 }
