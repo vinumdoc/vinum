@@ -79,7 +79,7 @@ void *vut_arena_realloc(struct vut_arena *arena, void *old_ptr, size_t bytes, si
 
 	void *ptr = vut_arena_malloc(arena, bytes, times);
 	if (old_ptr != NULL)
-		memcpy(ptr, old_ptr, bytes * times);
+		memmove(ptr, old_ptr, bytes * times);
 
 	return ptr;
 }
