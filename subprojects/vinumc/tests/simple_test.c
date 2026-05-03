@@ -6,7 +6,7 @@ static char *compile_program(const char *prg_cstr, struct vut_allocator *alloc) 
 	struct compiler_ctx comp = compiler_ctx_init(alloc);
 
 	struct vut_str prg = vut_str_init(alloc);
-	vut_put_str(&prg, prg_cstr);
+	vut_str_put_cstr(&prg, prg_cstr);
 
 	struct vut_str out = compiler_compile(&comp, &prg);
 

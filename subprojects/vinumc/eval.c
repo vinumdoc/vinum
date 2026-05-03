@@ -289,9 +289,9 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 		// put the extern function call return on the out str
 
 		if ((flags & REDUCE_BLANKS) != 0) {
-			vut_put_blank_reduced_str(out, call_return.ptr, true, true);
+			vut_str_put_blank_reduced_cstr(out, call_return.ptr, true, true);
 		} else {
-			vut_put_str(out, call_return.ptr);
+			vut_str_put_cstr(out, call_return.ptr);
 		}
 
 		if (call_return.free) {
@@ -310,9 +310,9 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_text) {
 	if ((flags & REDUCE_BLANKS) != 0) {
 		bool trim_left = (flags & FIRST_CHILD) != 0;
 		bool trim_right = (flags & LAST_CHILD) != 0;
-		vut_put_blank_reduced_str(out, text, trim_left, trim_right);
+		vut_str_put_blank_reduced_cstr(out, text, trim_left, trim_right);
 	} else {
-		vut_put_str(out, text);
+		vut_str_put_cstr(out, text);
 	}
 }
 

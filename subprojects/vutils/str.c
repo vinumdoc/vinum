@@ -14,7 +14,7 @@ static bool is_blank_char(char c) {
 	return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
-void vut_put_str(struct vut_str *to, const char *from) {
+void vut_str_put_cstr(struct vut_str *to, const char *from) {
 	size_t _len = strlen(from);
 	VUT_VEC_PUT_MANY(to, from, _len);
 }
@@ -24,7 +24,8 @@ void vut_put_str(struct vut_str *to, const char *from) {
 //
 // If `trim_left` is true, leading blanks are removed.
 // If `trim_right` is true, trailing blanks are removed.
-void vut_put_blank_reduced_str(struct vut_str *to, char *from, bool trim_left, bool trim_right) {
+void vut_str_put_blank_reduced_cstr(struct vut_str *to, char *from, bool trim_left,
+				    bool trim_right) {
 	size_t start = 0;
 	size_t end = strlen(from);
 	if (trim_left) {
