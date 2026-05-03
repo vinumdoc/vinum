@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <vutils/arena_allocator.h>
 #include <vutils/str.h>
 #include <vutils/system_allocator.h>
 #include <vutils/vec.h>
@@ -28,32 +29,45 @@ struct eval_ctx eval_ctx_new(struct vut_allocator allocator) {
 		.scopes = VUT_VEC_INIT(struct eval_ctx_scopes_t, allocator),
 	};
 
+	struct vut_arena *arena = vut_allocator_malloc(allocator, sizeof(*arena), 1);
+	*arena = vut_arena_new(allocator, 10 * 1024);
+	ret.scopes_childs_arena = vut_arena_to_vut_allocator(arena);
+
+	arena = vut_allocator_malloc(allocator, sizeof(*arena), 1);
+	*arena = vut_arena_new(allocator, 10 * 1024);
+	ret.scopes_namespace_arena = vut_arena_to_vut_allocator(arena);
+
 	return ret;
 }
 
 void eval_ctx_free(struct eval_ctx *ctx) {
+	vut_arena_free_all(ctx->scopes_namespace_arena.base_allocator);
+	vut_allocator_free(ctx->allocator, ctx->scopes_namespace_arena.base_allocator);
+
+	vut_arena_free_all(ctx->scopes_childs_arena.base_allocator);
+	vut_allocator_free(ctx->allocator, ctx->scopes_childs_arena.base_allocator);
+
 	VUT_VEC_FREE(&ctx->scopes);
 
 	*ctx = (struct eval_ctx){ 0 };
 }
 
-static struct scope scope_new(ast_node_id_t node, int father, struct vut_allocator allocator) {
+static struct scope scope_new(struct eval_ctx *ctx, ast_node_id_t node, int father) {
 	struct scope new_scope = {
 		.father = father,
 		.node = node,
-		.childs = VUT_VEC_INIT(struct scope_childs_t, allocator),
-		.namespace = VUT_VEC_INIT(struct scope_namespace_t, allocator),
+		.childs = VUT_VEC_INIT(struct scope_childs_t, ctx->scopes_childs_arena),
+		.namespace = VUT_VEC_INIT(struct scope_namespace_t, ctx->scopes_namespace_arena),
 	};
 	return new_scope;
 }
 
-static size_t add_scope_child(struct eval_ctx_scopes_t *scope_array, size_t scope_id,
-			      ast_node_id_t node, struct vut_allocator allocator) {
-	size_t new_scope_id = scope_array->len;
-	struct scope new_scope = scope_new(node, scope_id, allocator);
+static size_t add_scope_child(struct eval_ctx *ctx, size_t father, ast_node_id_t node) {
+	size_t new_scope_id = ctx->scopes.len;
+	struct scope new_scope = scope_new(ctx, node, father);
 
-	VUT_VEC_PUT(scope_array, new_scope);
-	struct scope *scope = &scope_array->base[scope_id];
+	VUT_VEC_PUT(&ctx->scopes, new_scope);
+	struct scope *scope = &ctx->scopes.base[father];
 	VUT_VEC_PUT(&scope->childs, new_scope_id);
 
 	return new_scope_id;
@@ -152,8 +166,8 @@ RESOLVE_FUNC_SIGNATURE(resolve_symbols) {
 		resolve_symbols_assignment(cctx, curr_scope_id, ast_node);
 	} else {
 		if (ast_get_type(ast, ast_node) == CALL)
-			curr_scope_id = add_scope_child(&ctx->scopes, curr_scope_id, ast_node,
-							ctx->allocator);
+			curr_scope_id = add_scope_child(ctx, curr_scope_id, ast_node);
+
 		resolve_symbols_descent(cctx, curr_scope_id, ast_node);
 	}
 }
@@ -419,7 +433,7 @@ void unload_libs(struct loaded_lib *loaded_libs, struct vut_allocator alloc) {
 
 struct vut_str eval(struct compiler_ctx *cctx) {
 	struct eval_ctx *ctx = &cctx->eval_ctx;
-	struct scope base_scope = scope_new(0, -1, ctx->allocator);
+	struct scope base_scope = scope_new(ctx, 0, -1);
 	VUT_VEC_PUT(&ctx->scopes, base_scope);
 
 	struct loaded_lib *loaded_libs = load_libs(ctx, &cctx->libraries);
