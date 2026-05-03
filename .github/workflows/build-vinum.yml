@@ -27,17 +27,7 @@ jobs:
             meson \
             ninja-build
 
-      - name: Build
-        run: |
-          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD)
-
-          for commit in $commits; do
-            echo "checking commit: $commit"
-            git checkout $commit
-            meson compile -C buildir
-          done
-
-      - name: Run tests
+      - name: Verify every commit
         run: |
           commits=$(git rev-list origin/$TARGET_BRANCH..HEAD)
 
