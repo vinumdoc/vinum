@@ -3,15 +3,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <vutils/arena_allocator.h>
+
 #include "ast.h"
-
-struct ast_node ast_node_new(const int type, struct vut_sv text, struct vut_allocator allocator) {
-	struct ast_node ret = { .type = type,
-				.text = text,
-				.childs = VUT_VEC_INIT(struct ast_node_childs_t, allocator) };
-
-	return ret;
-}
 
 struct ast ast_new(struct vut_allocator allocator) {
 	struct ast ret = {
@@ -19,24 +13,39 @@ struct ast ast_new(struct vut_allocator allocator) {
 		.allocator = allocator,
 	};
 
+	struct vut_arena *arena = vut_allocator_malloc(allocator, sizeof(*arena), 1);
+	*arena = vut_arena_new(allocator, 10 * 1024);
+	ret.child_arena = vut_arena_to_vut_allocator(arena);
+
 	return ret;
 }
 
 void ast_free(struct ast *ast) {
+	vut_arena_free_all(ast->child_arena.base_allocator);
+	vut_allocator_free(ast->allocator, ast->child_arena.base_allocator);
 	VUT_VEC_FREE(&ast->nodes);
 
 	*ast = (struct ast){};
 }
 
-ast_node_id_t ast_add_node(struct ast *ast, const struct ast_node node) {
+static ast_node_id_t ast_add_node(struct ast *ast, const struct ast_node node) {
 	VUT_VEC_PUT(&ast->nodes, node);
 	return ast->nodes.len - 1;
+}
+
+ast_node_id_t ast_node_new(struct ast *ast, const int type, struct vut_sv text) {
+	struct ast_node node = { .type = type,
+				 .text = text,
+				 .childs =
+					 VUT_VEC_INIT(struct ast_node_childs_t, ast->child_arena) };
+
+	return ast_add_node(ast, node);
 }
 
 ast_node_id_t ast_copy_node(struct ast *ast, ast_node_id_t node_id) {
 	struct ast_node no_childs_copy = VUT_VEC_AT(&ast->nodes, node_id);
 
-	no_childs_copy.childs = VUT_VEC_INIT(struct ast_node_childs_t, ast->allocator);
+	no_childs_copy.childs = VUT_VEC_INIT(struct ast_node_childs_t, ast->child_arena);
 
 	size_t node_copy_id = ast_add_node(ast, no_childs_copy);
 	struct ast_node *node_copy = &VUT_VEC_AT(&ast->nodes, node_copy_id);

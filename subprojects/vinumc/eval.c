@@ -243,8 +243,7 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 			if (ast_get_num_child(ast, ast_node) <= 1) {
 				// ensure that the call node has an ARGS node
 				// to prevent it from being skipped during evaluation
-				size_t args_node_id =
-					ast_add_node(ast, ast_node_new_nvl(ARGS, ast->allocator));
+				size_t args_node_id = ast_node_new_nvl(ast, ARGS);
 				ast_add_child(ast, ast_node, args_node_id);
 			}
 		}

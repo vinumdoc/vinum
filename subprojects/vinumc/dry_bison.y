@@ -47,8 +47,7 @@ void yyerror(yyscan_t scanner, struct compiler_ctx *ctx, const char *fmt, ...);
 program:
        {
        UNUSED(yynerrs);
-	struct ast_node node = ast_node_new_nvl(PROGRAM, ctx->ast.allocator);
-	$$ = ast_add_node(&ctx->ast, node);
+	$$ = ast_node_new_nvl(&ctx->ast, PROGRAM);
        }
        | program block {
 	ast_add_child(&ctx->ast, $1, $2);
@@ -58,7 +57,7 @@ program:
 
 block:
      '[' symbol ':' args ']'  {
-	ast_node_id_t node = ast_add_node(&ctx->ast, ast_node_new_nvl(ASSIGNMENT, ctx->ast.allocator));
+	ast_node_id_t node = ast_node_new_nvl(&ctx->ast, ASSIGNMENT);
 
 	ast_add_child(&ctx->ast, node, $2);
 	ast_add_child(&ctx->ast, node, $4);
@@ -66,7 +65,7 @@ block:
 	$$ = node;
    }
    | '[' symbol args ']'  {
-	ast_node_id_t node = ast_add_node(&ctx->ast, ast_node_new_nvl(CALL, ctx->ast.allocator));
+	ast_node_id_t node = ast_node_new_nvl(&ctx->ast, CALL);
 
 	ast_add_child(&ctx->ast, node, $2);
 	ast_add_child(&ctx->ast, node, $3);
@@ -74,7 +73,7 @@ block:
 	$$ = node;
    }
    | '[' symbol ']'  {
-	ast_node_id_t node = ast_add_node(&ctx->ast, ast_node_new_nvl(CALL, ctx->ast.allocator));
+	ast_node_id_t node = ast_node_new_nvl(&ctx->ast, CALL);
 
 	ast_add_child(&ctx->ast, node, $2);
 
@@ -84,7 +83,7 @@ block:
 
 args:
 	args_child {
-		ast_node_id_t node = ast_add_node(&ctx->ast, ast_node_new_nvl(ARGS, ctx->ast.allocator));
+		ast_node_id_t node = ast_node_new_nvl(&ctx->ast, ARGS);
 		ast_add_child(&ctx->ast, node, $1);
 
 		$$ = node;
@@ -127,7 +126,7 @@ symbol: SYMBOL {
 	$$ = $1;
       }
       | block {
-	ast_node_id_t node = ast_add_node(&ctx->ast, ast_node_new_nvl(SYMBOL, ctx->ast.allocator));
+	ast_node_id_t node = ast_node_new_nvl(&ctx->ast, SYMBOL);
 	ast_add_child(&ctx->ast, node, $1);
 
 	$$ = node;
