@@ -54,10 +54,10 @@ void *vut_arena_malloc(struct vut_arena *arena, size_t bytes, size_t times) {
 	if (bytes * times == 0)
 		return NULL;
 
-	assert(arena->buffer - arena->free_ptr <= (long)arena->buffer_size);
-
 	uint8_t *aligned_ptr = (uint8_t *)ALIGN_UP(arena->free_ptr, _Alignof(max_align_t));
 	uint8_t *end_ptr = aligned_ptr + bytes * times;
+
+	assert(end_ptr <= arena->buffer + arena->buffer_size);
 
 	arena->free_ptr = end_ptr;
 
