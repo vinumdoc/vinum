@@ -6,6 +6,8 @@
 #include "allocator.h"
 #include "arena_allocator.h"
 
+#define ALIGN_UP(addr, align) ((((uintptr_t)(addr)) + ((align) - 1)) & ~((uintptr_t)((align) - 1)))
+
 struct vut_arena vut_arena_new(struct vut_allocator *base_allocator, size_t arena_size) {
 	struct vut_arena new_arena = {};
 	new_arena.base_allocator = base_allocator;
@@ -52,12 +54,14 @@ void *vut_arena_malloc(struct vut_arena *arena, size_t bytes, size_t times) {
 	if (bytes * times == 0)
 		return NULL;
 
-	assert(arena->buffer - arena->free_ptr <= (long)arena->buffer_size);
+	uint8_t *aligned_ptr = (uint8_t *)ALIGN_UP(arena->free_ptr, _Alignof(max_align_t));
+	uint8_t *end_ptr = aligned_ptr + bytes * times;
 
-	uint8_t *ret = arena->free_ptr;
-	arena->free_ptr += bytes * times;
+	assert(end_ptr <= arena->buffer + arena->buffer_size);
 
-	return ret;
+	arena->free_ptr = end_ptr;
+
+	return aligned_ptr;
 }
 
 void *vut_arena_calloc(struct vut_arena *arena, size_t bytes, size_t times) {
@@ -75,7 +79,7 @@ void *vut_arena_realloc(struct vut_arena *arena, void *old_ptr, size_t bytes, si
 
 	void *ptr = vut_arena_malloc(arena, bytes, times);
 	if (old_ptr != NULL)
-		memcpy(ptr, old_ptr, bytes * times);
+		memmove(ptr, old_ptr, bytes * times);
 
 	return ptr;
 }
