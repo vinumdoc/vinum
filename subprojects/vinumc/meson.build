@@ -47,7 +47,7 @@ parser_lib = static_library('vinumc_parser',
 
 parser_dep = declare_dependency(
   link_with : parser_lib,
-  sources : [bison_gen, lex_gen],
+  sources : [bison_gen[1], lex_gen[1]],
   include_directories : generated_inc,
   dependencies : vutils_dep,
 )
@@ -87,13 +87,12 @@ libvinumc = library(
 libvinumc_dep = declare_dependency(
   link_with: libvinumc,
   include_directories: external_inc,
-  dependencies: parser_dep,
 )
 
 libvinumc_dep_priv = declare_dependency(
   link_with: libvinumc,
+  sources : [bison_gen[1], lex_gen[1]],
   include_directories: [external_inc, libvinumc.private_dir_include()],
-  dependencies: parser_dep,
 )
 
 vinumc = executable(
