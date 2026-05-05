@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include <vutils/allocator.h>
+#include <vutils/sv.h>
 #include <vutils/vec.h>
 
 #include "dry_bison.h"
@@ -16,13 +17,13 @@ struct ast_node_childs_t VUT_VEC_DEF(ast_node_id_t);
 
 struct ast_node {
 	int type;
-	char *text;
+	struct vut_sv text;
 
 	struct ast_node_childs_t childs;
 };
 
-struct ast_node ast_node_new(const int type, char *value, struct vut_allocator *allocator);
-#define ast_node_new_nvl(type, allocator) (ast_node_new((type), NULL, (allocator)))
+struct ast_node ast_node_new(const int type, struct vut_sv text, struct vut_allocator *allocator);
+#define ast_node_new_nvl(type, allocator) (ast_node_new((type), (struct vut_sv){ 0 }, (allocator)))
 
 struct ast_nodes_t VUT_VEC_DEF(struct ast_node);
 
@@ -46,7 +47,8 @@ void ast_set_nth_child(struct ast *ast, ast_node_id_t father_id, ast_node_id_t n
 int ast_get_type(const struct ast *ast, ast_node_id_t id);
 void ast_set_type(struct ast *ast, ast_node_id_t id, int type);
 
-char *ast_get_text(const struct ast *ast, ast_node_id_t id);
+struct vut_sv ast_get_text(const struct ast *ast, ast_node_id_t id);
+void ast_set_text(const struct ast *ast, ast_node_id_t id, struct vut_sv text);
 
 void ast_print(const struct ast *ast);
 void ast_dot(const struct ast *ast, FILE *stream);

@@ -11,9 +11,10 @@ install_subdir(
 srcs = [
   'allocator.c',
   'arena_allocator.c',
-  'system_allocator.c',
-  'str.c',
   'futils.c',
+  'str.c',
+  'sv.c',
+  'system_allocator.c',
 ]
 
 libvutils = library(

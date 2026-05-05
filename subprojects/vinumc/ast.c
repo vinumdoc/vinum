@@ -5,7 +5,7 @@
 
 #include "ast.h"
 
-struct ast_node ast_node_new(const int type, char *text, struct vut_allocator *allocator) {
+struct ast_node ast_node_new(const int type, struct vut_sv text, struct vut_allocator *allocator) {
 	struct ast_node ret = { .type = type,
 				.text = text,
 				.childs = VUT_VEC_INIT(struct ast_node_childs_t, allocator) };
@@ -78,9 +78,14 @@ void ast_set_type(struct ast *ast, ast_node_id_t id, int type) {
 	node->type = type;
 }
 
-char *ast_get_text(const struct ast *ast, ast_node_id_t id) {
+struct vut_sv ast_get_text(const struct ast *ast, ast_node_id_t id) {
 	struct ast_node *node = &VUT_VEC_AT(&ast->nodes, id);
 	return node->text;
+}
+
+void ast_set_text(const struct ast *ast, ast_node_id_t id, struct vut_sv text) {
+	struct ast_node *node = &VUT_VEC_AT(&ast->nodes, id);
+	node->text = text;
 }
 
 const char *token_to_str(enum yytokentype token) {
@@ -122,7 +127,7 @@ static void ast_print_rec(const struct ast *ast, const int id, const int level) 
 	}
 
 	if (node->type == TEXT || node->type == SYMBOL || node->type == LITERAL) {
-		printf("(%s)", node->text);
+		printf("(" VUT_SV_FMT ")", VUT_SV_ARG(node->text));
 	}
 	printf("\n");
 
@@ -146,8 +151,8 @@ static void ast_dot_rec(const struct ast *ast, FILE *stream, const size_t id) {
 		fprintf(stream, "%s", token_to_str(node->type));
 	}
 
-	if (node->text != NULL) {
-		fprintf(stream, "(%s)", node->text);
+	if (node->text.base != NULL) {
+		fprintf(stream, "(" VUT_SV_FMT ")", VUT_SV_ARG(node->text));
 	}
 
 	fprintf(stream, "\"]\n");

@@ -52,9 +52,9 @@ static size_t add_scope_child(struct eval_ctx_scopes_t *scope_array, size_t scop
 }
 
 static struct namespace_entry *namespace_find_name(const struct scope_namespace_t *namespace,
-						   const char *name) {
+						   const struct vut_sv name) {
 	for (size_t i = 0; i < namespace->len; i++) {
-		if (strcmp(name, VUT_VEC_AT(namespace, i).name) == 0)
+		if (vut_sv_eq(name, VUT_VEC_AT(namespace, i).name))
 			return &VUT_VEC_AT(namespace, i);
 	}
 
@@ -62,7 +62,8 @@ static struct namespace_entry *namespace_find_name(const struct scope_namespace_
 }
 
 static struct namespace_entry *find_symbol_on_scopes(const struct eval_ctx_scopes_t *scope_array,
-						     const struct scope *scope, const char *name) {
+						     const struct scope *scope,
+						     const struct vut_sv name) {
 	while (scope != NULL) {
 		struct namespace_entry *entry = namespace_find_name(&scope->namespace, name);
 
@@ -106,7 +107,7 @@ RESOLVE_FUNC_SIGNATURE(resolve_symbols_descent) {
 RESOLVE_FUNC_SIGNATURE(resolve_symbols_assignment) {
 	struct scope *curr_scope = &VUT_VEC_AT(&ctx->scopes, curr_scope_id);
 
-	char *name = ast_get_text(ast, ast_get_nth_child(ast, ast_node_id, 0));
+	struct vut_sv name = ast_get_text(ast, ast_get_nth_child(ast, ast_node_id, 0));
 	struct namespace_entry entry = {
 		.name = name,
 		.type = ENTRY_INTERNAL,
@@ -150,9 +151,10 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 	assert(ast_get_type(ast, call_name_ast) == SYMBOL);
 
 	bool allocated = false;
-	char *call_name = ast_get_text(ast, call_name_ast);
+	struct vut_sv call_name = ast_get_text(ast, call_name_ast);
+	struct vut_str call_name_str = { 0 };
 
-	if (call_name == NULL) {
+	if (call_name.base == NULL) {
 		if (ast_get_num_child(ast, call_name_ast) == 0) {
 			fprintf(stderr, "ERROR: Symbol with no name\n");
 			return;
@@ -161,11 +163,11 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 			assert(ast_get_type(ast, call) == CALL);
 			resolve_calls(ctx, ast, curr_scope_id, call);
 
-			struct vut_str call_name_str = vut_str_init(ctx->allocator);
+			call_name_str = vut_str_init(ctx->allocator);
 
 			do_calls(ctx, ast, &call_name_str, call, REDUCE_BLANKS);
 
-			call_name = vut_str_move_to_cstr(&call_name_str);
+			call_name = vut_sv_from_vut_str(&call_name_str);
 			allocated = true;
 		}
 	}
@@ -218,14 +220,15 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 			}
 		}
 	} else {
-		fprintf(stderr, "ERROR: No symbol with name \"%s\" exist\n", call_name);
+		fprintf(stderr, "ERROR: No symbol with name \"" VUT_SV_FMT "\" exist\n",
+			VUT_SV_ARG(call_name));
 	}
 
 	resolve_calls_descent(ctx, ast, curr_scope_id, ast_node_id);
 
 exit:
 	if (allocated)
-		vut_allocator_free(ctx->allocator, call_name);
+		vut_str_free(&call_name_str);
 }
 
 RESOLVE_FUNC_SIGNATURE(resolve_calls) {
@@ -289,9 +292,9 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 		// put the extern function call return on the out str
 
 		if ((flags & REDUCE_BLANKS) != 0) {
-			vut_put_blank_reduced_str(out, call_return.ptr, true, true);
+			vut_str_put_blank_reduced_cstr(out, call_return.ptr, true, true);
 		} else {
-			vut_put_str(out, call_return.ptr);
+			vut_str_put_cstr(out, call_return.ptr);
 		}
 
 		if (call_return.free) {
@@ -305,14 +308,14 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 
 DO_CALLS_FUNC_SIGNATURE(do_calls_text) {
 	UNUSED(ctx);
-	char *text = ast_get_text(ast, ast_node_id);
+	struct vut_sv text = ast_get_text(ast, ast_node_id);
 
 	if ((flags & REDUCE_BLANKS) != 0) {
 		bool trim_left = (flags & FIRST_CHILD) != 0;
 		bool trim_right = (flags & LAST_CHILD) != 0;
-		vut_put_blank_reduced_str(out, text, trim_left, trim_right);
+		vut_str_put_blank_reduced_sv(out, text, trim_left, trim_right);
 	} else {
-		vut_put_str(out, text);
+		vut_str_put_sv(out, text);
 	}
 }
 
@@ -341,7 +344,7 @@ void resolve_extern_functions(struct eval_ctx *ctx, struct loaded_lib lib) {
 	struct extern_function f = lib.functions[i];
 	while (f.name != 0) {
 		struct namespace_entry entry = {
-			.name = f.name,
+			.name = vut_sv_from_cstr(f.name),
 			.type = ENTRY_EXTERNAL,
 			.as.func = f.fp,
 		};
@@ -400,7 +403,7 @@ void eval_dot(const struct eval_ctx *ctx, FILE *stream) {
 		const struct scope *sc = &VUT_VEC_AT(&ctx->scopes, i);
 		fprintf(stream, "\t%zu [label=\" %zu |", i, i);
 		for (size_t j = 0; j < sc->namespace.len; j++) {
-			fprintf(stream, "%s", VUT_VEC_AT(&sc->namespace, j).name);
+			fprintf(stream, VUT_SV_FMT, VUT_SV_ARG(VUT_VEC_AT(&sc->namespace, j).name));
 			if (j < sc->namespace.len - 1)
 				fprintf(stream, " |");
 		}

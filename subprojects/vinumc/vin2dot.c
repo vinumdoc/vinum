@@ -53,8 +53,8 @@ static void dot_ast_and_scopes(struct ast_nodes_t *ast, struct eval_ctx_scopes_t
 			fprintf(stream, "%s", token_to_str(node->type));
 		}
 
-		if (node->text != NULL) {
-			fprintf(stream, "(%s)", node->text);
+		if (node->text.base != NULL) {
+			fprintf(stream, "(" VUT_SV_FMT ")", VUT_SV_ARG(node->text));
 		}
 
 		fprintf(stream, "\"]\n");
@@ -71,7 +71,8 @@ static void dot_ast_and_scopes(struct ast_nodes_t *ast, struct eval_ctx_scopes_t
 		fprintf(stream, "\ts_%zu [shape=record, label=\" %zu |", i, i);
 		for (size_t j = 0; j < sc->namespace.len; j++) {
 			struct namespace_entry *entry = &VUT_VEC_AT(&sc->namespace, j);
-			fprintf(stream, "<%d> %s", entry->as.ast_node_id, entry->name);
+			fprintf(stream, "<%d> " VUT_SV_FMT, entry->as.ast_node_id,
+				VUT_SV_ARG(entry->name));
 			if (j < sc->namespace.len - 1)
 				fprintf(stream, " |");
 		}
