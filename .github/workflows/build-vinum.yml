@@ -12,6 +12,18 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+
+    strategy:
+      # Prevents one failing compiler from cancelling the other
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+
+      # 2. Inject the matrix values into the environment
+
+    env:
+      CC: ${{ matrix.compiler }}
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,33 +36,31 @@ jobs:
             bison \
             flex \
             gcc \
+            clang \
             meson \
             ninja-build
 
-      - name: Configure
-        run: meson setup buildir
-
-      - name: Build
+      - name: Verify every commit
         run: |
-          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD)
+          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD --reverse)
 
           for commit in $commits; do
-            echo "checking commit: $commit"
-            git checkout $commit
-            meson compile -C buildir
-          done
+            short_sha=$(git rev-parse --short $commit)
 
-      - name: Run tests
-        run: |
-          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD)
-
-          for commit in $commits; do
-            echo "checking commit: $commit"
+            echo "::group::[$short_sha] Checkout & Clean"
             git checkout $commit
+            rm -rf buildir
+            echo "::endgroup::"
+
+            echo "::group::[$short_sha] Setup & Test"
+            meson setup buildir
             meson test -C buildir --print-errorlogs
+            echo "::endgroup::"
+
+            echo "---------------------------------------------------"
           done
 
-  check-formating:
+  check-formatting:
     name: Check Formatting
     runs-on: ubuntu-latest
     steps:
@@ -67,16 +77,22 @@ jobs:
             ninja-build \
             clang-format
 
-      - name: Configure build dir
-        run: meson setup buildir
-
       - name: Check formatting
         run: |
-          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD)
+          commits=$(git rev-list origin/$TARGET_BRANCH..HEAD --reverse)
 
           for commit in $commits; do
-            echo "Checking commit: $commit"
+            short_sha=$(git rev-parse --short $commit)
+
+            echo "::group::[$short_sha] Check formatting"
+
             git checkout $commit
+            rm -rf buildir
+            meson setup buildir
             meson compile -C buildir --ninja-args=clang-format-check
+
+            echo "::endgroup::"
+
+            echo "---------------------------------------------------"
           done
 
