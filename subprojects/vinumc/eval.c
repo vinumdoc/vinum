@@ -354,14 +354,14 @@ void resolve_extern_functions(struct eval_ctx *ctx, struct loaded_lib lib) {
 	}
 }
 
-struct loaded_lib *load_libs(struct eval_ctx *ctx, struct str_vec *libraries) {
+struct loaded_lib *load_libs(struct eval_ctx *ctx, struct sv_vec *libraries) {
 	size_t len = libraries->len;
 	if (len == 0)
 		return NULL;
 	struct loaded_lib *loaded_libs =
 		vut_allocator_calloc(ctx->allocator, sizeof(struct loaded_lib), len + 1);
 	for (size_t i = 0; i < len; i++) {
-		loaded_libs[i] = load_lib(VUT_VEC_AT(libraries, i));
+		loaded_libs[i] = load_lib(VUT_VEC_AT(libraries, i), *ctx->allocator);
 		resolve_extern_functions(ctx, loaded_libs[i]);
 	}
 	loaded_libs[len].dl_handle = NULL;
@@ -380,7 +380,7 @@ void unload_libs(struct loaded_lib *loaded_libs, struct vut_allocator *alloc) {
 	vut_allocator_free(alloc, loaded_libs);
 }
 
-struct vut_str eval(struct eval_ctx *ctx, struct ast *ast, struct str_vec *libraries) {
+struct vut_str eval(struct eval_ctx *ctx, struct ast *ast, struct sv_vec *libraries) {
 	struct scope base_scope = scope_new(0, -1, ctx->allocator);
 	VUT_VEC_PUT(&ctx->scopes, base_scope);
 
