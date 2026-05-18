@@ -7,7 +7,7 @@ static char *compile_program_with_testlib(const char *prg_cstr, struct vut_alloc
 
 	struct vut_str prg = vut_str_init(alloc);
 	vut_str_put_cstr(&prg, prg_cstr);
-	VUT_VEC_PUT(&comp.libraries, "subprojects/vinumc/tests/libtestlib.so");
+	VUT_VEC_PUT(&comp.libraries, vut_sv_from_cstr("subprojects/vinumc/tests/libtestlib.so"));
 
 	struct vut_str out = compiler_compile(&comp, &prg);
 

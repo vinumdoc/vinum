@@ -19,6 +19,12 @@ struct vut_sv vut_sv_from_vut_str(const struct vut_str *str) {
 	return vut_sv_from_str(str->base, str->len);
 }
 
+char *vut_sv_to_cstr(const struct vut_sv sv, struct vut_allocator alloc) {
+	char *ret = vut_allocator_calloc(&alloc, sizeof(*ret), sv.len + 1);
+	memcpy(ret, sv.base, sizeof(*ret) * sv.len);
+	return ret;
+}
+
 bool vut_sv_eq(struct vut_sv a, struct vut_sv b) {
 	if (a.len != b.len)
 		return false;

@@ -5,6 +5,8 @@
 
 %option extra-type="struct compiler_ctx *"
 
+%option never-interactive
+
 %x DEFINE_CALL_NAME
 %x HAS_CALL_NAME
 %x CONTENT

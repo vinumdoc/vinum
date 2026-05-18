@@ -41,7 +41,7 @@ struct flag {
 	union {
 		bool *boolean;
 		char **str;
-		struct str_vec *str_vec;
+		struct sv_vec *sv_vec;
 	} ref_as;
 };
 
@@ -102,8 +102,7 @@ static void parse_cmdline(const int argc, char **argv, struct ctx *ctx, struct f
 			*f->ref_as.boolean = true;
 			break;
 		case FLAG_MULTI_ARGUMENTS: {
-			char *tmp = strdup(optarg);
-			VUT_VEC_PUT(f->ref_as.str_vec, tmp);
+			VUT_VEC_PUT(f->ref_as.sv_vec, vut_sv_from_cstr(optarg));
 		} break;
 		}
 	}
@@ -188,7 +187,7 @@ int main(int argc, char **argv) {
 			.help_desc = "Set a library to be loaded",
 			.placeholder_name = "libraries",
 			.kind = FLAG_MULTI_ARGUMENTS,
-			.ref_as.str_vec = &ctx.compiler.libraries,
+			.ref_as.sv_vec = &ctx.compiler.libraries,
 		},
 	};
 
