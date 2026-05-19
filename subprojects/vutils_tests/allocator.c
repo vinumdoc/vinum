@@ -19,7 +19,7 @@ struct allocator_case {
 };
 
 static struct vut_allocator gen_sys_allocator() {
-	return *vut_get_system_allocator();
+	return vut_get_system_allocator();
 }
 
 static struct vut_allocator gen_arena_allocator() {
@@ -50,7 +50,7 @@ static void test_malloc_simple(struct vunit_test_ctx *ctx) {
 		struct allocator_case *c = &allocator_cases[i];
 		struct vut_allocator alloc = c->gen_allocator();
 
-		size_t *arr = vut_allocator_malloc(&alloc, sizeof(*arr), DEFAULT_ALLOC_SIZE);
+		size_t *arr = vut_allocator_malloc(alloc, sizeof(*arr), DEFAULT_ALLOC_SIZE);
 		for (size_t j = 0; j < DEFAULT_ALLOC_SIZE; j++) {
 			arr[j] = j;
 			VUNIT_ASSERT_EQ(ctx, arr[j], j);
@@ -66,7 +66,7 @@ static void test_malloc_zero_size_allocation(struct vunit_test_ctx *ctx) {
 		struct allocator_case *c = &allocator_cases[i];
 		struct vut_allocator alloc = c->gen_allocator();
 
-		size_t *arr = vut_allocator_malloc(&alloc, sizeof(*arr), 0);
+		size_t *arr = vut_allocator_malloc(alloc, sizeof(*arr), 0);
 		VUNIT_ASSERT_EQ(ctx, arr, NULL);
 
 		if (c->destroy_allocator != NULL)
@@ -79,7 +79,7 @@ static void test_calloc_simple(struct vunit_test_ctx *ctx) {
 		struct allocator_case *c = &allocator_cases[i];
 		struct vut_allocator alloc = c->gen_allocator();
 
-		size_t *arr = vut_allocator_calloc(&alloc, sizeof(*arr), DEFAULT_ALLOC_SIZE);
+		size_t *arr = vut_allocator_calloc(alloc, sizeof(*arr), DEFAULT_ALLOC_SIZE);
 		for (size_t j = 0; j < DEFAULT_ALLOC_SIZE; j++) {
 			VUNIT_ASSERT_EQ(ctx, arr[j], 0);
 			arr[j] = j;
@@ -96,7 +96,7 @@ static void test_calloc_zero_size_allocation(struct vunit_test_ctx *ctx) {
 		struct allocator_case *c = &allocator_cases[i];
 		struct vut_allocator alloc = c->gen_allocator();
 
-		size_t *arr = vut_allocator_calloc(&alloc, sizeof(*arr), 0);
+		size_t *arr = vut_allocator_calloc(alloc, sizeof(*arr), 0);
 		VUNIT_ASSERT_EQ(ctx, arr, NULL);
 
 		if (c->destroy_allocator != NULL)
@@ -109,11 +109,11 @@ static void test_realloc_simple(struct vunit_test_ctx *ctx) {
 		struct allocator_case *c = &allocator_cases[i];
 		struct vut_allocator alloc = c->gen_allocator();
 
-		size_t *arr = vut_allocator_malloc(&alloc, sizeof(*arr), DEFAULT_ALLOC_SIZE);
+		size_t *arr = vut_allocator_malloc(alloc, sizeof(*arr), DEFAULT_ALLOC_SIZE);
 		for (size_t j = 0; j < DEFAULT_ALLOC_SIZE; j++) {
 			arr[j] = j;
 		}
-		arr = vut_allocator_realloc(&alloc, arr, sizeof(*arr), DEFAULT_ALLOC_SIZE * 2);
+		arr = vut_allocator_realloc(alloc, arr, sizeof(*arr), DEFAULT_ALLOC_SIZE * 2);
 		for (size_t j = 0; j < DEFAULT_ALLOC_SIZE; j++) {
 			VUNIT_ASSERT_EQ(ctx, arr[j], j);
 		}
@@ -132,11 +132,11 @@ static void test_realloc_zero_size(struct vunit_test_ctx *ctx) {
 		struct allocator_case *c = &allocator_cases[i];
 		struct vut_allocator alloc = c->gen_allocator();
 
-		size_t *arr = vut_allocator_malloc(&alloc, sizeof(*arr), DEFAULT_ALLOC_SIZE);
+		size_t *arr = vut_allocator_malloc(alloc, sizeof(*arr), DEFAULT_ALLOC_SIZE);
 		for (size_t j = 0; j < DEFAULT_ALLOC_SIZE; j++) {
 			arr[j] = j;
 		}
-		arr = vut_allocator_realloc(&alloc, arr, sizeof(*arr), 0);
+		arr = vut_allocator_realloc(alloc, arr, sizeof(*arr), 0);
 		VUNIT_ASSERT_EQ(ctx, arr, NULL);
 
 		if (c->destroy_allocator != NULL)
@@ -150,7 +150,7 @@ static void test_free_null(struct vunit_test_ctx *ctx) {
 		struct allocator_case *c = &allocator_cases[i];
 		struct vut_allocator alloc = c->gen_allocator();
 
-		vut_allocator_free(&alloc, NULL);
+		vut_allocator_free(alloc, NULL);
 
 		if (c->destroy_allocator != NULL)
 			c->destroy_allocator(alloc);

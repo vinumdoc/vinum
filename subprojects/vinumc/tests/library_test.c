@@ -2,7 +2,7 @@
 
 #include "libvinumc.h"
 
-static char *compile_program_with_testlib(const char *prg_cstr, struct vut_allocator *alloc) {
+static char *compile_program_with_testlib(const char *prg_cstr, struct vut_allocator alloc) {
 	struct compiler_ctx comp = compiler_ctx_init(alloc);
 
 	struct vut_str prg = vut_str_init(alloc);
@@ -15,7 +15,7 @@ static char *compile_program_with_testlib(const char *prg_cstr, struct vut_alloc
 }
 
 void test_call(struct vunit_test_ctx *ctx) {
-	const char *out = compile_program_with_testlib("[return_arg test]\n", &ctx->allocator);
+	const char *out = compile_program_with_testlib("[return_arg test]\n", ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "test");
 }
@@ -23,20 +23,20 @@ void test_call(struct vunit_test_ctx *ctx) {
 void test_nested_call(struct vunit_test_ctx *ctx) {
 	const char *out = compile_program_with_testlib("[a: This is a [return_arg Test!]!]\n"
 						       "[a]\n",
-						       &ctx->allocator);
+						       ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "This is a Test!!");
 }
 
 void test_empty_nested_call(struct vunit_test_ctx *ctx) {
 	const char *out = compile_program_with_testlib("[return_arg [return_arg [return_arg]]]",
-						       &ctx->allocator);
+						       ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "");
 }
 
 void test_call_no_args(struct vunit_test_ctx *ctx) {
-	const char *out = compile_program_with_testlib("[parenthesize]", &ctx->allocator);
+	const char *out = compile_program_with_testlib("[parenthesize]", ctx->allocator);
 
 	VUNIT_ASSERT_STREQ(ctx, out, "()");
 }

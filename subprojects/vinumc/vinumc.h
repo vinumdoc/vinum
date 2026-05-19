@@ -15,9 +15,9 @@ struct ctx {
 
 	struct compiler_ctx compiler;
 
-	struct vut_allocator *alloc;
+	struct vut_allocator alloc;
 };
 
-struct ctx ctx_new(struct vut_allocator *allocator);
+struct ctx ctx_new(struct vut_allocator allocator);
 
 #endif // __VINUMC_H__

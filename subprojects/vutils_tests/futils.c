@@ -19,7 +19,7 @@ void test_fut_read_all_FILE(struct vunit_test_ctx *ctx) {
 	const char buff[] = "hello world!";
 	fwrite(buff, sizeof(buff), 1, fp);
 
-	struct vut_str msg = vut_fut_read_all_FILE(fp, &ctx->allocator);
+	struct vut_str msg = vut_fut_read_all_FILE(fp, ctx->allocator);
 
 	char *ret = vut_str_move_to_cstr(&msg);
 

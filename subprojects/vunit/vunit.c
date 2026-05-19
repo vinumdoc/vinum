@@ -25,7 +25,7 @@ static char *alloc_printf(struct vunit_test_ctx *ctx, const char *fmt, ...) {
 	assert(len >= 0);
 	len++;
 
-	ret = vut_allocator_malloc(&ctx->allocator, sizeof(*ret), len);
+	ret = vut_allocator_malloc(ctx->allocator, sizeof(*ret), len);
 	assert(ret != NULL);
 
 	va_start(ap, fmt);
@@ -195,10 +195,10 @@ static char *read_all_from_pipe(struct vunit_test_ctx *ctx, int fd) {
 
 	ssize_t read_len = 0;
 	size_t total_len = 0;
-	char *ret = vut_allocator_malloc(&ctx->allocator, sizeof(*ret), 1);
+	char *ret = vut_allocator_malloc(ctx->allocator, sizeof(*ret), 1);
 
 	while ((read_len = read(fd, tmp_buf, sizeof(tmp_buf))) > 0) {
-		ret = vut_allocator_realloc(&ctx->allocator, ret, sizeof(*ret),
+		ret = vut_allocator_realloc(ctx->allocator, ret, sizeof(*ret),
 					    total_len + read_len + 1);
 		memcpy(ret + total_len, tmp_buf, sizeof(*ret) * read_len);
 		total_len += read_len;
@@ -271,9 +271,10 @@ int vunit_run_vinumc(struct vunit_test_ctx *ctx, char *input, char **output, cha
 			close(rx_stderr);
 		}
 
-		VUNIT_ASSERT_NEQ(ctx, WIFEXITED(stat), 0);
-
-		return WEXITSTATUS(stat);
+		if (!WIFEXITED(stat))
+			return -1;
+		else
+			return WEXITSTATUS(stat);
 	} else {
 		if (input != NULL) {
 			int rx = father_to_child_pipe[0];
@@ -298,7 +299,7 @@ int vunit_run_vinumc(struct vunit_test_ctx *ctx, char *input, char **output, cha
 		}
 
 		char **args_to_send =
-			vut_allocator_malloc(&ctx->allocator, sizeof(*args_to_send), argc + 2);
+			vut_allocator_malloc(ctx->allocator, sizeof(*args_to_send), argc + 2);
 		VUNIT_ASSERT_NEQ(ctx, args_to_send, NULL);
 
 		// TODO: Get the absolute path
@@ -342,7 +343,7 @@ char *vunit_file_to_str(struct vunit_test_ctx *ctx, const char *file_path) {
 	VUNIT_ASSERT_NEQ(ctx, file_size, -1);
 	rewind(fp);
 
-	char *ret_str = vut_allocator_calloc(&ctx->allocator, file_size + 1, sizeof(*ret_str));
+	char *ret_str = vut_allocator_calloc(ctx->allocator, file_size + 1, sizeof(*ret_str));
 	VUNIT_ASSERT_NEQ(ctx, ret_str, NULL);
 
 	fread(ret_str, sizeof(*ret_str), file_size, fp);
@@ -360,7 +361,7 @@ int vunit_run_vinumcv(struct vunit_test_ctx *ctx, char *input, char **output, ch
 	char *curr_arg;
 	while ((curr_arg = va_arg(ap, char *)) != NULL) {
 		argc++;
-		argv = vut_allocator_realloc(&ctx->allocator, argv, sizeof(*argv), argc);
+		argv = vut_allocator_realloc(ctx->allocator, argv, sizeof(*argv), argc);
 		argv[argc - 1] = curr_arg;
 	}
 
@@ -375,6 +376,9 @@ void vunit_run_vinumc_ok(struct vunit_test_ctx *ctx, char *input, char **output,
 	int ret = vunit_run_vinumcv(ctx, input, output, &err, ap);
 	va_end(ap);
 
+	if (strlen(err) != 0) {
+		fprintf(stderr, "PROGRAM STDERR:\n%s\n", err);
+	}
 	VUNIT_ASSERT_EQ(ctx, ret, 0);
 	VUNIT_ASSERT_EQ(ctx, strlen(err), 0);
 }

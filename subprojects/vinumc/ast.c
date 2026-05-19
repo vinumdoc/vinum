@@ -5,7 +5,7 @@
 
 #include "ast.h"
 
-struct ast_node ast_node_new(const int type, struct vut_sv text, struct vut_allocator *allocator) {
+struct ast_node ast_node_new(const int type, struct vut_sv text, struct vut_allocator allocator) {
 	struct ast_node ret = { .type = type,
 				.text = text,
 				.childs = VUT_VEC_INIT(struct ast_node_childs_t, allocator) };
@@ -13,7 +13,7 @@ struct ast_node ast_node_new(const int type, struct vut_sv text, struct vut_allo
 	return ret;
 }
 
-struct ast ast_new(struct vut_allocator *allocator) {
+struct ast ast_new(struct vut_allocator allocator) {
 	struct ast ret = {
 		.nodes = VUT_VEC_INIT(struct ast_nodes_t, allocator),
 		.allocator = allocator,

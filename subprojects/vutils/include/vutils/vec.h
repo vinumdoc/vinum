@@ -9,7 +9,7 @@
 		base_type *base;                                                                   \
 		size_t len;                                                                        \
 		size_t capacity;                                                                   \
-		struct vut_allocator *allocator;                                                   \
+		struct vut_allocator allocator;                                                    \
 	}
 
 #define VUT_VEC_INIT(vec_type, allocator_obj)                                                      \

@@ -8,13 +8,13 @@
 #include "vec.h"
 
 struct vut_arena {
-	struct vut_allocator *base_allocator;
+	struct vut_allocator base_allocator;
 	uint8_t *buffer;
 	size_t buffer_size;
 	uint8_t *free_ptr;
 };
 
-struct vut_arena vut_arena_new(struct vut_allocator *base_allocator,
+struct vut_arena vut_arena_new(struct vut_allocator base_allocator,
 			       size_t common_max_allocation_size);
 struct vut_allocator vut_arena_to_vut_allocator(struct vut_arena *arena);
 

@@ -8,7 +8,7 @@
 
 #define ALIGN_UP(addr, align) ((((uintptr_t)(addr)) + ((align) - 1)) & ~((uintptr_t)((align) - 1)))
 
-struct vut_arena vut_arena_new(struct vut_allocator *base_allocator, size_t arena_size) {
+struct vut_arena vut_arena_new(struct vut_allocator base_allocator, size_t arena_size) {
 	struct vut_arena new_arena = {};
 	new_arena.base_allocator = base_allocator;
 	new_arena.buffer_size = arena_size;
@@ -44,7 +44,7 @@ static struct vut_allocator_funcs arena_allocator_funcs = {
 struct vut_allocator vut_arena_to_vut_allocator(struct vut_arena *arena) {
 	struct vut_allocator new_allocator = {
 		.base_allocator = arena,
-		.funcs = arena_allocator_funcs,
+		.funcs = &arena_allocator_funcs,
 	};
 
 	return new_allocator;

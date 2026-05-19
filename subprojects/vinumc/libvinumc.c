@@ -1,7 +1,7 @@
 #include "libvinumc.h"
 #include "dry_flex.h"
 
-struct compiler_ctx compiler_ctx_init(struct vut_allocator *alloc) {
+struct compiler_ctx compiler_ctx_init(struct vut_allocator alloc) {
 	struct compiler_ctx ctx = {
 		.ast = ast_new(alloc),
 		.eval_ctx = eval_ctx_new(alloc),
