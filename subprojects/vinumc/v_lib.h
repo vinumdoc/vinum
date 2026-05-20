@@ -2,7 +2,7 @@
 #define __V_LIB_H__
 
 struct _call_ctx {
-	char *text;
+	char *arg_text;
 };
 
 #endif //__V_LIB_H__
