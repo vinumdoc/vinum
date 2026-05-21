@@ -32,7 +32,7 @@ foreach t : tests
 
   test_exe = executable(
     basename,
-    t,
+    [t, 'test_helpers.c'],
     include_directories : [
       local_inc,
       generated_inc,
