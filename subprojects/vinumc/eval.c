@@ -361,7 +361,7 @@ struct loaded_lib *load_libs(struct eval_ctx *ctx, struct sv_vec *libraries) {
 	struct loaded_lib *loaded_libs =
 		vut_allocator_calloc(ctx->allocator, sizeof(struct loaded_lib), len + 1);
 	for (size_t i = 0; i < len; i++) {
-		loaded_libs[i] = load_lib(VUT_VEC_AT(libraries, i), *ctx->allocator);
+		loaded_libs[i] = load_lib(VUT_VEC_AT(libraries, i), ctx->allocator);
 		resolve_extern_functions(ctx, loaded_libs[i]);
 	}
 	loaded_libs[len].dl_handle = NULL;

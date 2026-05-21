@@ -20,7 +20,7 @@ struct vut_sv vut_sv_from_vut_str(const struct vut_str *str) {
 }
 
 char *vut_sv_to_cstr(const struct vut_sv sv, struct vut_allocator alloc) {
-	char *ret = vut_allocator_calloc(&alloc, sizeof(*ret), sv.len + 1);
+	char *ret = vut_allocator_calloc(alloc, sizeof(*ret), sv.len + 1);
 	memcpy(ret, sv.base, sizeof(*ret) * sv.len);
 	return ret;
 }
