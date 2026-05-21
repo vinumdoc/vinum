@@ -5,10 +5,7 @@
 void test_output_flag(struct vunit_test_ctx *ctx) {
 	char *out = NULL;
 
-	vunit_run_vinumc_ok(ctx,
-			    "[a: Hello World!]\n"
-			    "[a]\n",
-			    &out, "-h", NULL);
+	vunit_run_vinumc_ok(ctx, NULL, &out, "-h", NULL);
 
 	const char *help_output =
 		"usage: vinumc [-o | --output <output_path>] [-h | --help] [-w | "
@@ -35,10 +32,7 @@ void test_output_flag(struct vunit_test_ctx *ctx) {
 
 	out = NULL;
 
-	vunit_run_vinumc_ok(ctx,
-			    "[a: Hello World!]\n"
-			    "[a]\n",
-			    &out, "--help", NULL);
+	vunit_run_vinumc_ok(ctx, NULL, &out, "--help", NULL);
 
 	VUNIT_ASSERT_STREQ(ctx, out, help_output);
 }
