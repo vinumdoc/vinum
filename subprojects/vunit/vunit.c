@@ -306,7 +306,8 @@ int vunit_run_vinumc(struct vunit_test_ctx *ctx, char *input, char **output, cha
 		char *prg_name = "vinumc";
 
 		args_to_send[0] = prg_name;
-		memcpy(args_to_send + 1, argv, argc * sizeof(*argv));
+		if (argc != 0)
+			memcpy(args_to_send + 1, argv, argc * sizeof(*argv));
 		args_to_send[argc + 1] = NULL;
 
 		ret = execvp(prg_name, args_to_send);
