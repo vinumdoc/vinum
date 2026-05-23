@@ -23,6 +23,6 @@ struct loaded_lib {
 	struct extern_function *functions;
 };
 
-struct return_value ctx_get_text(call_ctx ctx);
+struct return_value ctx_get_arg(call_ctx ctx);
 
 #endif //__EXTERN_LIBRARY_H__
