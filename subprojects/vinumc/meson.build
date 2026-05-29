@@ -64,7 +64,7 @@ install_subdir(
 )
 
 libvinumc = library(
-  'libvinumc',
+  'vinumc',
   sources: [
       'ast.c',
       'eval.c',
