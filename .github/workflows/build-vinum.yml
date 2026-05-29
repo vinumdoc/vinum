@@ -59,6 +59,10 @@ jobs:
             meson test -C buildir --print-errorlogs
             echo "::endgroup::"
 
+            echo "::group::[$short_sha] Check build reproducibility"
+            meson reprotest
+            echo "::endgroup::"
+
             echo "---------------------------------------------------"
           done
 
