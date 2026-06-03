@@ -37,8 +37,10 @@ jobs:
             flex \
             gcc \
             clang \
+            python3-pip
+          pip install \
             meson \
-            ninja-build
+            ninja
 
       - name: Verify every commit
         run: |
@@ -55,6 +57,10 @@ jobs:
             echo "::group::[$short_sha] Setup & Test"
             meson setup buildir
             meson test -C buildir --print-errorlogs
+            echo "::endgroup::"
+
+            echo "::group::[$short_sha] Check build reproducibility"
+            meson reprotest
             echo "::endgroup::"
 
             echo "---------------------------------------------------"
