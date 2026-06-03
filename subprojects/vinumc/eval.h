@@ -46,8 +46,14 @@ struct eval_ctx eval_ctx_new(struct vut_allocator allocator);
 
 struct sv_vec VUT_VEC_DEF(struct vut_sv);
 
-struct vut_str eval(struct eval_ctx *ctx, struct ast *ast, struct sv_vec *libraries);
+struct vut_str eval(struct compiler_ctx *cctx);
+
+void eval_node(struct compiler_ctx *cctx, ast_node_id_t ast_node, size_t scope_id,
+	       struct vut_str *ret_str);
 
 void eval_dot(const struct eval_ctx *ctx, FILE *stream);
+
+struct namespace_entry *eval_find_symbol_on_scopes(const struct eval_ctx *ctx, size_t curr_scope,
+						   const struct vut_sv name);
 
 #endif // __EVAL_H__

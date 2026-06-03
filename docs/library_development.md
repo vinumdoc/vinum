@@ -18,7 +18,7 @@ Where return_value is defined as:
 struct return_value {
   char *ptr; // the return string
   bool free; // indicates whether ptr should be freed
-  bool status; // indicates if the function succeed 
+  bool status; // indicates if the function succeed
 };
 ```
 
@@ -26,7 +26,9 @@ struct return_value {
 You can use this functions to get data from the callee context:
 ```c
 // get all the args text
-struct return_value ctx_get_text(call_ctx ctx);
+struct return_value ctx_get_arg(call_ctx ctx);
+// evalues and returns the text value of a symbol finding it by name
+struct return_value ctx_eval_symbol(call_ctx ctx, const char *name);
 ```
 
 ## 4. Register your functions
@@ -48,7 +50,7 @@ Compile your library as a shared object:
 ```sh
 gcc -shared -fPIC -o your_lib.so your_lib.c -I/path/to/extern_library.h -L/path/to/libextern_library.so -lextern_library
 ```
-Where 
+Where
 
 ## 6. Usage
 

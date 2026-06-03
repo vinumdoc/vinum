@@ -4,11 +4,11 @@
 #include <vinumc/extern_library.h>
 
 struct return_value return_arg(call_ctx ctx) {
-	return ctx_get_text(ctx);
+	return ctx_get_arg(ctx);
 }
 
 struct return_value parenthesize(call_ctx ctx) {
-	struct return_value ret = ctx_get_text(ctx);
+	struct return_value ret = ctx_get_arg(ctx);
 	if (!ret.status) {
 		return ret;
 	}
@@ -25,9 +25,24 @@ struct return_value parenthesize(call_ctx ctx) {
 	return (struct return_value){ .ptr = result, .free = true, .status = true };
 }
 
+struct return_value author_last_name(call_ctx ctx) {
+	struct return_value ret = ctx_eval_symbol(ctx, "author");
+	if (!ret.status) {
+		return ret;
+	}
+
+	char *last_space = strrchr(ret.ptr, ' ');
+	if (last_space) {
+		memmove(ret.ptr, last_space + 1, strlen(last_space) + 2);
+	}
+
+	return ret;
+}
+
 struct extern_function *expose_library() {
 	static struct extern_function lib[] = { { "return_arg", return_arg },
 						{ "parenthesize", parenthesize },
+						{ "author_last_name", author_last_name },
 						{} };
 	return lib;
 }
