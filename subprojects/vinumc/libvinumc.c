@@ -1,5 +1,6 @@
 #include "libvinumc.h"
 #include "dry_flex.h"
+#include <vutils/arena_allocator.h>
 
 struct compiler_ctx compiler_ctx_init(struct vut_allocator alloc) {
 	struct compiler_ctx ctx = {
@@ -11,7 +12,24 @@ struct compiler_ctx compiler_ctx_init(struct vut_allocator alloc) {
 		.alloc = alloc,
 	};
 
+	struct vut_arena *arena = vut_allocator_malloc(alloc, sizeof(*arena), 1);
+	*arena = vut_arena_new(alloc, 1024),
+
+	ctx.dry_arena = vut_arena_to_vut_allocator(arena);
+	ctx.dry_flex_text_buffer = vut_str_init(ctx.dry_arena);
+
 	return ctx;
+}
+
+void compiler_ctx_free(struct compiler_ctx *ctx) {
+	vut_arena_free_all(ctx->dry_arena.base_allocator);
+	vut_allocator_free(ctx->alloc, ctx->dry_arena.base_allocator);
+
+	VUT_VEC_FREE(&ctx->libraries);
+	eval_ctx_free(&ctx->eval_ctx);
+	ast_free(&ctx->ast);
+
+	*ctx = (struct compiler_ctx){ 0 };
 }
 
 typedef struct yy_buffer_state *YY_BUFFER_STATE;

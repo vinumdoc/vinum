@@ -39,10 +39,14 @@ struct eval_ctx_scopes_t VUT_VEC_DEF(struct scope);
 
 struct eval_ctx {
 	struct eval_ctx_scopes_t scopes;
+
 	struct vut_allocator allocator;
+	struct vut_allocator scopes_childs_arena;
+	struct vut_allocator scopes_namespace_arena;
 };
 
 struct eval_ctx eval_ctx_new(struct vut_allocator allocator);
+void eval_ctx_free(struct eval_ctx *ctx);
 
 struct sv_vec VUT_VEC_DEF(struct vut_sv);
 

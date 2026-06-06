@@ -41,8 +41,7 @@ BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
 
 <INITIAL>[ \t\r\n]+ ;
 <INITIAL>[^\[\] \t\r\n]+ {
-	struct ast_node node = ast_node_new(TEXT, vut_sv_from_cstr(yytext), yyextra->ast.allocator);
-	*yylval = ast_add_node(&yyextra->ast, node);
+	*yylval = ast_node_new(&yyextra->ast, TEXT, vut_sv_from_cstr(yytext));
 
 	return TEXT;
 }
@@ -60,8 +59,7 @@ BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
 <DEFINE_CALL_NAME,HAS_CALL_NAME>[ \t]*: { replace_state(CONTENT, yyscanner); return ':'; }
 <DEFINE_CALL_NAME>[ \t\r\n]+ ;
 <DEFINE_CALL_NAME>[^\[\]: \t\r\n]+ {
-	struct ast_node node = ast_node_new(SYMBOL, vut_sv_from_cstr(yytext), yyextra->ast.allocator);
-	*yylval = ast_add_node(&yyextra->ast, node);
+	*yylval = ast_node_new(&yyextra->ast, SYMBOL, vut_sv_from_cstr(yytext));
 
 	replace_state(HAS_CALL_NAME, yyscanner);
 
@@ -71,16 +69,14 @@ BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
 <HAS_CALL_NAME>. { replace_state(CONTENT, yyscanner); yyless(0); }
 
 <CONTENT>"$*" {
-	struct ast_node node = ast_node_new_nvl(ARG_REF_ALL_ARGS, yyextra->ast.allocator);
-	*yylval = ast_add_node(&yyextra->ast, node);
+	*yylval = ast_node_new_nvl(&yyextra->ast, ARG_REF_ALL_ARGS);
 
 	return ARG_REF_ALL_ARGS;
 }
 
 <CONTENT>"{#" { yy_push_state(IN_LITERAL, yyscanner); }
 <IN_LITERAL>"#}" {
-	struct ast_node node = ast_node_new(LITERAL, vut_sv_from_str(yytext, yyleng - 2), yyextra->ast.allocator);
-	*yylval = ast_add_node(&yyextra->ast, node);
+	*yylval = ast_node_new(&yyextra->ast, LITERAL, vut_sv_from_str(yytext, yyleng - 2));
 
 	yy_pop_state(yyscanner);
 	return LITERAL;
@@ -91,9 +87,7 @@ BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
 <IN_LITERAL>(.|\n) {
 	// the next token is eof, so we yield the
 	// contents buffered so far
-	struct ast_node node = ast_node_new(LITERAL, vut_sv_from_str(yytext, yyleng),
-	yyextra->ast.allocator);
-	*yylval = ast_add_node(&yyextra->ast, node);
+	*yylval = ast_node_new(&yyextra->ast, LITERAL, vut_sv_from_str(yytext, yyleng));
 	yy_pop_state(yyscanner);
 	return LITERAL;
 }
@@ -142,14 +136,13 @@ static int yield_text_node(yyscan_t yyscanner) {
 	YYSTYPE * lval = yyget_lval(yyscanner);
 	struct compiler_ctx * extra = yyget_extra(yyscanner);
 
-	struct ast_node node = ast_node_new(
+	*lval = ast_node_new(
+		&extra->ast,
 		TEXT,
-		vut_sv_from_vut_str(&extra->dry_flex_text_buffer),
-		extra->ast.allocator
+		vut_sv_from_vut_str(&extra->dry_flex_text_buffer)
 	);
 	// transfers the string to the ast node
-	extra->dry_flex_text_buffer = vut_str_init(extra->ast.allocator);
+	extra->dry_flex_text_buffer = vut_str_init(extra->dry_arena);
 
-	*lval = ast_add_node(&extra->ast, node);
 	return TEXT;
 }
