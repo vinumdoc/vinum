@@ -33,6 +33,9 @@ static void replace_state(int new_state, yyscan_t yyscanner);
 static int yield_text_node(yyscan_t yyscanner);
 
 void yyerror(yyscan_t scanner, struct compiler_ctx *ctx, const char *fmt, ...);
+
+#define YY_USER_ACTION update_line_buffer(yyextra, yytext);
+static void update_line_buffer(struct compiler_ctx *ctx, const char *text);
 %}
 
 BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
@@ -145,4 +148,14 @@ static int yield_text_node(yyscan_t yyscanner) {
 	extra->dry_flex_text_buffer = vut_str_init(extra->dry_arena);
 
 	return TEXT;
+}
+
+static void update_line_buffer(struct compiler_ctx *ctx, const char *text) {
+  for (int i = 0; text[i] != '\0'; i++) {
+      if (text[i] == '\n') {
+          ctx->line_buffer.len = 0;
+      } else {
+          VUT_VEC_PUT(&ctx->line_buffer, text[i]);
+      }
+  }
 }
