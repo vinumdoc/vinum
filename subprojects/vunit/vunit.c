@@ -1,5 +1,7 @@
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -212,6 +214,11 @@ static char *read_all_from_pipe(struct vunit_test_ctx *ctx, int fd) {
 
 int vunit_run_vinumc(struct vunit_test_ctx *ctx, char *input, char **output, char **error,
 		     char *const argv[], const int argc) {
+	// A child that exits before reading its stdin (e.g. `vinumc -h`) closes
+	// the read end while we're still writing; without this the parent dies
+	// from SIGPIPE before we get to assert anything.
+	signal(SIGPIPE, SIG_IGN);
+
 	// These variable names refer to the direction of the messsages
 	int father_to_child_pipe[2];
 	int child_to_father_pipe_stdout[2];
@@ -240,8 +247,11 @@ int vunit_run_vinumc(struct vunit_test_ctx *ctx, char *input, char **output, cha
 			close(father_to_child_pipe[0]);
 			size_t len = strlen(input);
 			ssize_t wrote_len = write(tx, input, len);
-			VUNIT_ASSERT(ctx, wrote_len >= 0);
-			VUNIT_ASSERT(ctx, (size_t)wrote_len == len);
+			if (wrote_len < 0) {
+				VUNIT_ASSERT_MSG(ctx, errno == EPIPE, "write");
+			} else {
+				VUNIT_ASSERT(ctx, (size_t)wrote_len == len);
+			}
 			close(tx);
 		}
 
