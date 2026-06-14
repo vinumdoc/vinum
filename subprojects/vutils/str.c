@@ -53,7 +53,7 @@ void vut_str_put_blank_reduced_sv(struct vut_str *to, struct vut_sv from, bool t
 		}
 	}
 
-	bool is_previous_blank = to->len == 0 || is_blank_char(VUT_VEC_AT(to, to->len));
+	bool is_previous_blank = to->len == 0 || is_blank_char(VUT_VEC_AT(to, to->len - 1));
 
 	VUT_VEC_RESERVE(to, (end - start + 1));
 	for (size_t i = start; i < end; i++) {
