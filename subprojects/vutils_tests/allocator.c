@@ -56,6 +56,8 @@ static void test_malloc_simple(struct vunit_test_ctx *ctx) {
 			VUNIT_ASSERT_EQ(ctx, arr[j], j);
 		}
 
+		vut_allocator_free(alloc, arr);
+
 		if (c->destroy_allocator != NULL)
 			c->destroy_allocator(alloc);
 	}
@@ -68,6 +70,8 @@ static void test_malloc_zero_size_allocation(struct vunit_test_ctx *ctx) {
 
 		size_t *arr = vut_allocator_malloc(alloc, sizeof(*arr), 0);
 		VUNIT_ASSERT_EQ(ctx, arr, NULL);
+
+		vut_allocator_free(alloc, arr);
 
 		if (c->destroy_allocator != NULL)
 			c->destroy_allocator(alloc);
@@ -85,6 +89,8 @@ static void test_calloc_simple(struct vunit_test_ctx *ctx) {
 			arr[j] = j;
 			VUNIT_ASSERT_EQ(ctx, arr[j], j);
 		}
+
+		vut_allocator_free(alloc, arr);
 
 		if (c->destroy_allocator != NULL)
 			c->destroy_allocator(alloc);
@@ -121,6 +127,8 @@ static void test_realloc_simple(struct vunit_test_ctx *ctx) {
 			arr[j] = j;
 			VUNIT_ASSERT_EQ(ctx, arr[j], j);
 		}
+
+		vut_allocator_free(alloc, arr);
 
 		if (c->destroy_allocator != NULL)
 			c->destroy_allocator(alloc);
