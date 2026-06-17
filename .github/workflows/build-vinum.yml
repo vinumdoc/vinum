@@ -56,6 +56,7 @@ jobs:
 
             echo "::group::[$short_sha] Setup & Test"
             meson setup buildir
+            meson configure buildir -Db_sanitize=address,undefined -Db_lundef=false
             meson test -C buildir --print-errorlogs
             echo "::endgroup::"
 
