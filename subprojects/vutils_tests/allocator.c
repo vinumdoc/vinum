@@ -18,11 +18,11 @@ struct allocator_case {
 	destroy_allocator_func_t destroy_allocator;
 };
 
-static struct vut_allocator gen_sys_allocator() {
+static struct vut_allocator gen_sys_allocator(void) {
 	return vut_get_system_allocator();
 }
 
-static struct vut_allocator gen_arena_allocator() {
+static struct vut_allocator gen_arena_allocator(void) {
 	struct vut_arena *arena =
 		vut_allocator_malloc(vut_get_system_allocator(), sizeof(*arena), 1);
 	*arena = vut_arena_new(vut_get_system_allocator(), DEFAULT_ALLOC_SIZE * DEFAULT_ALLOC_SIZE);
