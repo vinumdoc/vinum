@@ -12,6 +12,7 @@ struct ctx {
 	char *input_path;
 	char *output_path;
 	bool show_help;
+	bool show_version;
 
 	struct compiler_ctx compiler;
 

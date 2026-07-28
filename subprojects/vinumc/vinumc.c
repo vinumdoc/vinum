@@ -13,6 +13,7 @@
 #include <vutils/system_allocator.h>
 #include <vutils/vec.h>
 
+#include "config.h"
 #include "vinumc.h"
 
 #define ARRAY_SIZE(arr) (sizeof((arr)) / sizeof(*(arr)))
@@ -195,12 +196,24 @@ int main(int argc, char **argv) {
 			.kind = FLAG_MULTI_ARGUMENTS,
 			.ref_as.sv_vec = &ctx.compiler.libraries,
 		},
+		{
+			.name = "version",
+			.short_name = 'v',
+			.help_desc = "Show the current vinumc version",
+			.kind = FLAG_BOOLEAN,
+			.ref_as.boolean = &ctx.show_version,
+		},
 	};
 
 	parse_cmdline(argc, argv, &ctx, vinumc_flags, ARRAY_SIZE(vinumc_flags));
 
 	if (ctx.show_help) {
 		print_help("vinumc", vinumc_flags, ARRAY_SIZE(vinumc_flags));
+		goto exit;
+	}
+
+	if (ctx.show_version) {
+		printf("v" VINUMC_VERSION "\n");
 		goto exit;
 	}
 

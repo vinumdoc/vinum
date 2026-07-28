@@ -1,0 +1,6 @@
+#ifndef __VINUMC_CONFIG_H__
+#define __VINUMC_CONFIG_H__
+
+#define VINUMC_VERSION @vinumc_version@
+
+#endif // __VINUMC_CONFIG_H__
