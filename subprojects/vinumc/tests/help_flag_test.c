@@ -11,8 +11,8 @@ void test_output_flag(struct vunit_test_ctx *ctx) {
 			    &out, "-h", NULL);
 
 	const char *help_output =
-		"usage: vinumc [-o | --output <output_path>] [-h | --help] [-w | --with "
-		"<libraries>] [<file-input>]\n"
+		"usage: vinumc [-o | --output <output_path>] [-h | --help] [-w | "
+		"--with <libraries>] [-v | --version] [<file-input>]\n"
 		"\n"
 		"Options:\n"
 		"  -o, --output\n"
@@ -22,7 +22,10 @@ void test_output_flag(struct vunit_test_ctx *ctx) {
 		"	Show help\n"
 		"\n"
 		"  -w, --with (can be specified multiple times)\n"
-		"	Set a library to be loaded\n";
+		"	Set a library to be loaded\n"
+		"\n"
+		"  -v, --version\n"
+		"	Show the current vinumc version\n";
 
 	VUNIT_ASSERT_STREQ(ctx, out, help_output);
 
