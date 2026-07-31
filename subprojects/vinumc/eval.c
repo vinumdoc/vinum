@@ -343,6 +343,9 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 
 		struct return_value call_return = symbol_info->as.func(&call_ctx);
 
+		if (call_return.ptr == NULL)
+			return;
+
 		// put the extern function call return on the out str
 		if ((flags & REDUCE_BLANKS) != 0) {
 			vut_str_put_blank_reduced_cstr(out, call_return.ptr, true, true);
