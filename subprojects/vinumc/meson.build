@@ -63,6 +63,8 @@ install_subdir(
   install_dir: 'include',
 )
 
+subdir('vsl')
+
 libvinumc = library(
   'vinumc',
   sources: [
@@ -80,6 +82,7 @@ libvinumc = library(
      dl_dep,
      vutils_dep,
      parser_dep,
+     vsl_dep,
    ],
   install: true
 )

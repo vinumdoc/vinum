@@ -391,11 +391,11 @@ DO_CALLS_FUNC_SIGNATURE(do_calls) {
 	}
 }
 
-void resolve_extern_functions(struct eval_ctx *ctx, struct loaded_lib lib) {
+void resolve_extern_functions(struct eval_ctx *ctx, struct extern_function *functions) {
 	struct scope *curr_scope = &VUT_VEC_AT(&ctx->scopes, 0);
 
 	int i = 0;
-	struct extern_function f = lib.functions[i];
+	struct extern_function f = functions[i];
 	while (f.name != 0) {
 		struct namespace_entry entry = {
 			.name = vut_sv_from_cstr(f.name),
@@ -404,21 +404,22 @@ void resolve_extern_functions(struct eval_ctx *ctx, struct loaded_lib lib) {
 		};
 
 		VUT_VEC_PUT(&curr_scope->namespace, entry);
-		f = lib.functions[++i];
+		f = functions[++i];
 	}
 }
 
+struct extern_function *vsl_expose_library();
+
 struct loaded_lib *load_libs(struct eval_ctx *ctx, struct sv_vec *libraries) {
 	size_t len = libraries->len;
-	if (len == 0)
-		return NULL;
 	struct loaded_lib *loaded_libs =
 		vut_allocator_calloc(ctx->allocator, sizeof(struct loaded_lib), len + 1);
 	for (size_t i = 0; i < len; i++) {
 		loaded_libs[i] = load_lib(VUT_VEC_AT(libraries, i), ctx->allocator);
-		resolve_extern_functions(ctx, loaded_libs[i]);
+		resolve_extern_functions(ctx, loaded_libs[i].functions);
 	}
 	loaded_libs[len].dl_handle = NULL;
+	resolve_extern_functions(ctx, vsl_expose_library());
 	return loaded_libs;
 }
 
