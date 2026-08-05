@@ -39,6 +39,8 @@ void yyerror(yyscan_t scanner, struct compiler_ctx *ctx, const char *fmt, ...);
 %token SYMBOL
 // TODO: FUNCTION is not used in bison but in eval
 %token FUNCTION
+// TODO: UNDEFINED is not used in bison but in eval
+%token UNDEFINED
 %token TEXT
 %token LITERAL
 
