@@ -238,9 +238,29 @@ int main(int argc, char **argv) {
 		program_str = vut_fut_read_all_FILE(stdin, ctx.alloc);
 	}
 
-	struct vut_str str_out = compiler_compile(&ctx.compiler, &program_str);
+	struct vut_str cocktailing_str = vut_str_init(ctx.alloc);
+
+	for (size_t i = 0; i < ctx.compiler.cocktailing_libraries.len; i++) {
+		struct vut_sv lib_path_sv = VUT_VEC_AT(&ctx.compiler.cocktailing_libraries, i);
+		char *path = vut_sv_to_cstr(lib_path_sv, ctx.alloc);
+
+		FILE *lib_file = fopen(path, "r");
+		if (lib_file != NULL) {
+			struct vut_str lib_content = vut_fut_read_all_FILE(lib_file, ctx.alloc);
+			fclose(lib_file);
+			free(path);
+
+			vut_str_put_sv(&cocktailing_str, vut_sv_from_vut_str(&lib_content));
+
+			vut_str_free(&lib_content);
+		}
+		// TODO: handle file error
+	}
+
+	struct vut_str str_out = compiler_compile(&ctx.compiler, &program_str, &cocktailing_str);
 
 	vut_str_free(&program_str);
+	vut_str_free(&cocktailing_str);
 
 	fprintf(out, VUT_STR_FMT, VUT_STR_ARG(str_out));
 

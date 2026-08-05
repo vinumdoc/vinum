@@ -8,7 +8,8 @@ static char *compile_program(const char *prg_cstr, struct vut_allocator alloc) {
 	struct vut_str prg = vut_str_init(alloc);
 	vut_str_put_cstr(&prg, prg_cstr);
 
-	struct vut_str out = compiler_compile(&comp, &prg);
+	struct vut_str cocktail = vut_str_init(alloc);
+	struct vut_str out = compiler_compile(&comp, &prg, &cocktail);
 
 	return vut_str_move_to_cstr(&out);
 }
