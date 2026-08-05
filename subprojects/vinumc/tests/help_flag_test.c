@@ -12,7 +12,8 @@ void test_output_flag(struct vunit_test_ctx *ctx) {
 
 	const char *help_output =
 		"usage: vinumc [-o | --output <output_path>] [-h | --help] [-w | "
-		"--with <libraries>] [-v | --version] [<file-input>]\n"
+		"--with <libraries>] [-e | --effect <cocktailing_libraries>] [-v | --version] "
+		"[<file-input>]\n"
 		"\n"
 		"Options:\n"
 		"  -o, --output\n"
@@ -23,6 +24,9 @@ void test_output_flag(struct vunit_test_ctx *ctx) {
 		"\n"
 		"  -w, --with (can be specified multiple times)\n"
 		"	Set a library to be loaded\n"
+		"\n"
+		"  -e, --effect (can be specified multiple times)\n"
+		"	Set a vinum cocktailing library to be loaded\n"
 		"\n"
 		"  -v, --version\n"
 		"	Show the current vinumc version\n";

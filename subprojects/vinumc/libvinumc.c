@@ -7,6 +7,7 @@ struct compiler_ctx compiler_ctx_init(struct vut_allocator alloc) {
 		.ast = ast_new(alloc),
 		.eval_ctx = eval_ctx_new(alloc),
 		.libraries = VUT_VEC_INIT(struct sv_vec, alloc),
+		.cocktailing_libraries = VUT_VEC_INIT(struct sv_vec, alloc),
 		.dry_flex_text_buffer = vut_str_init(alloc),
 
 		.alloc = alloc,

@@ -12,6 +12,7 @@ struct compiler_ctx {
 	struct ast ast;
 	struct eval_ctx eval_ctx;
 	struct sv_vec libraries;
+	struct sv_vec cocktailing_libraries;
 	// used to handle character escaping inside the regular text blocks
 	// preventing having two consecutive TEXT nodes
 	// that could be just one node

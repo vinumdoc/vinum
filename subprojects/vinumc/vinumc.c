@@ -197,6 +197,14 @@ int main(int argc, char **argv) {
 			.ref_as.sv_vec = &ctx.compiler.libraries,
 		},
 		{
+			.name = "effect",
+			.short_name = 'e',
+			.help_desc = "Set a vinum cocktailing library to be loaded",
+			.placeholder_name = "cocktailing_libraries",
+			.kind = FLAG_MULTI_ARGUMENTS,
+			.ref_as.sv_vec = &ctx.compiler.cocktailing_libraries,
+		},
+		{
 			.name = "version",
 			.short_name = 'v',
 			.help_desc = "Show the current vinumc version",
