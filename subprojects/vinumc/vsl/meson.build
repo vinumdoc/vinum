@@ -2,7 +2,7 @@ vsl_srcs = [
   'vsl.c',
 ]
 
-vsl = shared_library(
+vsl = library(
   'vsl',
   vsl_srcs,
   include_directories : [
