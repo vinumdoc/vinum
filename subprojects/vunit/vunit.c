@@ -13,7 +13,7 @@
 
 #include <vunit.h>
 
-#define VUNIT_ARENA_SIZE 1024 * 1024
+#define VUNIT_ARENA_SIZE 1024 * 1024 * 32
 
 static char *alloc_printf(struct vunit_test_ctx *ctx, const char *fmt, ...) {
 	va_list ap;

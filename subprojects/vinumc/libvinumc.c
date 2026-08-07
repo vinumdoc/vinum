@@ -13,7 +13,7 @@ struct compiler_ctx compiler_ctx_init(struct vut_allocator alloc) {
 	};
 
 	struct vut_arena *arena = vut_allocator_malloc(alloc, sizeof(*arena), 1);
-	*arena = vut_arena_new(alloc, 1024),
+	*arena = vut_arena_new(alloc, 1024 * 1024),
 
 	ctx.dry_arena = vut_arena_to_vut_allocator(arena);
 	ctx.dry_flex_text_buffer = vut_str_init(ctx.dry_arena);
