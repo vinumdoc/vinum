@@ -1,6 +1,7 @@
 fs = import('fs')
 
 tests = [
+  'cocktail_test.c',
   'help_flag_test.c',
   'library_test.c',
   'metaprog_test.c',

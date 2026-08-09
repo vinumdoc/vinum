@@ -119,6 +119,8 @@ const char *token_to_str(enum yytokentype token) {
 		return "SYMBOL";
 	case FUNCTION:
 		return "FUNCTION";
+	case UNDEFINED:
+		return "UNDEFINED";
 	case TEXT:
 		return "TEXT";
 	case LITERAL:

@@ -262,8 +262,8 @@ RESOLVE_FUNC_SIGNATURE(resolve_calls_call) {
 			}
 		}
 	} else {
-		fprintf(stderr, "ERROR: No symbol with name \"" VUT_SV_FMT "\" exist\n",
-			VUT_SV_ARG(call_name));
+		ast_node_id_t symbol = ast_get_nth_child(ast, ast_node, 0);
+		ast_set_type(ast, symbol, UNDEFINED);
 	}
 
 	resolve_calls_descent(cctx, curr_scope_id, ast_node);
@@ -309,10 +309,36 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_program) {
 	}
 }
 
+DO_CALLS_FUNC_SIGNATURE(do_calls_undefined) {
+	struct ast *ast = &cctx->ast;
+	ast_node_id_t symbol = ast_get_nth_child(ast, ast_node, 0);
+
+	if (ast_get_type(ast, symbol) != UNDEFINED) {
+		return;
+	}
+
+	vut_str_put_cstr(out, "[");
+	struct vut_sv call_name = ast_get_text(ast, symbol);
+	vut_str_put_sv(out, call_name);
+
+	if (ast_get_num_child(ast, ast_node) > 1) {
+		vut_str_put_cstr(out, " ");
+		ast_node_id_t args = ast_get_nth_child(ast, ast_node, 1);
+		size_t num_args = ast_get_num_child(ast, args);
+		for (size_t i = 0; i < num_args; i++) {
+			size_t arg_child = ast_get_nth_child(ast, args, i);
+			do_calls(cctx, out, arg_child, flags);
+		}
+	}
+
+	vut_str_put_cstr(out, "]");
+}
+
 DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 	struct ast *ast = &cctx->ast;
 	struct eval_ctx *ctx = &cctx->eval_ctx;
 	if (ast_get_num_child(ast, ast_node) <= 1) {
+		do_calls_undefined(cctx, out, ast_node, flags);
 		return;
 	}
 
@@ -356,6 +382,8 @@ DO_CALLS_FUNC_SIGNATURE(do_calls_call) {
 		if (call_return.free) {
 			free(call_return.ptr);
 		}
+	} else if (ast_get_type(ast, symbol) == UNDEFINED) {
+		do_calls_undefined(cctx, out, ast_node, flags);
 	} else {
 		do_calls(cctx, out, args, flags);
 	}

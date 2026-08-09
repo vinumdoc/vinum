@@ -12,6 +12,7 @@ struct compiler_ctx {
 	struct ast ast;
 	struct eval_ctx eval_ctx;
 	struct sv_vec libraries;
+	struct sv_vec cocktailing_libraries;
 	// used to handle character escaping inside the regular text blocks
 	// preventing having two consecutive TEXT nodes
 	// that could be just one node
@@ -26,6 +27,7 @@ void compiler_ctx_free(struct compiler_ctx *ctx);
 
 void compiler_parse(struct compiler_ctx *ctx, struct vut_str *program);
 struct vut_str compiler_eval(struct compiler_ctx *ctx);
-struct vut_str compiler_compile(struct compiler_ctx *ctx, struct vut_str *program);
+struct vut_str compiler_compile(struct compiler_ctx *ctx, struct vut_str *program,
+				struct vut_str *cocktail);
 
 #endif // __LIBVINUMC_H__

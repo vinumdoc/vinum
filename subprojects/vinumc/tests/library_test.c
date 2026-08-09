@@ -9,7 +9,8 @@ static char *compile_program_with_testlib(const char *prg_cstr, struct vut_alloc
 	vut_str_put_cstr(&prg, prg_cstr);
 	VUT_VEC_PUT(&comp.libraries, vut_sv_from_cstr("subprojects/vinumc/tests/libtestlib.so"));
 
-	struct vut_str out = compiler_compile(&comp, &prg);
+	struct vut_str cocktail = vut_str_init(alloc);
+	struct vut_str out = compiler_compile(&comp, &prg, &cocktail);
 
 	return vut_str_move_to_cstr(&out);
 }

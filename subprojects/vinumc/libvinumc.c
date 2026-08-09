@@ -7,6 +7,7 @@ struct compiler_ctx compiler_ctx_init(struct vut_allocator alloc) {
 		.ast = ast_new(alloc),
 		.eval_ctx = eval_ctx_new(alloc),
 		.libraries = VUT_VEC_INIT(struct sv_vec, alloc),
+		.cocktailing_libraries = VUT_VEC_INIT(struct sv_vec, alloc),
 		.dry_flex_text_buffer = vut_str_init(alloc),
 
 		.alloc = alloc,
@@ -53,7 +54,25 @@ struct vut_str compiler_eval(struct compiler_ctx *ctx) {
 	return eval(ctx);
 }
 
-struct vut_str compiler_compile(struct compiler_ctx *ctx, struct vut_str *program) {
+struct vut_str compiler_compile(struct compiler_ctx *ctx, struct vut_str *program,
+				struct vut_str *cocktail) {
 	compiler_parse(ctx, program);
-	return eval(ctx);
+	struct vut_str eval_output = eval(ctx);
+
+	if (VUT_STR_EMPTY(*cocktail)) {
+		return eval_output;
+	}
+
+	struct compiler_ctx cocktail_ctx = compiler_ctx_init(ctx->alloc);
+
+	vut_str_put_sv(&eval_output, vut_sv_from_vut_str(cocktail));
+
+	compiler_parse(&cocktail_ctx, &eval_output);
+
+	struct vut_str cocktail_output = compiler_eval(&cocktail_ctx);
+
+	vut_str_free(&eval_output);
+	compiler_ctx_free(&cocktail_ctx);
+
+	return cocktail_output;
 }

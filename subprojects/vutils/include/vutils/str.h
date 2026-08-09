@@ -8,6 +8,7 @@
 
 #define VUT_STR_FMT "%.*s"
 #define VUT_STR_ARG(s) (int)(s).len, (s).base
+#define VUT_STR_EMPTY(s) (int)(s).len == 0
 
 struct vut_str VUT_VEC_DEF(char);
 
