@@ -33,6 +33,7 @@ struct vunit_test {
 	}
 
 #define TAP_TAB "    "
+#define YAML_TAB "  "
 
 #define VUNIT_ASSERT_YAML(ctx, predicate, yaml)                                                    \
 	__vunit_assert((ctx), (predicate), #predicate, yaml, __FILE__, __LINE__)
