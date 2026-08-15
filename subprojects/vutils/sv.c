@@ -36,3 +36,7 @@ bool vut_sv_eq(struct vut_sv a, struct vut_sv b) {
 
 	return true;
 }
+
+bool vut_sv_is_empty(struct vut_sv sv) {
+	return sv.len == 0;
+}
