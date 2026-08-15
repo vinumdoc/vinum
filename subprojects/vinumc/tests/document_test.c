@@ -94,7 +94,6 @@ struct vunit_test tests[] = {
 	  .todo_msg = "[fqn] automatic not implemented" },
 	{ .name = "[doc:] editor function defers to cocktailing",
 	  .test_func = test_doc_editor_function,
-	  .todo = true,
 	  .todo_msg = "[doc:] editor function / cocktailing not implemented" },
 	{},
 };

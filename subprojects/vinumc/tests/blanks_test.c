@@ -27,11 +27,9 @@ void test_symbol_field_blanks_ignored(struct vunit_test_ctx *ctx) {
 struct vunit_test tests[] = {
 	{ .name = "Blank reduction collapses newlines into one space",
 	  .test_func = test_blank_reduction_across_newline,
-	  .todo = true,
 	  .todo_msg = "blank reduction across newlines not implemented" },
 	{ .name = "Leading and trailing blanks are suppressed",
 	  .test_func = test_leading_trailing_blanks_suppressed,
-	  .todo = true,
 	  .todo_msg = "leading/trailing blank suppression not implemented" },
 	{ .name = "Blanks around symbol field are ignored",
 	  .test_func = test_symbol_field_blanks_ignored },

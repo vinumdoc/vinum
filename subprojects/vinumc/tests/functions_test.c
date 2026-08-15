@@ -48,7 +48,6 @@ struct vunit_test tests[] = {
 	{ .name = "Definition block expands to nothing", .test_func = test_simple_definition },
 	{ .name = "Reference after definition",
 	  .test_func = test_reference_after_definition,
-	  .todo = true,
 	  .todo_msg = "symbol reference resolution not implemented" },
 	{ .name = "Optional argument via nested binding",
 	  .test_func = test_optional_argument_binding,

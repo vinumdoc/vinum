@@ -83,7 +83,6 @@ struct vunit_test tests[] = {
 	  .todo_msg = "nested compound projection not implemented" },
 	{ .name = "Qualified-name form is equivalent to compound form",
 	  .test_func = test_qualified_names_equivalence,
-	  .todo = true,
 	  .todo_msg = "qualified-name form not implemented" },
 	{ .name = "Extending a compound via qualified name",
 	  .test_func = test_extend_compound_later,
