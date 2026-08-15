@@ -145,9 +145,12 @@ static enum test_return_status run_test(const struct vunit_test *test, struct vu
 }
 
 int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
-	// TODO: Make use of the command args
-	(void)argc;
-	(void)argv;
+	assert(argc <= 2);
+
+	char *pattern = NULL;
+	if (argc == 2) {
+		pattern = argv[1];
+	}
 
 	size_t num_test = get_num_tests(tests);
 
@@ -162,7 +165,18 @@ int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
 			.allocator = vut_arena_to_vut_allocator(&arena),
 		};
 
-		enum test_return_status status = run_test(test, &ctx);
+		bool skip_test = false;
+
+		if (pattern != NULL && pattern[0] != 0) {
+			skip_test = strstr(test->name, pattern) == NULL;
+		}
+
+		enum test_return_status status;
+		if (!skip_test) {
+			status = run_test(test, &ctx);
+		} else {
+			status = SKIPPED;
+		}
 
 		const char *todo_str = "";
 		if (test->todo) {
