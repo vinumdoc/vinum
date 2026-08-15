@@ -214,7 +214,7 @@ int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
 			break;
 		case FAILED:
 			printf("not ok %zu - %s%s\n", i + 1, test->name, todo_str);
-			if (ctx.lonjmp_msg != NULL && !test->todo)
+			if (ctx.lonjmp_msg != NULL)
 				printf("%s\n", ctx.lonjmp_msg);
 			break;
 		case SKIPPED:
