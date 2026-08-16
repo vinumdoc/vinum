@@ -8,6 +8,23 @@ tests = [
   'output_flag_test.c',
   'simple_test.c',
   'text_handling_test.c',
+  'overview_test.c',
+  'functions_test.c',
+  'expansion_test.c',
+  'shots_test.c',
+  'compounds_test.c',
+  'scope_test.c',
+  'namespace_test.c',
+  'document_test.c',
+  'modules_test.c',
+  'blanks_test.c',
+  'escapes_test.c',
+  'filters_test.c',
+  'automatics_test.c',
+  'deferral_test.c',
+  'control_structures_test.c',
+  'preprocessor_test.c',
+  'macros_test.c',
 ]
 
 vunit_dep = dependency('vunit', fallback : ['vunit', 'vunit_dep'])
@@ -32,7 +49,7 @@ foreach t : tests
 
   test_exe = executable(
     basename,
-    t,
+    [t, 'test_helpers.c'],
     include_directories : [
       local_inc,
       generated_inc,
