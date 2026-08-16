@@ -51,7 +51,7 @@ program:
        UNUSED(yynerrs);
 	$$ = ast_node_new_nvl(&ctx->ast, PROGRAM);
        }
-       | program block {
+       | program args_child {
 	ast_add_child(&ctx->ast, $1, $2);
 	$$ = $1;
        }

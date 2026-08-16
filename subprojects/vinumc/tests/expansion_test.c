@@ -50,7 +50,6 @@ struct vunit_test tests[] = {
 	  .todo_msg = "eager [[symbol]] expansion in definition keys not implemented" },
 	{ .name = "Eager symbol expansion in reference block",
 	  .test_func = test_eager_symbol_in_reference,
-	  .todo = true,
 	  .todo_msg = "eager [[symbol]] expansion in reference position not implemented" },
 	{},
 };

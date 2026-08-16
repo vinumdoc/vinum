@@ -115,7 +115,6 @@ void test_latex_translation(struct vunit_test_ctx *ctx) {
 struct vunit_test tests[] = {
 	{ .name = "winegrape definition and reference",
 	  .test_func = test_winegrape_definition,
-	  .todo = true,
 	  .todo_msg = "symbol reference resolution not implemented" },
 	{ .name = "Nested user function expanding a reference",
 	  .test_func = test_nested_first,

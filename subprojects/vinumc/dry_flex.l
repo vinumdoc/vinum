@@ -40,7 +40,7 @@ BEFORE_TEXT_END ("["|"]"|"$*"|"{#")
 
 
 <INITIAL>[ \t\r\n]+ ;
-<INITIAL>[^\[\] \t\r\n]+ {
+<INITIAL>[^\[\]]+ {
 	*yylval = ast_node_new(&yyextra->ast, TEXT, vut_sv_from_cstr(yytext));
 
 	return TEXT;
