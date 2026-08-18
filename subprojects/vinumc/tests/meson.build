@@ -64,9 +64,6 @@ foreach t : tests
   test_env.prepend('PATH', fs.parent(vinumc.full_path()))
 
   test_kwargs = {}
-  if meson.version().version_compare('>=0.62.0')
-    test_kwargs += {'verbose': true}
-  endif
 
   test(
     basename,
