@@ -22,5 +22,8 @@ struct vut_sv vut_sv_from_vut_str(const struct vut_str *str);
 char *vut_sv_to_cstr(const struct vut_sv sv, struct vut_allocator alloc);
 
 bool vut_sv_eq(struct vut_sv a, struct vut_sv b);
+bool vut_sv_is_empty(struct vut_sv sv);
+
+struct vut_sv vut_sv_splitc(struct vut_sv *sv, char c);
 
 #endif // __VUT_SV_H__

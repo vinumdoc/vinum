@@ -36,3 +36,23 @@ bool vut_sv_eq(struct vut_sv a, struct vut_sv b) {
 
 	return true;
 }
+
+bool vut_sv_is_empty(struct vut_sv sv) {
+	return sv.len == 0;
+}
+
+struct vut_sv vut_sv_splitc(struct vut_sv *sv, char c) {
+	for (size_t i = 0; i < sv->len; i++) {
+		if (sv->base[i] == c) {
+			struct vut_sv ret = vut_sv_from_str(sv->base, i);
+			sv->base += i + 1;
+			sv->len -= i + 1;
+			return ret;
+		}
+	}
+
+	struct vut_sv ret = *sv;
+	sv->base += sv->len;
+	sv->len = 0;
+	return ret;
+}
