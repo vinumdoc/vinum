@@ -64,7 +64,7 @@ static char *indent(const char *str, const char *prefix, struct vut_allocator al
 		vut_str_put_sv(&ret, line);
 	}
 
-	if (ret.len > 0 && ret.base[ret.len - 1] == '\n')
+	if (ret.len == 0 || (ret.len > 0 && ret.base[ret.len - 1] == '\n'))
 		vut_str_put_cstr(&ret, prefix);
 
 	return vut_str_move_to_cstr(&ret);
