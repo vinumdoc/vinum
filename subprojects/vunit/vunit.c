@@ -64,7 +64,7 @@ static char *indent(const char *str, const char *prefix, struct vut_allocator al
 		vut_str_put_sv(&ret, line);
 	}
 
-	if (ret.len > 0 && ret.base[ret.len - 1] == '\n')
+	if (ret.len == 0 || (ret.len > 0 && ret.base[ret.len - 1] == '\n'))
 		vut_str_put_cstr(&ret, prefix);
 
 	return vut_str_move_to_cstr(&ret);
@@ -214,7 +214,7 @@ int __vunit_main(const struct vunit_test *tests, int argc, char *argv[]) {
 			break;
 		case FAILED:
 			printf("not ok %zu - %s%s\n", i + 1, test->name, todo_str);
-			if (ctx.lonjmp_msg != NULL && !test->todo)
+			if (ctx.lonjmp_msg != NULL)
 				printf("%s\n", ctx.lonjmp_msg);
 			break;
 		case SKIPPED:
