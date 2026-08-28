@@ -18,6 +18,7 @@ struct compiler_ctx compiler_ctx_init(struct vut_allocator alloc) {
 
 	ctx.dry_arena = vut_arena_to_vut_allocator(arena);
 	ctx.dry_flex_text_buffer = vut_str_init(ctx.dry_arena);
+	ctx.line_buffer = vut_str_init(ctx.dry_arena);
 
 	return ctx;
 }
@@ -43,6 +44,7 @@ void compiler_parse(struct compiler_ctx *ctx, struct vut_str *program) {
 	// Flex requires that the buffer ends with two trailing null terminators.
 	VUT_VEC_PUT_MANY(program, "\0\0", 2);
 	YY_BUFFER_STATE buffer = yy_scan_buffer(program->base, program->len, scanner);
+	yyset_lineno(0, scanner);
 
 	yyparse(scanner, ctx);
 
@@ -75,4 +77,27 @@ struct vut_str compiler_compile(struct compiler_ctx *ctx, struct vut_str *progra
 	compiler_ctx_free(&cocktail_ctx);
 
 	return cocktail_output;
+}
+
+#define ANSI_BOLD_RED "\x1b[1;31m"
+#define ANSI_RESET "\x1b[0m"
+
+void print_error(const char *error_msg, int line, int column, int length, char *error_line_text,
+		 const char *filename) {
+	fprintf(stderr, "%s:%d:%d: ", filename, line, column);
+	fprintf(stderr, ANSI_BOLD_RED "error: " ANSI_RESET);
+	fprintf(stderr, "%s", error_msg);
+	fprintf(stderr, "\n");
+
+	// TODO: color error on line
+	fprintf(stderr, "%5d | %s\n", line, error_line_text);
+	fprintf(stderr, "      | ");
+	for (int i = 1; i < column; i++) {
+		fprintf(stderr, " ");
+	}
+	fprintf(stderr, ANSI_BOLD_RED "^");
+	for (int i = 1; i < length; i++) {
+		fprintf(stderr, ANSI_BOLD_RED "~");
+	}
+	fprintf(stderr, ANSI_RESET "\n\n");
 }

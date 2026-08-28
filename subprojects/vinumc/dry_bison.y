@@ -13,6 +13,9 @@ typedef void* yyscan_t;
 int yylex(YYSTYPE *yylval_param, yyscan_t yyscanner);
 
 void yyerror(yyscan_t scanner, struct compiler_ctx *ctx, const char *fmt, ...);
+int yyget_lineno(void *yyscanner);
+int yyset_lineno(int lineno, void *yyscanner);
+int yyget_leng(void *yyscanner);
 %}
 
 %code requires {
@@ -136,16 +139,21 @@ symbol: SYMBOL {
       ;
 %%
 
-
 void yyerror(yyscan_t scanner, struct compiler_ctx *ctx, const char *fmt, ...) {
-	UNUSED(scanner);
-	UNUSED(ctx);
 	va_list ap;
 	va_start(ap, fmt);
 
-	fprintf(stderr, "[ERROR]:");
-	vfprintf(stderr, fmt, ap);
-	fprintf(stderr, "\n");
+	int error_line = yyget_lineno(scanner);
+	if (error_line < 1) {
+		error_line = 0;
+	}
+	error_line++;
+	int token_size = yyget_leng(scanner);
+	if (token_size < 0) token_size = 0;
+	int column = ctx->line_buffer.len - token_size + 1;
+
+	// TODO: proper filename
+	print_error(fmt, error_line, column, token_size, vut_str_move_to_cstr(&ctx->line_buffer), "input");
 
 	va_end(ap);
 }

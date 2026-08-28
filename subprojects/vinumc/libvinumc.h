@@ -18,6 +18,9 @@ struct compiler_ctx {
 	// that could be just one node
 	struct vut_str dry_flex_text_buffer;
 
+	// used to show better errors
+	struct vut_str line_buffer;
+
 	struct vut_allocator dry_arena;
 	struct vut_allocator alloc;
 };
@@ -29,5 +32,8 @@ void compiler_parse(struct compiler_ctx *ctx, struct vut_str *program);
 struct vut_str compiler_eval(struct compiler_ctx *ctx);
 struct vut_str compiler_compile(struct compiler_ctx *ctx, struct vut_str *program,
 				struct vut_str *cocktail);
+
+void print_error(const char *error_msg, int line, int column, int length, char *error_line_text,
+		 const char *filename);
 
 #endif // __LIBVINUMC_H__
