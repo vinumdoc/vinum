@@ -1,0 +1,3 @@
+docs += files(
+  'index.rst',
+)

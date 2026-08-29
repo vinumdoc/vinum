@@ -24,6 +24,9 @@ struct ast_node {
 
 struct ast_nodes_t VUT_VEC_DEF(struct ast_node);
 
+/**
+ * The Abstract Syntax Tree container.
+ */
 struct ast {
 	struct ast_nodes_t nodes;
 
